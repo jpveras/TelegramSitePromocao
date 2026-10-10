@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Promoções do Veras</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-soft: #11141b;
+    --card: #161920;
+    --card-hover: #1c2029;
+    --border: #262b36;
+    --border-soft: #1e222c;
+    --text: #eef0f3;
+    --muted: #8b93a1;
+    --muted-soft: #5f6676;
+    --accent: #ff7a1a;
+    --accent-dim: #ff7a1a22;
+    --green: #3fc96b;
+    --red: #ff5c6c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+
+  /* ---------- Topbar ---------- */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border-soft);
+    position: sticky;
+    top: 0;
+    background: rgba(11, 13, 18, 0.92);
+    backdrop-filter: blur(8px);
+    z-index: 20;
+  }
+  .topbar .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .topbar .brand .emoji { font-size: 18px; }
+  .status {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 4px rgba(63, 201, 107, 0.15);
+  }
+  .dot.off {
+    background: var(--red);
+    box-shadow: 0 0 0 4px rgba(255, 92, 108, 0.15);
+  }
+
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px 24px 60px;
+  }
+
+  /* ---------- Hero / header panel ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: linear-gradient(180deg, var(--bg-soft), var(--card));
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    padding: 22px 24px;
+  }
+  .profile {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: radial-gradient(circle at 30% 30%, #ff9a44, #ff5c1a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+  .profile h1 {
+    margin: 0 0 2px;
+    font-size: 21px;
+  }
+  .profile .handle {
+    color: var(--accent);
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .profile p.desc {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.5;
+    max-width: 48ch;
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .stat-box {
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .stat-box .label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted-soft);
+    margin-bottom: 4px;
+  }
+  .stat-box .value {
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .stat-box .value.live {
+    color: var(--green);
+    font-size: 17px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .stat-box .value.live .dot {
+    width: 9px;
+    height: 9px;
+  }
+
+  /* ---------- Filter panel ---------- */
+  .filter-panel h2 {
+    margin: 0 0 2px;
+    font-size: 15px;
+  }
+  .filter-panel .sub {
+    color: var(--muted);
+    font-size: 12.5px;
+    margin-bottom: 14px;
+  }
+  .store-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 12.5px;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--text); }
+  .chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #1a0e04;
+    font-weight: 700;
+  }
+  .chip .count {
+    font-size: 10.5px;
+    opacity: 0.75;
+  }
+  .filter-group {
+    margin-bottom: 14px;
+  }
+  .filter-group .filter-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted-soft);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .filter-group .chips-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chip.category.active {
+    background: #3fa0ff;
+    border-color: #3fa0ff;
+    color: #061322;
+  }
+  .search-row {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .search-row input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px 11px 38px;
+    color: var(--text);
+    font-size: 13.5px;
+    outline: none;
+  }
+  .search-row input:focus { border-color: var(--accent); }
+  .search-row .icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted-soft);
+    font-size: 14px;
+  }
+  select.sort-select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* ---------- Section header ---------- */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .section-head h2 {
+    font-size: 19px;
+    margin: 0;
+  }
+  .section-head .badge {
+    font-size: 11.5px;
+    color: var(--green);
+    background: rgba(63, 201, 107, 0.12);
+    border: 1px solid rgba(63, 201, 107, 0.3);
+    padding: 4px 10px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-head .badge .dot { width: 6px; height: 6px; }
+
+  /* ---------- Grid ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: fadein 0.35s ease;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .card:hover {
+    border-color: #3a4152;
+    transform: translateY(-2px);
+  }
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card .thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: var(--bg-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .card .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card .thumb .placeholder {
+    font-size: 36px;
+    opacity: 0.35;
+  }
+  .store-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(10, 11, 15, 0.82);
+    backdrop-filter: blur(4px);
+    padding: 4px 9px 4px 6px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .store-badge .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .discount-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--red);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 6px;
+  }
+  .card .body {
+    padding: 12px 13px 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .card .title {
+    font-size: 13.5px;
+    line-height: 1.35;
+    margin: 0 0 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.7em;
+  }
+  .price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    margin-bottom: 2px;
+    flex-wrap: wrap;
+  }
+  .price-row .old {
+    font-size: 11.5px;
+    color: var(--muted-soft);
+    text-decoration: line-through;
+  }
+  .price-row .now {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .time-row {
+    font-size: 11px;
+    color: var(--muted-soft);
+    margin-bottom: 10px;
+  }
+  .card .spacer { flex: 1; }
+  .btn-offer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: var(--accent);
+    color: #1a0e04;
+    font-weight: 700;
+    font-size: 12.5px;
+    text-decoration: none;
+    border: none;
+    border-radius: 9px;
+    padding: 10px;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+  .btn-offer:hover { filter: brightness(1.08); }
+  .btn-offer.disabled {
+    background: var(--bg-soft);
+    color: var(--muted-soft);
+    cursor: default;
+    border: 1px solid var(--border);
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 80px 20px;
+    font-size: 14px;
+  }
+  .empty .big { font-size: 34px; margin-bottom: 10px; }
+
+  #load-more-wrap { text-align: center; }
+  #load-more {
+    margin: 26px auto 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 11px 22px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  #load-more:hover { border-color: var(--accent); }
+  #load-more:disabled { opacity: 0.5; cursor: default; }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><span class="emoji">🔥</span> Promoções do Veras</div>
+    <div class="status">
+      <span class="dot" id="status-dot"></span>
+      <span id="status-text">conectando…</span>
+    </div>
+  </div>
+
+  <main>
+    <div class="hero">
+      <div class="panel">
+        <div class="profile">
+          <div class="avatar">🔥</div>
+          <div>
+            <h1>Promoções do Veras</h1>
+            <div class="handle">Todas as promoções ao vivo para você aproveitar</div>
+            <p class="desc">
+              Ofertas publicadas no grupo/canal acompanhado chegam aqui
+              automaticamente, sem precisar atualizar a página.
+            </p>
+          </div>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-box">
+            <div class="label">Total capturado</div>
+            <div class="value" id="stat-total">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="label">Últimas 24h</div>
+            <div class="value" id="stat-recent">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="label">Conexão</div>
+            <div class="value live" id="stat-conn"><span class="dot"></span> ao vivo</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel filter-panel">
+        <h2>Encontre uma oferta</h2>
+        <div class="sub">Clique numa loja ou categoria, ou busque por produto.</div>
+
+        <div class="search-row">
+          <span class="icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Busque por produto, marca ou palavra…" />
+        </div>
+
+        <select class="sort-select" id="sort-select" style="margin-bottom: 16px;">
+          <option value="newest">Mais recentes primeiro</option>
+          <option value="oldest">Mais antigas primeiro</option>
+        </select>
+
+        <div class="filter-group">
+          <div class="filter-label">Loja</div>
+          <div class="chips-row" id="store-chips"><!-- preenchido via JS --></div>
+        </div>
+
+        <div class="filter-group" style="margin-bottom: 0;">
+          <div class="filter-label">Categoria</div>
+          <div class="chips-row" id="category-chips"><!-- preenchido via JS --></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>Ofertas recebidas</h2>
+      <span class="badge"><span class="dot"></span> catálogo atualizado</span>
+    </div>
+
+    <div class="grid" id="feed"></div>
+    <div class="empty" id="empty-msg" hidden>
+      <div class="big">🕵️</div>
+      Nenhum anúncio encontrado.
+    </div>
+    <div id="load-more-wrap">
+      <button id="load-more" hidden>Carregar mais antigos</button>
+    </div>
+  </main>
+
+<script>
+  // ---------- Reconhecimento de loja a partir do texto da mensagem ----------
+  // Casa link (dominio/link curto de afiliado) e tambem mencao em texto puro,
+  // ja que nem toda mensagem traz um link explicito.
+  const STORES = [
+    { key: "amazon",      label: "Amazon",        match: /amazon\.com|amzn\.to|\bamazon\b/i,                          color: "#ff9900", icon: "a" },
+    { key: "mercadolivre",label: "Mercado Livre", match: /mercadolivre\.com|mercado\s?livre|\bml\.com\.br/i,          color: "#ffe600", icon: "M", dark: true },
+    { key: "shopee",      label: "Shopee",        match: /shopee\.com(\.br)?|shp\.ee|\bshopee\b/i,                    color: "#ee4d2d", icon: "S" },
+    { key: "shein",       label: "Shein",         match: /shein\.com|\bshein\b/i,                                     color: "#1c1c1c", icon: "S" },
+    { key: "magalu",      label: "Magalu",        match: /magazineluiza\.com|\bmagalu\b|magazine\s?luiza/i,           color: "#0086ff", icon: "M" },
+    { key: "aliexpress",  label: "AliExpress",    match: /aliexpress\.com|\bali\s?express\b/i,                        color: "#e62e04", icon: "A" },
+    { key: "kabum",       label: "Kabum",         match: /kabum\.com|\bkabum\b/i,                                     color: "#ff6500", icon: "K" },
+    { key: "americanas",  label: "Americanas",    match: /americanas\.com|\bamericanas\b/i,                           color: "#e60014", icon: "A" },
+    { key: "casasbahia",  label: "Casas Bahia",   match: /casasbahia\.com|casas\s?bahia/i,                            color: "#004f9f", icon: "C" },
+  ];
+  // Anuncios sem loja identificavel no texto caem aqui. Nao exibe badge no
+  // card (evita rotular errado), mas ainda entra no filtro pra nao sumir.
+  const DEFAULT_STORE = { key: "outros", label: "Outras lojas", color: "#5a6170", icon: "🏷️" };
+
+  function detectStore(text) {
+    if (!text) return DEFAULT_STORE;
+    for (const s of STORES) {
+      if (s.match.test(text)) return s;
+    }
+    return DEFAULT_STORE;
+  }
+
+  // ---------- Reconhecimento de categoria a partir do texto da mensagem ----------
+  const CATEGORIES = [
+    { key: "informatica", label: "Informática",    icon: "💻", match: /notebook|placa\s?de\s?v[íi]deo|processador|placa.?m[ãa]e|\bssd\b|\bhd\b|mem[óo]ria\s?ram|gabinete|water\s?cooler|\bcooler\b|teclado|\bmouse\b|monitor|impressora|fonte\s.*\d+\s?w|80\s?plus|pendrive|hd\s?externo/i },
+    { key: "celulares",   label: "Celulares",      icon: "📱", match: /celular|smartphone|iphone|galaxy|xiaomi|redmi|carregador|fone\s?de\s?ouvido|headset|caixa\s?de\s?som|smart\s?tv|fone\s?bluetooth/i },
+    { key: "casa",        label: "Casa e Cozinha", icon: "🏠", match: /panela|escorredor|liquidificador|air\s?fryer|fritadeira|cozinha|talher|jogo\s?de\s?cama|edred[oã]m|utens[íi]lio|caneca|aspirador|ventilador/i },
+    { key: "moda",        label: "Moda",           icon: "👗", match: /vestido|cal[çc]a\b|camiseta|blusa|sapato|t[êe]nis|sand[áa]lia|\bmule\b|bolsa|short|saia|jaqueta|roupa/i },
+    { key: "brinquedos",  label: "Brinquedos",     icon: "🧸", match: /brinquedo|boneca|\blego\b|blocos\s?de\s?montar|infantil|beb[êe]|jogo\s?da\s?mem[óo]ria/i },
+    { key: "beleza",      label: "Beleza",         icon: "💄", match: /perfume|maquiagem|batom|shampoo|creme|hidratante|skincare/i },
+    { key: "esporte",     label: "Esporte",        icon: "🏋️", match: /academia|halter|esteira|bicicleta|suplemento|\bwhey\b|prote[íi]na/i },
+    { key: "games",       label: "Games",          icon: "🎮", match: /playstation|\bxbox\b|nintendo|console|controle\s?(sem\s?fio|gamer)/i },
+  ];
+  const DEFAULT_CATEGORY = { key: "outros", label: "Outras categorias", icon: "🏷️" };
+
+  function detectCategory(text) {
+    if (!text) return DEFAULT_CATEGORY;
+    for (const c of CATEGORIES) {
+      if (c.match.test(text)) return c;
+    }
+    return DEFAULT_CATEGORY;
+  }
+
+  function extractUrl(text) {
+    if (!text) return null;
+    const m = text.match(/(https?:\/\/[^\s]+)/i);
+    return m ? m[0] : null;
+  }
+
+  function extractPrices(text) {
+    if (!text) return { now: null, old: null };
+    const matches = [...text.matchAll(/R\$\s?[\d.,]+/g)].map((m) => m[0]);
+    if (matches.length === 0) return { now: null, old: null };
+    if (matches.length === 1) return { now: matches[0], old: null };
+    // Heurística: primeiro valor = preço antigo, segundo = preço atual
+    return { old: matches[0], now: matches[1] };
+  }
+
+  function extractDiscount(text) {
+    if (!text) return null;
+    const m = text.match(/-\s?\d{1,2}\s?%/);
+    return m ? m[0].replace(/\s/g, "") : null;
+  }
+
+  function firstLine(text) {
+    if (!text) return "Anúncio sem título";
+    const line = text.split("\n").find((l) => l.trim().length > 0);
+    return line ? line.trim() : "Anúncio sem título";
+  }
+
+  // ---------- Estado ----------
+  let allAds = [];
+  let oldestId = null;
+  let activeStore = "all";
+  let activeCategory = "all";
+  let searchTerm = "";
+  let sortOrder = "newest";
+
+  const feedEl = document.getElementById("feed");
+  const emptyEl = document.getElementById("empty-msg");
+  const loadMoreBtn = document.getElementById("load-more");
+  const statusDot = document.getElementById("status-dot");
+  const statusText = document.getElementById("status-text");
+  const statTotal = document.getElementById("stat-total");
+  const statRecent = document.getElementById("stat-recent");
+  const searchInput = document.getElementById("search-input");
+  const sortSelect = document.getElementById("sort-select");
+  const storeChipsEl = document.getElementById("store-chips");
+  const categoryChipsEl = document.getElementById("category-chips");
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleString("pt-BR", {
+      day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+    });
+  }
+
+  function timeAgo(iso) {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const min = Math.floor(diffMs / 60000);
+    if (min < 1) return "agora mesmo";
+    if (min < 60) return `há ${min}m`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `há ${hr}h`;
+    const days = Math.floor(hr / 24);
+    return `há ${days}d`;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function buildCard(ad) {
+    const store = detectStore(ad.text);
+    const url = extractUrl(ad.text);
+    const { now, old } = extractPrices(ad.text);
+    const discount = extractDiscount(ad.text);
+    const title = escapeHtml(firstLine(ad.text).slice(0, 140));
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.id = ad.id;
+
+    const thumbInner = ad.photo_url
+      ? `<img src="${ad.photo_url}" alt="" loading="lazy" onerror="this.onerror=null; this.outerHTML='<span class=&quot;placeholder&quot;>🏷️</span>';" />`
+      : `<span class="placeholder">🏷️</span>`;
+
+    const showBadge = store.key !== "outros";
+
+    card.innerHTML = `
+      <div class="thumb">
+        ${thumbInner}
+        ${
+          showBadge
+            ? `<span class="store-badge">
+                 <span class="swatch" style="background:${store.color}; color:${store.dark ? '#1a1a1a' : '#fff'}">${store.icon}</span>
+                 ${store.label}
+               </span>`
+            : ""
+        }
+        ${discount ? `<span class="discount-badge">${discount}</span>` : ""}
+      </div>
+      <div class="body">
+        <p class="title">${title}</p>
+        <div class="price-row">
+          ${old ? `<span class="old">${old}</span>` : ""}
+          ${now ? `<span class="now">${now}</span>` : ""}
+        </div>
+        <div class="time-row">${timeAgo(ad.posted_at)} · ${formatDate(ad.posted_at)}</div>
+        <div class="spacer"></div>
+        ${
+          url
+            ? `<a class="btn-offer" href="${url}" target="_blank" rel="noopener noreferrer">Ver oferta →</a>`
+            : `<span class="btn-offer disabled">Sem link direto</span>`
+        }
+      </div>
+    `;
+    return card;
+  }
+
+  function buildStoreChips() {
+    const counts = { all: allAds.length };
+    for (const ad of allAds) {
+      const s = detectStore(ad.text).key;
+      counts[s] = (counts[s] || 0) + 1;
+    }
+    const chips = [{ key: "all", label: "Todas as lojas" }].concat(
+      STORES.filter((s) => counts[s.key] > 0).map((s) => ({ key: s.key, label: s.label }))
+    );
+    if (counts[DEFAULT_STORE.key]) {
+      chips.push({ key: DEFAULT_STORE.key, label: DEFAULT_STORE.label });
+    }
+
+    storeChipsEl.innerHTML = "";
+    for (const c of chips) {
+      const el = document.createElement("div");
+      el.className = "chip" + (activeStore === c.key ? " active" : "");
+      el.innerHTML = `${c.label} <span class="count">${counts[c.key] || 0}</span>`;
+      el.addEventListener("click", () => {
+        activeStore = c.key;
+        buildStoreChips();
+        renderGrid();
+      });
+      storeChipsEl.appendChild(el);
+    }
+  }
+
+  function buildCategoryChips() {
+    const counts = { all: allAds.length };
+    for (const ad of allAds) {
+      const c = detectCategory(ad.text).key;
+      counts[c] = (counts[c] || 0) + 1;
+    }
+    const chips = [{ key: "all", label: "Todas" }].concat(
+      CATEGORIES.filter((c) => counts[c.key] > 0).map((c) => ({ key: c.key, label: `${c.icon} ${c.label}` }))
+    );
+    if (counts[DEFAULT_CATEGORY.key]) {
+      chips.push({ key: DEFAULT_CATEGORY.key, label: `${DEFAULT_CATEGORY.icon} ${DEFAULT_CATEGORY.label}` });
+    }
+
+    categoryChipsEl.innerHTML = "";
+    for (const c of chips) {
+      const el = document.createElement("div");
+      el.className = "chip category" + (activeCategory === c.key ? " active" : "");
+      el.innerHTML = `${c.label} <span class="count">${counts[c.key] || 0}</span>`;
+      el.addEventListener("click", () => {
+        activeCategory = c.key;
+        buildCategoryChips();
+        renderGrid();
+      });
+      categoryChipsEl.appendChild(el);
+    }
+  }
+
+  function updateStats() {
+    statTotal.textContent = allAds.length;
+    const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    statRecent.textContent = allAds.filter((a) => new Date(a.posted_at).getTime() >= dayAgo).length;
+  }
+
+  function renderGrid() {
+    let list = allAds.filter((ad) => {
+      if (activeStore !== "all" && detectStore(ad.text).key !== activeStore) return false;
+      if (activeCategory !== "all" && detectCategory(ad.text).key !== activeCategory) return false;
+      if (searchTerm && !(ad.text || "").toLowerCase().includes(searchTerm)) return false;
+      return true;
+    });
+    list.sort((a, b) => (sortOrder === "newest" ? b.id - a.id : a.id - b.id));
+
+    feedEl.innerHTML = "";
+    if (list.length === 0) {
+      emptyEl.hidden = false;
+    } else {
+      emptyEl.hidden = true;
+      for (const ad of list) feedEl.appendChild(buildCard(ad));
+    }
+    updateStats();
+  }
+
+  searchInput.addEventListener("input", (e) => {
+    searchTerm = e.target.value.trim().toLowerCase();
+    renderGrid();
+  });
+  sortSelect.addEventListener("change", (e) => {
+    sortOrder = e.target.value;
+    renderGrid();
+  });
+
+  async function loadInitial() {
+    const res = await fetch("/api/ads?limit=60");
+    const ads = await res.json();
+    allAds = ads;
+    if (ads.length > 0) {
+      oldestId = ads[ads.length - 1].id;
+      loadMoreBtn.hidden = false;
+    }
+    buildStoreChips();
+    buildCategoryChips();
+    renderGrid();
+  }
+
+  async function loadMore() {
+    loadMoreBtn.disabled = true;
+    const res = await fetch(`/api/ads?limit=60&before=${oldestId}`);
+    const ads = await res.json();
+    if (ads.length === 0) {
+      loadMoreBtn.hidden = true;
+      loadMoreBtn.textContent = "Não há mais anúncios";
+      return;
+    }
+    allAds = allAds.concat(ads);
+    oldestId = ads[ads.length - 1].id;
+    buildStoreChips();
+    buildCategoryChips();
+    renderGrid();
+    loadMoreBtn.disabled = false;
+  }
+  loadMoreBtn.addEventListener("click", loadMore);
+
+  function connectStream() {
+    const source = new EventSource("/api/stream");
+
+    source.onopen = () => {
+      statusDot.classList.remove("off");
+      statusText.textContent = "ao vivo";
+    };
+    source.onerror = () => {
+      statusDot.classList.add("off");
+      statusText.textContent = "reconectando…";
+    };
+    source.onmessage = (event) => {
+      const ad = JSON.parse(event.data);
+      allAds.unshift(ad);
+      buildStoreChips();
+      buildCategoryChips();
+      renderGrid();
+    };
+  }
+
+  loadInitial();
+  connectStream();
+</script>
+</body>
+</html>
