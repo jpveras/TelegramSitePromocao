@@ -102,7 +102,9 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
 
   const telegram = require("../api/telegram");
   const ads = require("../api/ads");
-  const ok = { "x-telegram-bot-api-secret-token": "segredo-teste" };
+  // O Telegram envia o hash SHA-256 da senha (ver api/_lib/secret.js).
+  const hashed = require("crypto").createHash("sha256").update("segredo-teste").digest("hex");
+  const ok = { "x-telegram-bot-api-secret-token": hashed };
 
   // Sem o segredo: recusado.
   let r = await call(telegram, { method: "POST", body: {}, headers: {} });

@@ -5,7 +5,9 @@
 const { isConfigured, countAds, listSeenChats } = require("./_lib/store");
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
+const { webhookSecret } = require("./_lib/secret");
+
+const WEBHOOK_SECRET = webhookSecret();
 const SETUP_KEY = process.env.SETUP_KEY;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID || null;
 

@@ -3,7 +3,9 @@
 
 const { upsertAd, rememberChat } = require("./_lib/store");
 
-const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
+const { webhookSecret } = require("./_lib/secret");
+
+const WEBHOOK_SECRET = webhookSecret();
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID || null;
 
 function readBody(req) {

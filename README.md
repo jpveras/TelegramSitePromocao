@@ -39,7 +39,7 @@ Em **Settings → Environment Variables** (ambiente Production):
 | Variável | Valor |
 | --- | --- |
 | `TELEGRAM_BOT_TOKEN` | token do @BotFather |
-| `TELEGRAM_WEBHOOK_SECRET` | texto longo e aleatório (letras, números, `_` e `-`) |
+| `TELEGRAM_WEBHOOK_SECRET` | texto longo e aleatório (qualquer caractere) |
 | `SETUP_KEY` | outra senha aleatória, para abrir a página de setup |
 | `TELEGRAM_CHAT_ID` | opcional; id do grupo/canal (veja o passo 5) |
 
