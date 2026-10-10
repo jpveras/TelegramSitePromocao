@@ -269,7 +269,9 @@
     margin-bottom: 16px;
   }
   .section-head h2 {
-    font-size: 19px;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
     margin: 0;
   }
   .section-head .badge {
@@ -285,147 +287,189 @@
   }
   .section-head .badge .dot { width: 6px; height: 6px; }
 
-  /* ---------- Grid ---------- */
+  /* ---------- Grid de ofertas ---------- */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 22px;
   }
   .card {
-    background: var(--card);
+    position: relative;
+    background: linear-gradient(180deg, #17191f, #121419);
     border: 1px solid var(--border-soft);
-    border-radius: 14px;
+    border-radius: 20px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     animation: fadein 0.35s ease;
-    transition: border-color 0.15s ease, transform 0.15s ease;
-  }
-  .card:hover {
-    border-color: #3a4152;
-    transform: translateY(-2px);
+    transition: transform 0.25s ease, filter 0.25s ease, opacity 0.25s ease,
+      border-color 0.25s ease, box-shadow 0.25s ease;
   }
   @keyframes fadein {
     from { opacity: 0; transform: translateY(-8px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  /* Ao passar o mouse numa oferta, ela sobe e as outras ficam embacadas. */
+  @media (hover: hover) {
+    .card:hover {
+      transform: translateY(-6px) scale(1.015);
+      border-color: rgba(255, 122, 26, 0.55);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 122, 26, 0.25);
+      z-index: 2;
+    }
+    .grid:has(.card:hover) .card:not(:hover) {
+      filter: blur(3px) brightness(0.55) saturate(0.8);
+      transform: scale(0.985);
+    }
+  }
   .card .thumb {
     position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1;
-    background: var(--bg-soft);
+    aspect-ratio: 4 / 3;
+    background: linear-gradient(180deg, #ffffff, #eceef1);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    padding: 18px;
   }
   .card .thumb img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
   }
-  .card .thumb .placeholder {
-    font-size: 36px;
-    opacity: 0.35;
-  }
+  .card .thumb .placeholder { font-size: 40px; opacity: 0.4; }
   .store-badge {
     position: absolute;
-    top: 8px;
-    left: 8px;
+    top: 12px;
+    left: 12px;
     display: flex;
     align-items: center;
-    gap: 5px;
-    background: rgba(10, 11, 15, 0.82);
-    backdrop-filter: blur(4px);
-    padding: 4px 9px 4px 6px;
+    gap: 6px;
+    background: rgba(40, 42, 48, 0.85);
+    color: #fff;
+    backdrop-filter: blur(6px);
+    padding: 5px 11px 5px 7px;
     border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
   }
   .store-badge .swatch {
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 9px;
-    color: #fff;
+    font-weight: 800;
     flex-shrink: 0;
   }
-  .discount-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: var(--red);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 7px;
-    border-radius: 6px;
-  }
   .card .body {
-    padding: 12px 13px 14px;
+    padding: 18px 20px 20px;
     display: flex;
     flex-direction: column;
     flex: 1;
   }
   .card .title {
-    font-size: 13.5px;
-    line-height: 1.35;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.38;
     margin: 0 0 8px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 2.7em;
+    min-height: 2.76em;
   }
-  .price-row {
+  .card .category {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .price-block { margin-bottom: 10px; }
+  .price-old-row {
     display: flex;
-    align-items: baseline;
-    gap: 7px;
+    align-items: center;
+    gap: 8px;
+    min-height: 20px;
     margin-bottom: 2px;
-    flex-wrap: wrap;
   }
-  .price-row .old {
-    font-size: 11.5px;
+  .price-old-row .old {
+    font-size: 12.5px;
     color: var(--muted-soft);
     text-decoration: line-through;
   }
-  .price-row .now {
-    font-size: 17px;
+  .price-old-row .off {
+    font-size: 11.5px;
     font-weight: 800;
-    color: var(--accent);
+    color: var(--green);
+    background: rgba(63, 201, 107, 0.12);
+    padding: 2px 7px;
+    border-radius: 6px;
   }
-  .time-row {
+  .price-old-row .label {
     font-size: 11px;
-    color: var(--muted-soft);
-    margin-bottom: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
   }
+  .price-now-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .price-now-row .now {
+    font-size: 27px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--accent);
+    line-height: 1.1;
+  }
+  .price-now-row .ago {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .card .rating {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    min-height: 18px;
+  }
+  .card .rating b { color: var(--text); }
   .card .spacer { flex: 1; }
   .btn-offer {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
+    justify-content: space-between;
     background: var(--accent);
-    color: #1a0e04;
-    font-weight: 700;
-    font-size: 12.5px;
+    color: #fff;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     text-decoration: none;
     border: none;
-    border-radius: 9px;
-    padding: 10px;
+    border-radius: 14px;
+    padding: 15px 18px;
     cursor: pointer;
+    box-shadow: 0 8px 22px rgba(255, 122, 26, 0.25);
     transition: filter 0.15s ease;
   }
+  .btn-offer .chev { font-size: 18px; line-height: 1; }
   .btn-offer:hover { filter: brightness(1.08); }
   .btn-offer.disabled {
+    justify-content: center;
     background: var(--bg-soft);
     color: var(--muted-soft);
     cursor: default;
     border: 1px solid var(--border);
+    box-shadow: none;
   }
   /* ---------- Copy e chamadas para entrar nos grupos ---------- */
   .profile p.desc.lead { color: var(--text); margin-bottom: 8px; }
@@ -494,42 +538,41 @@
   .card .actions {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 14px;
   }
   .btn-coupon {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
+    gap: 8px;
     width: 100%;
-    background: var(--accent-dim);
+    text-align: left;
+    background: #1d1712;
     color: var(--accent);
-    border: 1.5px dashed var(--accent);
-    border-radius: 9px;
-    padding: 9px 10px;
+    border: 1px solid #3a2a1c;
+    border-radius: 11px;
+    padding: 10px 14px;
     font: inherit;
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
+  .btn-coupon .tag { font-size: 14px; }
   .btn-coupon .code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    letter-spacing: 0.04em;
-    color: var(--text);
+    letter-spacing: 0.02em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex: 1;
   }
-  .btn-coupon .hint { font-weight: 600; font-size: 11px; opacity: 0.8; white-space: nowrap; }
-  .btn-coupon:hover { background: #ff7a1a33; }
+  .btn-coupon .hint { font-weight: 600; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .btn-coupon:hover { background: #26190f; border-color: var(--accent); }
   .btn-coupon.copied {
-    border-style: solid;
     border-color: var(--green);
-    background: rgba(63, 201, 107, 0.12);
+    background: rgba(63, 201, 107, 0.1);
     color: var(--green);
   }
-  .btn-coupon.copied .code { color: var(--green); }
+  .btn-coupon.copied .hint { color: var(--green); }
   .btn-coupon.none {
     background: transparent;
     border: 1px dashed var(--border);
@@ -663,8 +706,8 @@
     </div>
 
     <div class="section-head">
-      <h2>Ofertas recebidas</h2>
-      <span class="badge"><span class="dot"></span> catálogo atualizado</span>
+      <h2>Ofertas do Dia</h2>
+      <span class="badge"><span class="dot"></span> Catálogo atualizado</span>
     </div>
 
     <div class="grid" id="feed"></div>
@@ -745,13 +788,37 @@
     return m ? m[0] : null;
   }
 
+  // "De R$ 3.435,59" = preco antigo; "💰 R$ 1.982" = preco atual.
+  // Sem esses marcadores, cai na heuristica: 1o valor antigo, 2o atual.
   function extractPrices(text) {
     if (!text) return { now: null, old: null };
-    const matches = [...text.matchAll(/R\$\s?[\d.,]+/g)].map((m) => m[0]);
+    const oldM = text.match(/\bDe\s*R\$\s?([\d.,]*\d)/i);
+    const nowM = text.match(/💰\s*R\$\s?([\d.,]*\d)/);
+    if (nowM) return { now: `R$ ${nowM[1]}`, old: oldM ? `R$ ${oldM[1]}` : null };
+    const matches = [...text.matchAll(/R\$\s?([\d.,]*\d)/g)].map((m) => `R$ ${m[1]}`);
     if (matches.length === 0) return { now: null, old: null };
     if (matches.length === 1) return { now: matches[0], old: null };
-    // Heurística: primeiro valor = preço antigo, segundo = preço atual
     return { old: matches[0], now: matches[1] };
+  }
+
+  function parseBRL(value) {
+    if (!value) return null;
+    const n = Number(value.replace(/[^\d,.]/g, "").replace(/\./g, "").replace(",", "."));
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  // Nota de avaliacao: "Nota de Avaliação: ⭐ 4.7" -> "4.7"
+  function extractRating(text) {
+    if (!text) return null;
+    const m = text.match(/avalia[cç][aã]o[^\d\n]{0,8}(\d(?:[.,]\d)?)/i);
+    return m ? m[1].replace(",", ".") : null;
+  }
+
+  // Nome do produto: a linha que comeca com 🔥 no padrao do DisparaPromo.
+  function extractProductName(text) {
+    if (!text) return null;
+    const line = text.split("\n").find((l) => /^\s*🔥/.test(l));
+    return line ? line.replace(/^\s*🔥\s*/, "").trim() : null;
   }
 
   // "Use o Cupom: HOJE10DO10" -> "HOJE10DO10". Exige os dois-pontos para nao
@@ -762,10 +829,12 @@
     return m ? m[1].toUpperCase() : null;
   }
 
-  function extractDiscount(text) {
+  function extractDiscount(text, oldPrice, nowPrice) {
+    const o = parseBRL(oldPrice), n = parseBRL(nowPrice);
+    if (o && n && o > n) return `-${Math.round((1 - n / o) * 100)}%`;
     if (!text) return null;
-    const m = text.match(/-\s?\d{1,2}\s?%/);
-    return m ? m[0].replace(/\s/g, "") : null;
+    const m = text.match(/(\d{1,2})\s?%\s*(?:de\s*desconto|off)/i) || text.match(/-\s?(\d{1,2})\s?%/);
+    return m ? `-${m[1]}%` : null;
   }
 
   function firstLine(text) {
@@ -821,11 +890,15 @@
 
   function buildCard(ad) {
     const store = detectStore(ad.text);
+    const category = detectCategory(ad.text);
     const url = extractUrl(ad.text);
     const { now, old } = extractPrices(ad.text);
-    const discount = extractDiscount(ad.text);
+    const discount = extractDiscount(ad.text, old, now);
     const coupon = extractCoupon(ad.text);
-    const title = escapeHtml(firstLine(ad.text).slice(0, 140));
+    const rating = extractRating(ad.text);
+    const name = extractProductName(ad.text) || firstLine(ad.text);
+    const title = escapeHtml(name.slice(0, 160));
+    const headline = escapeHtml(firstLine(ad.text));
 
     const card = document.createElement("div");
     card.className = "card";
@@ -835,40 +908,47 @@
       ? `<img src="${escapeHtml(ad.photo_url)}" alt="" loading="lazy" onerror="this.onerror=null; this.outerHTML='<span class=&quot;placeholder&quot;>🏷️</span>';" />`
       : `<span class="placeholder">🏷️</span>`;
 
-    const showBadge = store.key !== "outros";
+    const storeBadge =
+      store.key !== "outros"
+        ? `<span class="store-badge">
+             <span class="swatch" style="background:${store.color}; color:${store.dark ? "#1a1a1a" : "#fff"}">${store.icon}</span>
+             ${store.label}
+           </span>`
+        : "";
+
+    const categoryLabel = category.key !== "outros" ? `${category.icon} ${category.label}` : "Oferta selecionada";
 
     card.innerHTML = `
-      <div class="thumb">
-        ${thumbInner}
-        ${
-          showBadge
-            ? `<span class="store-badge">
-                 <span class="swatch" style="background:${store.color}; color:${store.dark ? '#1a1a1a' : '#fff'}">${store.icon}</span>
-                 ${store.label}
-               </span>`
-            : ""
-        }
-        ${discount ? `<span class="discount-badge">${discount}</span>` : ""}
-      </div>
+      <div class="thumb">${thumbInner}${storeBadge}</div>
       <div class="body">
-        <p class="title">${title}</p>
-        <div class="price-row">
-          ${old ? `<span class="old">${old}</span>` : ""}
-          ${now ? `<span class="now">${now}</span>` : ""}
+        <p class="title" title="${headline}">${title}</p>
+        <div class="category">${categoryLabel}</div>
+        <div class="price-block">
+          <div class="price-old-row">
+            ${
+              old
+                ? `<span class="old">${escapeHtml(old)}</span>${discount ? `<span class="off">${discount}</span>` : ""}`
+                : `<span class="label">Oferta por</span>${discount ? `<span class="off">${discount}</span>` : ""}`
+            }
+          </div>
+          <div class="price-now-row">
+            <span class="now">${now ? escapeHtml(now) : "Confira"}</span>
+            <span class="ago" title="${formatDate(ad.posted_at)}">${timeAgo(ad.posted_at)}</span>
+          </div>
         </div>
-        <div class="time-row">${timeAgo(ad.posted_at)} · ${formatDate(ad.posted_at)}</div>
+        <div class="rating">${rating ? `⭐ <b>${escapeHtml(rating)}</b> de avaliação` : ""}</div>
         <div class="spacer"></div>
         <div class="actions">
           ${
             coupon
               ? `<button type="button" class="btn-coupon" data-coupon="${escapeHtml(coupon)}" title="Clique para copiar o cupom">
-                   🎟️ <span class="code">${escapeHtml(coupon)}</span> <span class="hint">· copiar</span>
+                   <span class="tag">🏷️</span><span class="code">Cupom: ${escapeHtml(coupon)}</span><span class="hint">copiar</span>
                  </button>`
               : `<span class="btn-coupon none">Sem cupom disponível</span>`
           }
           ${
             url
-              ? `<a class="btn-offer" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Ver oferta →</a>`
+              ? `<a class="btn-offer" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Ver oferta <span class="chev">›</span></a>`
               : `<span class="btn-offer disabled">Sem link direto</span>`
           }
         </div>
@@ -984,11 +1064,11 @@
     const ok = await copyText(code);
     const hint = btn.querySelector(".hint");
     btn.classList.toggle("copied", ok);
-    hint.textContent = ok ? "· copiado! ✓" : "· selecione e copie";
+    hint.textContent = ok ? "copiado! ✓" : "selecione e copie";
     clearTimeout(btn._t);
     btn._t = setTimeout(() => {
       btn.classList.remove("copied");
-      hint.textContent = "· copiar";
+      hint.textContent = "copiar";
     }, 2000);
   });
 
