@@ -1,53 +1,48 @@
-// Espelho do canal do Telegram para o site.
-//   GET /api/ads              -> posts mais recentes
-//   GET /api/ads?before=123   -> posts mais antigos que o 123 (botao "carregar mais")
-//   GET /api/ads?after=123    -> posts novos desde o 123 (feed ao vivo)
+// Lista os anuncios para o site.
+//   GET /api/ads?limit=60             -> mais recentes
+//   GET /api/ads?limit=60&before=123  -> mais antigos que o id 123 (botao "carregar mais")
+//   GET /api/ads?after=123            -> novos desde o id 123 (feed ao vivo)
 
-const { normalizeChannel, fetchChannelPage } = require("./_lib/channel");
+const { isConfigured, listAds, listAdsAfter, countAds } = require("./_lib/store");
 
-const CONFIGURED_CHANNEL = normalizeChannel(process.env.TELEGRAM_CHANNEL);
+// O que vai para o navegador: sem ids internos do Telegram. A foto passa
+// pela rota /api/photo, para o token do bot nunca aparecer no site.
+function toPublic(ad) {
+  return {
+    id: ad.id,
+    text: ad.text,
+    posted_at: ad.posted_at,
+    updated_at: ad.updated_at || null,
+    photo_url: ad.photo_file_id ? `/api/photo?ad=${ad.id}` : null,
+  };
+}
 
 function toInt(value) {
   const n = Number.parseInt(value, 10);
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
 module.exports = async function handler(req, res) {
-  const query = req.query || {};
-  // Enquanto TELEGRAM_CHANNEL nao estiver configurado, da para testar outro
-  // canal publico com ?channel=nome. Depois de configurado, so o canal oficial.
-  const CHANNEL = CONFIGURED_CHANNEL || normalizeChannel(query.channel);
-  if (!CHANNEL) {
-    res.setHeader("Cache-Control", "no-store");
-    res.status(200).json({ configured: false, ads: [] });
+  res.setHeader("Cache-Control", "no-store");
+
+  if (!isConfigured()) {
+    res.status(200).json({ configured: false, total: 0, ads: [] });
     return;
   }
 
+  const query = req.query || {};
+  const limit = Math.min(toInt(query.limit) || 60, 200);
   const before = toInt(query.before);
   const after = toInt(query.after);
 
   try {
-    const { available, posts } = await fetchChannelPage(CHANNEL, { before });
-    if (!available) {
-      res.setHeader("Cache-Control", "no-store");
-      res.status(200).json({
-        configured: true,
-        available: false,
-        channel: CHANNEL,
-        error: "Canal nao encontrado ou nao e publico.",
-        ads: [],
-      });
-      return;
-    }
-
-    const ads = after ? posts.filter((p) => p.id > after) : posts;
-    // A CDN da Vercel guarda a resposta por 10s: muitos visitantes ao mesmo
-    // tempo geram uma unica consulta ao Telegram.
-    res.setHeader("Cache-Control", "public, s-maxage=10, stale-while-revalidate=30");
-    res.status(200).json({ configured: true, available: true, channel: CHANNEL, ads });
+    const [ads, total] = await Promise.all([
+      after !== null ? listAdsAfter(after) : listAds({ limit, before }),
+      countAds(),
+    ]);
+    res.status(200).json({ configured: true, total, ads: ads.map(toPublic) });
   } catch (err) {
-    console.error("[ads] Falha ao ler o canal:", err.message);
-    res.setHeader("Cache-Control", "no-store");
-    res.status(502).json({ error: "Falha ao ler o canal do Telegram" });
+    console.error("[ads] Falha ao listar anuncios:", err.message);
+    res.status(500).json({ error: "Falha ao carregar anuncios" });
   }
 };
