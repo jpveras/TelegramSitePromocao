@@ -38,7 +38,12 @@ module.exports = async function handler(req, res) {
     }
 
     const buffer = Buffer.from(await fileRes.arrayBuffer());
-    res.setHeader("Content-Type", fileRes.headers.get("content-type") || "image/jpeg");
+    // O Telegram responde "application/octet-stream"; sem o tipo certo o
+    // navegador nao mostra a imagem. Deduz pelo final do arquivo.
+    const ext = (info.result.file_path.split(".").pop() || "").toLowerCase();
+    const types = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif" };
+    res.setHeader("Content-Type", types[ext] || "image/jpeg");
+    res.setHeader("X-Content-Type-Options", "nosniff");
     // A foto de um anuncio nao muda: a CDN da Vercel guarda por 30 dias.
     res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=2592000, immutable");
     res.status(200).send(buffer);

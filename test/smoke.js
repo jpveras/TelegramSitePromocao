@@ -146,7 +146,7 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   assert.strictEqual(r.data.total, 2);
   assert.deepStrictEqual(r.data.ads.map((a) => a.id), [2, 1]);
   assert.strictEqual(r.data.ads[1].text, "Air Fryer R$ 229,90");
-  assert.strictEqual(r.data.ads[1].photo_url, "/api/photo?ad=1");
+  assert.strictEqual(r.data.ads[1].photo_url, "/api/photo?ad=1&v=2");
   assert.ok(!("photo_file_id" in r.data.ads[1]) && !("chat_id" in r.data.ads[1]));
 
   // Paginacao e feed ao vivo.

@@ -43,6 +43,16 @@ async function redis(commands) {
   return results.map((r) => r.result);
 }
 
+// Grava o JSON so com caracteres ASCII (acentos e emojis viram \uXXXX).
+// Emojis e caracteres invisiveis chegavam embaralhados na volta do Redis,
+// deslocando quebras de linha e quebrando os links dos anuncios.
+function toStored(value) {
+  return JSON.stringify(value).replace(
+    /[\u007f-\uffff]/g,
+    (c) => "\\u" + c.charCodeAt(0).toString(16).padStart(4, "0")
+  );
+}
+
 function parseAds(rawList) {
   return rawList.filter(Boolean).map((raw) => JSON.parse(raw));
 }
@@ -62,7 +72,7 @@ async function upsertAd(ad) {
       received_at: current.received_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-    await redis([["SET", `ad:${existingId}`, JSON.stringify(updated)]]);
+    await redis([["SET", `ad:${existingId}`, toStored(updated)]]);
     return { ad: updated, created: false };
   }
 
@@ -83,7 +93,7 @@ async function upsertAd(ad) {
     received_at: new Date().toISOString(),
   };
   await redis([
-    ["SET", `ad:${id}`, JSON.stringify(record)],
+    ["SET", `ad:${id}`, toStored(record)],
     ["ZADD", "ads:index", String(id), String(id)],
   ]);
   return { ad: record, created: true };
