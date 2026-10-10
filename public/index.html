@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Promoções do Veras</title>
+<link rel="icon" type="image/png" href="favicon.png" />
 <style>
   :root {
     --bg: #0b0d12;
@@ -50,7 +51,7 @@
     font-weight: 700;
     font-size: 15px;
   }
-  .topbar .brand .emoji { font-size: 18px; }
+  .topbar .brand img { width: 28px; height: 28px; border-radius: 50%; display: block; }
   .status {
     font-size: 13px;
     color: var(--muted);
@@ -98,15 +99,12 @@
     align-items: flex-start;
   }
   .avatar {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    background: radial-gradient(circle at 30% 30%, #ff9a44, #ff5c1a);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
     flex-shrink: 0;
+    display: block;
+    box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px #f5c518;
   }
   .profile h1 {
     margin: 0 0 2px;
@@ -114,21 +112,27 @@
   }
   .profile .handle {
     color: var(--accent);
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 600;
     margin-bottom: 8px;
   }
   .profile p.desc {
     margin: 0;
     color: var(--muted);
-    font-size: 13.5px;
-    line-height: 1.5;
-    max-width: 48ch;
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 52ch;
+  }
+  .hero > .panel:first-child {
+    display: flex;
+    flex-direction: column;
   }
   .hero-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    margin-top: 20px;
+    margin-top: auto;
+    padding-top: 20px;
   }
   .stat-box {
     background: var(--bg);
@@ -423,6 +427,63 @@
     cursor: default;
     border: 1px solid var(--border);
   }
+  .card .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .btn-coupon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1.5px dashed var(--accent);
+    border-radius: 9px;
+    padding: 9px 10px;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn-coupon .code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .btn-coupon .hint { font-weight: 600; font-size: 11px; opacity: 0.8; white-space: nowrap; }
+  .btn-coupon:hover { background: #ff7a1a33; }
+  .btn-coupon.copied {
+    border-style: solid;
+    border-color: var(--green);
+    background: rgba(63, 201, 107, 0.12);
+    color: var(--green);
+  }
+  .btn-coupon.copied .code { color: var(--green); }
+  .btn-coupon.none {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--muted-soft);
+    cursor: default;
+    font-weight: 600;
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--border-soft);
+    margin-top: 20px;
+    padding: 22px 24px 28px;
+    text-align: center;
+    color: var(--muted-soft);
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .site-footer strong { color: var(--muted); font-weight: 600; }
 
   .empty {
     text-align: center;
@@ -449,7 +510,7 @@
 </head>
 <body>
   <div class="topbar">
-    <div class="brand"><span class="emoji">🔥</span> Promoções do Veras</div>
+    <div class="brand"><img src="logo.png" alt="" /> Promoções do Veras</div>
     <div class="status">
       <span class="dot" id="status-dot"></span>
       <span id="status-text">conectando…</span>
@@ -460,13 +521,13 @@
     <div class="hero">
       <div class="panel">
         <div class="profile">
-          <div class="avatar">🔥</div>
+          <img class="avatar" src="logo.png" alt="Logo JP Veras Tech" />
           <div>
             <h1>Promoções do Veras</h1>
-            <div class="handle">Todas as promoções ao vivo para você aproveitar</div>
+            <div class="handle">🔥 Promoções atualizadas todos os dias!</div>
             <p class="desc">
-              Ofertas publicadas no grupo/canal acompanhado chegam aqui
-              automaticamente, sem precisar atualizar a página.
+              Ofertas de Amazon, Shopee, Magalu, AliExpress e mais.<br />
+              💸 Só preço baixo de verdade – não perca tempo!
             </p>
           </div>
         </div>
@@ -526,6 +587,11 @@
       <button id="load-more" hidden>Carregar mais antigos</button>
     </div>
   </main>
+
+  <footer class="site-footer">
+    © <span id="footer-year">2026</span> <strong>Promoções do Veras</strong> · JP Veras Tech.
+    Todos os direitos reservados.
+  </footer>
 
 <script>
   // ---------- Reconhecimento de loja a partir do texto da mensagem ----------
@@ -590,6 +656,14 @@
     return { old: matches[0], now: matches[1] };
   }
 
+  // "Use o Cupom: HOJE10DO10" -> "HOJE10DO10". Exige os dois-pontos para nao
+  // confundir com frases como "com cupom aplicado".
+  function extractCoupon(text) {
+    if (!text) return null;
+    const m = text.match(/cupom\s*:\s*([A-Za-z0-9][A-Za-z0-9_-]{2,40})/i);
+    return m ? m[1].toUpperCase() : null;
+  }
+
   function extractDiscount(text) {
     if (!text) return null;
     const m = text.match(/-\s?\d{1,2}\s?%/);
@@ -652,6 +726,7 @@
     const url = extractUrl(ad.text);
     const { now, old } = extractPrices(ad.text);
     const discount = extractDiscount(ad.text);
+    const coupon = extractCoupon(ad.text);
     const title = escapeHtml(firstLine(ad.text).slice(0, 140));
 
     const card = document.createElement("div");
@@ -685,11 +760,20 @@
         </div>
         <div class="time-row">${timeAgo(ad.posted_at)} · ${formatDate(ad.posted_at)}</div>
         <div class="spacer"></div>
-        ${
-          url
-            ? `<a class="btn-offer" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Ver oferta →</a>`
-            : `<span class="btn-offer disabled">Sem link direto</span>`
-        }
+        <div class="actions">
+          ${
+            coupon
+              ? `<button type="button" class="btn-coupon" data-coupon="${escapeHtml(coupon)}" title="Clique para copiar o cupom">
+                   🎟️ <span class="code">${escapeHtml(coupon)}</span> <span class="hint">· copiar</span>
+                 </button>`
+              : `<span class="btn-coupon none">Sem cupom disponível</span>`
+          }
+          ${
+            url
+              ? `<a class="btn-offer" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Ver oferta →</a>`
+              : `<span class="btn-offer disabled">Sem link direto</span>`
+          }
+        </div>
       </div>
     `;
     return card;
@@ -773,6 +857,44 @@
     }
     updateStats();
   }
+
+  // ---------- Copiar cupom ----------
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Navegadores sem clipboard API (ou sem permissao): copia via campo oculto.
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch {}
+      ta.remove();
+      return ok;
+    }
+  }
+
+  feedEl.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".btn-coupon[data-coupon]");
+    if (!btn) return;
+    const code = btn.dataset.coupon;
+    const ok = await copyText(code);
+    const hint = btn.querySelector(".hint");
+    btn.classList.toggle("copied", ok);
+    hint.textContent = ok ? "· copiado! ✓" : "· selecione e copie";
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => {
+      btn.classList.remove("copied");
+      hint.textContent = "· copiar";
+    }, 2000);
+  });
+
+  document.getElementById("footer-year").textContent = new Date().getFullYear();
 
   searchInput.addEventListener("input", (e) => {
     searchTerm = e.target.value.trim().toLowerCase();
