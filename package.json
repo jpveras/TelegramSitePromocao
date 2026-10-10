@@ -1,13 +1,16 @@
 {
   "name": "telegram-ads-feed",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
-  "description": "Captura anuncios postados num grupo/canal do Telegram e exibe em um feed ao vivo no site, hospedado na Vercel",
+  "description": "Espelha os anuncios de um canal publico do Telegram num site na Vercel, sem banco de dados",
   "type": "commonjs",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "test": "node test/smoke.js"
+    "test": "node test/parse.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0"
   }
 }

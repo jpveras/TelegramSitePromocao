@@ -623,6 +623,7 @@
   const categoryChipsEl = document.getElementById("category-chips");
 
   function formatDate(iso) {
+    if (!iso) return "";
     const d = new Date(iso);
     return d.toLocaleString("pt-BR", {
       day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
@@ -630,6 +631,7 @@
   }
 
   function timeAgo(iso) {
+    if (!iso) return "";
     const diffMs = Date.now() - new Date(iso).getTime();
     const min = Math.floor(diffMs / 60000);
     if (min < 1) return "agora mesmo";
@@ -784,20 +786,26 @@
   });
 
   // ---------- Dados ----------
-  // A Vercel nao mantem conexoes abertas por muito tempo, entao o feed ao
-  // vivo pergunta a cada poucos segundos se chegou anuncio novo.
-  const POLL_MS = 5000;
+  // O site espelha o canal publico do Telegram: a cada poucos segundos
+  // pergunta se apareceu post novo la.
+  const POLL_MS = 10000;
   let newestId = 0;
   let serverTotal = null;
+  let setupProblem = false;
 
   async function fetchAds(params) {
-    const res = await fetch(`/api/ads?${params}`, { cache: "no-store" });
+    // ?channel=nome na URL do site repassa o canal (so vale antes de configurar).
+    const pageChannel = new URLSearchParams(location.search).get("channel");
+    const qs = [params, pageChannel ? `channel=${encodeURIComponent(pageChannel)}` : ""]
+      .filter(Boolean).join("&");
+    const res = await fetch(`/api/ads?${qs}`, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (typeof data.total === "number") serverTotal = data.total;
-    if (data.configured === false) {
+    if (data.configured === false || data.available === false) {
       statusDot.classList.add("off");
-      statusText.textContent = "aguardando configuração";
+      statusText.textContent = data.configured === false ? "aguardando configuração" : "canal não encontrado";
+      setupProblem = true;
     }
     return data.ads || [];
   }
@@ -814,12 +822,12 @@
 
   async function loadInitial() {
     try {
-      const ads = await fetchAds("limit=60");
+      const ads = await fetchAds("");
       allAds = ads;
       trackNewest(ads);
       if (ads.length > 0) {
         oldestId = ads[ads.length - 1].id;
-        loadMoreBtn.hidden = ads.length < 60;
+        loadMoreBtn.hidden = false;
       }
       refreshAll();
     } catch (err) {
@@ -831,14 +839,13 @@
   async function loadMore() {
     loadMoreBtn.disabled = true;
     try {
-      const ads = await fetchAds(`limit=60&before=${oldestId}`);
+      const ads = await fetchAds(`before=${oldestId}`);
       if (ads.length === 0) {
         loadMoreBtn.hidden = true;
         return;
       }
       allAds = allAds.concat(ads);
       oldestId = ads[ads.length - 1].id;
-      if (ads.length < 60) loadMoreBtn.hidden = true;
       refreshAll();
     } finally {
       loadMoreBtn.disabled = false;
@@ -849,7 +856,7 @@
   async function pollNew() {
     try {
       const ads = await fetchAds(`after=${newestId}`);
-      if (statusText.textContent !== "aguardando configuração") {
+      if (!setupProblem) {
         statusDot.classList.remove("off");
         statusText.textContent = "ao vivo";
       }
