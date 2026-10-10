@@ -643,7 +643,8 @@
   function escapeHtml(str) {
     const div = document.createElement("div");
     div.textContent = str;
-    return div.innerHTML;
+    // innerHTML nao escapa aspas; sem isso um link com " quebraria o atributo href/src.
+    return div.innerHTML.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
   function buildCard(ad) {
@@ -658,7 +659,7 @@
     card.dataset.id = ad.id;
 
     const thumbInner = ad.photo_url
-      ? `<img src="${ad.photo_url}" alt="" loading="lazy" onerror="this.onerror=null; this.outerHTML='<span class=&quot;placeholder&quot;>🏷️</span>';" />`
+      ? `<img src="${escapeHtml(ad.photo_url)}" alt="" loading="lazy" onerror="this.onerror=null; this.outerHTML='<span class=&quot;placeholder&quot;>🏷️</span>';" />`
       : `<span class="placeholder">🏷️</span>`;
 
     const showBadge = store.key !== "outros";
@@ -686,7 +687,7 @@
         <div class="spacer"></div>
         ${
           url
-            ? `<a class="btn-offer" href="${url}" target="_blank" rel="noopener noreferrer">Ver oferta →</a>`
+            ? `<a class="btn-offer" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Ver oferta →</a>`
             : `<span class="btn-offer disabled">Sem link direto</span>`
         }
       </div>
@@ -749,7 +750,7 @@
   }
 
   function updateStats() {
-    statTotal.textContent = allAds.length;
+    statTotal.textContent = serverTotal ?? allAds.length;
     const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
     statRecent.textContent = allAds.filter((a) => new Date(a.posted_at).getTime() >= dayAgo).length;
   }
@@ -782,59 +783,107 @@
     renderGrid();
   });
 
-  async function loadInitial() {
-    const res = await fetch("/api/ads?limit=60");
-    const ads = await res.json();
-    allAds = ads;
-    if (ads.length > 0) {
-      oldestId = ads[ads.length - 1].id;
-      loadMoreBtn.hidden = false;
+  // ---------- Dados ----------
+  // A Vercel nao mantem conexoes abertas por muito tempo, entao o feed ao
+  // vivo pergunta a cada poucos segundos se chegou anuncio novo.
+  const POLL_MS = 5000;
+  let newestId = 0;
+  let serverTotal = null;
+
+  async function fetchAds(params) {
+    const res = await fetch(`/api/ads?${params}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (typeof data.total === "number") serverTotal = data.total;
+    if (data.configured === false) {
+      statusDot.classList.add("off");
+      statusText.textContent = "aguardando configuração";
     }
+    return data.ads || [];
+  }
+
+  function trackNewest(ads) {
+    for (const ad of ads) if (ad.id > newestId) newestId = ad.id;
+  }
+
+  function refreshAll() {
     buildStoreChips();
     buildCategoryChips();
     renderGrid();
+  }
+
+  async function loadInitial() {
+    try {
+      const ads = await fetchAds("limit=60");
+      allAds = ads;
+      trackNewest(ads);
+      if (ads.length > 0) {
+        oldestId = ads[ads.length - 1].id;
+        loadMoreBtn.hidden = ads.length < 60;
+      }
+      refreshAll();
+    } catch (err) {
+      statusDot.classList.add("off");
+      statusText.textContent = "sem conexão";
+    }
   }
 
   async function loadMore() {
     loadMoreBtn.disabled = true;
-    const res = await fetch(`/api/ads?limit=60&before=${oldestId}`);
-    const ads = await res.json();
-    if (ads.length === 0) {
-      loadMoreBtn.hidden = true;
-      loadMoreBtn.textContent = "Não há mais anúncios";
-      return;
+    try {
+      const ads = await fetchAds(`limit=60&before=${oldestId}`);
+      if (ads.length === 0) {
+        loadMoreBtn.hidden = true;
+        return;
+      }
+      allAds = allAds.concat(ads);
+      oldestId = ads[ads.length - 1].id;
+      if (ads.length < 60) loadMoreBtn.hidden = true;
+      refreshAll();
+    } finally {
+      loadMoreBtn.disabled = false;
     }
-    allAds = allAds.concat(ads);
-    oldestId = ads[ads.length - 1].id;
-    buildStoreChips();
-    buildCategoryChips();
-    renderGrid();
-    loadMoreBtn.disabled = false;
   }
   loadMoreBtn.addEventListener("click", loadMore);
 
-  function connectStream() {
-    const source = new EventSource("/api/stream");
-
-    source.onopen = () => {
-      statusDot.classList.remove("off");
-      statusText.textContent = "ao vivo";
-    };
-    source.onerror = () => {
+  async function pollNew() {
+    try {
+      const ads = await fetchAds(`after=${newestId}`);
+      if (statusText.textContent !== "aguardando configuração") {
+        statusDot.classList.remove("off");
+        statusText.textContent = "ao vivo";
+      }
+      if (ads.length > 0) {
+        const known = new Set(allAds.map((a) => a.id));
+        const fresh = ads.filter((a) => !known.has(a.id));
+        trackNewest(ads);
+        if (fresh.length > 0) {
+          allAds = fresh.reverse().concat(allAds);
+          refreshAll();
+        }
+      }
+    } catch (err) {
       statusDot.classList.add("off");
       statusText.textContent = "reconectando…";
-    };
-    source.onmessage = (event) => {
-      const ad = JSON.parse(event.data);
-      allAds.unshift(ad);
-      buildStoreChips();
-      buildCategoryChips();
-      renderGrid();
-    };
+    } finally {
+      setTimeout(pollNew, document.hidden ? POLL_MS * 3 : POLL_MS);
+    }
   }
 
-  loadInitial();
-  connectStream();
+  // Ao voltar para a aba, busca na hora em vez de esperar o proximo ciclo.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) fetchAds(`after=${newestId}`).then((ads) => {
+      const known = new Set(allAds.map((a) => a.id));
+      const fresh = ads.filter((a) => !known.has(a.id));
+      trackNewest(ads);
+      if (fresh.length > 0) {
+        allAds = fresh.reverse().concat(allAds);
+        refreshAll();
+      }
+    }).catch(() => {});
+  });
+
+  loadInitial().then(() => setTimeout(pollNew, POLL_MS));
 </script>
 </body>
 </html>

@@ -1,16 +1,13 @@
 {
   "name": "telegram-ads-feed",
-  "version": "1.0.0",
-  "description": "Captura anuncios postados num grupo/canal do Telegram e exibe em um feed ao vivo no site",
-  "main": "src/server.js",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Captura anuncios postados num grupo/canal do Telegram e exibe em um feed ao vivo no site, hospedado na Vercel",
   "type": "commonjs",
-  "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+  "engines": {
+    "node": ">=20"
   },
-  "dependencies": {
-    "dotenv": "^16.4.5",
-    "express": "^4.21.0",
-    "node-telegram-bot-api": "^0.66.0"
+  "scripts": {
+    "test": "node test/smoke.js"
   }
 }
