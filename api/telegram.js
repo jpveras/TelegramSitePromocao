@@ -6,7 +6,11 @@ const { upsertAd, rememberChat } = require("./_lib/store");
 const { webhookSecret } = require("./_lib/secret");
 
 const WEBHOOK_SECRET = webhookSecret();
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID || null;
+// Um ou mais chats separados por virgula (ex.: o canal e o grupo).
+const CHAT_IDS = (process.env.TELEGRAM_CHAT_ID || "")
+  .split(",")
+  .map((id) => id.trim())
+  .filter(Boolean);
 
 function readBody(req) {
   if (req.body && typeof req.body === "object") return req.body;
@@ -53,7 +57,7 @@ module.exports = async function handler(req, res) {
   // Guarda os chats vistos para a pagina /api/setup mostrar qual e o id certo.
   await rememberChat(incomingChatId, chatName).catch(() => {});
 
-  if (CHAT_ID && incomingChatId !== String(CHAT_ID)) {
+  if (CHAT_IDS.length > 0 && !CHAT_IDS.includes(incomingChatId)) {
     res.status(200).json({ ok: true, ignored: "outro chat" });
     return;
   }
