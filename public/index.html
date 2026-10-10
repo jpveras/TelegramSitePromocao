@@ -427,6 +427,69 @@
     cursor: default;
     border: 1px solid var(--border);
   }
+  /* ---------- Copy e chamadas para entrar nos grupos ---------- */
+  .profile p.desc.lead { color: var(--text); margin-bottom: 8px; }
+  .profile p.desc strong { color: var(--accent); }
+  .perks {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .cta { margin-top: 18px; }
+  .cta-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn-join {
+    flex: 1 1 220px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 12px 16px;
+    border-radius: 11px;
+    font-weight: 800;
+    font-size: 14px;
+    text-decoration: none;
+    color: #fff;
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+  .btn-join svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .btn-join:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .btn-join.wa { background: #25d366; color: #062b15; box-shadow: 0 6px 20px rgba(37, 211, 102, 0.25); }
+  .btn-join.tg { background: #229ed9; box-shadow: 0 6px 20px rgba(34, 158, 217, 0.2); }
+  .cta-note { margin-top: 9px; font-size: 12.5px; color: var(--muted); }
+
+  .wa-float {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 30;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #25d366;
+    color: #062b15;
+    font-weight: 800;
+    font-size: 14px;
+    text-decoration: none;
+    padding: 12px 18px 12px 14px;
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 4px rgba(37, 211, 102, 0.18);
+    transition: transform 0.15s ease;
+  }
+  .wa-float svg { width: 26px; height: 26px; }
+  .wa-float:hover { transform: scale(1.04); }
+  @media (max-width: 600px) {
+    .wa-float { padding: 13px; right: 14px; bottom: 14px; }
+    .wa-float span { display: none; }
+  }
+  .footer-links { margin-top: 6px; }
+  .footer-links a { color: var(--muted); text-decoration: none; }
+  .footer-links a:hover { color: var(--accent); }
+
   .card .actions {
     display: flex;
     flex-direction: column;
@@ -477,7 +540,7 @@
   .site-footer {
     border-top: 1px solid var(--border-soft);
     margin-top: 20px;
-    padding: 22px 24px 28px;
+    padding: 22px 24px 84px;
     text-align: center;
     color: var(--muted-soft);
     font-size: 12.5px;
@@ -525,11 +588,33 @@
           <div>
             <h1>Promoções do Veras</h1>
             <div class="handle">🔥 Promoções atualizadas todos os dias!</div>
+            <p class="desc lead">
+              Enquanto muita gente paga preço cheio, quem está no grupo compra
+              o mesmo produto bem mais barato. A diferença é saber da oferta
+              <strong>na hora certa</strong>.
+            </p>
             <p class="desc">
-              Ofertas de Amazon, Shopee, Magalu, AliExpress e mais.<br />
+              Todo dia eu garimpo as melhores ofertas e cupons de Amazon, Shopee,
+              Mercado Livre, Magalu, AliExpress e mais, e mando direto no seu celular.
               💸 Só preço baixo de verdade – não perca tempo!
             </p>
+            <ul class="perks">
+              <li>✅ Cupons que somem em minutos</li>
+              <li>✅ Nada de promoção maquiada</li>
+              <li>✅ 100% grátis, sai quando quiser</li>
+            </ul>
           </div>
+        </div>
+        <div class="cta">
+          <div class="cta-buttons">
+            <a class="btn-join wa" href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Entrar no canal do WhatsApp
+            </a>
+            <a class="btn-join tg" href="https://t.me/PromocoesdoVeras" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg> Entrar no Telegram
+            </a>
+          </div>
+          <div class="cta-note">⚡ As melhores ofertas esgotam rápido: quem está no grupo vê primeiro.</div>
         </div>
         <div class="hero-stats">
           <div class="stat-box">
@@ -542,7 +627,7 @@
           </div>
           <div class="stat-box">
             <div class="label">Conexão</div>
-            <div class="value live" id="stat-conn"><span class="dot"></span> ao vivo</div>
+            <div class="value live" id="stat-conn"><span class="dot"></span> AO VIVO</div>
           </div>
         </div>
       </div>
@@ -588,9 +673,17 @@
     </div>
   </main>
 
+  <a class="wa-float" href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer" aria-label="Entrar no canal do WhatsApp">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span>Entre no canal</span>
+  </a>
+
   <footer class="site-footer">
     © <span id="footer-year">2026</span> <strong>Promoções do Veras</strong> · JP Veras Tech.
     Todos os direitos reservados.
+    <div class="footer-links">
+      <a href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer">WhatsApp</a> ·
+      <a href="https://t.me/PromocoesdoVeras" target="_blank" rel="noopener noreferrer">Telegram</a>
+    </div>
   </footer>
 
 <script>
@@ -973,7 +1066,7 @@
       const ads = await fetchAds(`after=${newestId}`);
       if (statusText.textContent !== "aguardando configuração") {
         statusDot.classList.remove("off");
-        statusText.textContent = "ao vivo";
+        statusText.textContent = "AO VIVO";
       }
       if (ads.length > 0) {
         const known = new Set(allAds.map((a) => a.id));
