@@ -614,6 +614,257 @@
   }
   #load-more:hover { border-color: var(--accent); }
   #load-more:disabled { opacity: 0.5; cursor: default; }
+  /* ========== Topo no estilo vitrine (sobrescreve o layout anterior) ========== */
+  .hero { grid-template-columns: 1.45fr 1fr; gap: 22px; margin-bottom: 36px; align-items: stretch; }
+  .hero > .panel:first-child { display: block; }
+  .hero .panel {
+    background: radial-gradient(120% 140% at 100% 0%, rgba(255, 122, 26, 0.08), transparent 55%),
+      linear-gradient(180deg, #15171c, #111317);
+    border: 1px solid #23262e;
+    border-radius: 26px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .brand-panel { display: flex; flex-direction: column; }
+  .brand-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 30px 32px 0;
+  }
+  .brand-id { display: flex; align-items: center; gap: 18px; min-width: 0; }
+  .brand-panel .avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px #14161b, 0 0 0 6px #f5c518, 0 10px 30px rgba(245, 197, 24, 0.18);
+  }
+  .brand-text h1 {
+    margin: 0;
+    font-size: clamp(28px, 3.2vw, 44px);
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+  }
+  .verified {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 900;
+    vertical-align: middle;
+    box-shadow: 0 0 0 3px rgba(255, 122, 26, 0.25);
+  }
+  .brand-handle {
+    display: inline-block;
+    margin-top: 8px;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+  }
+  .brand-handle:hover { text-decoration: underline; }
+  .brand-side { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; flex-shrink: 0; }
+  .social-row { display: flex; gap: 10px; }
+  .btn-join {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: #14161b;
+    border: 1px solid #2a2d36;
+    box-shadow: none !important;
+  }
+  .btn-join svg { width: 22px; height: 22px; }
+  .btn-join.wa { background: #14161b; color: #25d366; }
+  .btn-join.tg { background: #14161b; color: #2aa7e0; }
+  .btn-join.ig { background: #14161b; color: #e1306c; }
+  .btn-join:hover { border-color: currentColor; transform: translateY(-2px); }
+  .highlight {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px 14px 14px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255, 122, 26, 0.16), rgba(255, 122, 26, 0.06));
+    border: 1px solid rgba(255, 122, 26, 0.45);
+  }
+  .highlight-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .highlight-label {
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #f0c8a8;
+  }
+  .highlight-value { font-size: 19px; font-weight: 900; }
+  .highlight-sub { font-size: 11.5px; color: var(--muted); }
+  .brand-copy { padding: 18px 32px 24px; color: var(--muted); font-size: 15.5px; line-height: 1.6; }
+  .brand-copy p { margin: 0 0 6px; }
+  .brand-copy .lead { color: var(--text); font-size: 16.5px; }
+  .brand-copy .perks { margin: 10px 0 0; font-size: 14.5px; gap: 6px 22px; }
+  .brand-copy .tagline { margin-top: 12px; color: var(--accent); font-weight: 800; }
+  .brand-strip {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid #23262e;
+  }
+  .strip-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px;
+    border-right: 1px solid #23262e;
+  }
+  .strip-item:last-child { border-right: none; }
+  .strip-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #1b1d23;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .strip-icon .dot { width: 10px; height: 10px; }
+  .strip-label {
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .strip-label .live-text { color: var(--green); }
+  .strip-value { font-size: 15.5px; font-weight: 800; color: var(--text); line-height: 1.35; }
+
+  .filter-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 26px 28px 22px;
+    border-bottom: 1px solid #23262e;
+  }
+  .filter-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    background: rgba(255, 122, 26, 0.12);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .filter-panel h2 { font-size: 19px; font-weight: 800; margin: 0 0 3px; }
+  .filter-panel .sub { margin: 0; font-size: 13.5px; }
+  .filter-body { padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 16px; }
+  .store-scroll { position: relative; }
+  .store-chips {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding: 2px 52px 4px 0;
+    margin: 0;
+    -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
+            mask-image: linear-gradient(90deg, #000 85%, transparent);
+  }
+  .store-chips::-webkit-scrollbar { display: none; }
+  .store-chips .chip {
+    padding: 11px 16px;
+    border-radius: 14px;
+    font-size: 14.5px;
+    font-weight: 700;
+    background: #14161b;
+    border-color: #2a2d36;
+    color: var(--text);
+    gap: 9px;
+  }
+  .store-chips .chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(255, 122, 26, 0.3);
+  }
+  .chip .ico {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .scroll-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #2a2d36;
+    background: #14161b;
+    color: var(--text);
+    font-size: 22px;
+    cursor: pointer;
+  }
+  .scroll-btn:hover { border-color: var(--accent); }
+  .filter-panel .search-row { margin: 0; }
+  .filter-panel .search-row input {
+    padding: 16px 18px 16px 48px;
+    border-radius: 14px;
+    font-size: 15.5px;
+    background: #14161b;
+    border-color: #2a2d36;
+  }
+  .filter-panel .search-row .icon { left: 18px; font-size: 16px; }
+  .select-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+  .filter-panel select.sort-select {
+    padding: 15px 16px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    background: #14161b;
+    border-color: #2a2d36;
+  }
+  @media (max-width: 1100px) {
+    .hero { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .brand-top { flex-direction: column; padding: 24px 20px 0; }
+    .brand-side { align-items: flex-start; width: 100%; }
+    .brand-copy { padding: 16px 20px 20px; }
+    .brand-strip { grid-template-columns: 1fr; }
+    .strip-item { border-right: none; border-bottom: 1px solid #23262e; padding: 16px 20px; }
+    .strip-item:last-child { border-bottom: none; }
+    .brand-panel .avatar { width: 72px; height: 72px; }
+    .filter-head, .filter-body { padding-left: 20px; padding-right: 20px; }
+    .select-row { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -627,78 +878,104 @@
 
   <main>
     <div class="hero">
-      <div class="panel">
-        <div class="profile">
-          <img class="avatar" src="logo.png" alt="Logo JP Veras Tech" />
-          <div>
-            <h1>🔥 Promoções do Veras</h1>
-            <p class="desc lead">
-              As melhores ofertas e cupons da Amazon, Shopee, Mercado Livre e muito mais! 🛍️
-            </p>
-            <p class="desc">
-              💸 Economize de verdade com promoções selecionadas todos os dias.
-            </p>
-            <ul class="perks">
-              <li>✅ Ofertas e cupons exclusivos</li>
-              <li>✅ Grátis e sem enrolação</li>
-            </ul>
-            <p class="desc tagline">Menos preço, mais economia! 🚀</p>
+      <section class="panel brand-panel">
+        <div class="brand-top">
+          <div class="brand-id">
+            <img class="avatar" src="logo.png" alt="Logo JP Veras Tech" />
+            <div class="brand-text">
+              <h1>🔥 Promoções do Veras <span class="verified" title="Canal oficial">✓</span></h1>
+              <a class="brand-handle" href="https://www.instagram.com/promocoesdoveras/" target="_blank" rel="noopener noreferrer">@promocoesdoveras</a>
+            </div>
           </div>
-        </div>
-        <div class="cta">
-          <div class="cta-buttons">
-            <a class="btn-join wa" href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer" aria-label="Entrar no canal do WhatsApp" title="Canal do WhatsApp">
+          <div class="brand-side">
+            <div class="social-row">
+              <a class="btn-join wa" href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer" aria-label="Entrar no canal do WhatsApp" title="Canal do WhatsApp">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
             </a>
-            <a class="btn-join tg" href="https://t.me/PromocoesdoVeras" target="_blank" rel="noopener noreferrer" aria-label="Entrar no Telegram" title="Telegram">
+              <a class="btn-join tg" href="https://t.me/PromocoesdoVeras" target="_blank" rel="noopener noreferrer" aria-label="Entrar no Telegram" title="Telegram">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
             </a>
-            <a class="btn-join ig" href="https://www.instagram.com/promocoesdoveras/" target="_blank" rel="noopener noreferrer" aria-label="Seguir @promocoesdoveras no Instagram" title="Instagram @promocoesdoveras">
+              <a class="btn-join ig" href="https://www.instagram.com/promocoesdoveras/" target="_blank" rel="noopener noreferrer" aria-label="Seguir @promocoesdoveras no Instagram" title="Instagram @promocoesdoveras">
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.6" cy="6.4" r="1.3" fill="currentColor"/></svg>
             </a>
-          </div>
-          <div class="cta-note">⚡ As melhores ofertas esgotam rápido: quem está no grupo vê primeiro.</div>
-        </div>
-        <div class="hero-stats">
-          <div class="stat-box">
-            <div class="label">Total capturado</div>
-            <div class="value" id="stat-total">0</div>
-          </div>
-          <div class="stat-box">
-            <div class="label">Últimas 24h</div>
-            <div class="value" id="stat-recent">0</div>
-          </div>
-          <div class="stat-box">
-            <div class="label">Conexão</div>
-            <div class="value live" id="stat-conn"><span class="dot"></span> AO VIVO</div>
+            </div>
+            <div class="highlight">
+              <span class="highlight-icon">🔥</span>
+              <div>
+                <div class="highlight-label">Últimas 24h</div>
+                <div class="highlight-value"><span id="stat-recent">0</span> ofertas</div>
+                <div class="highlight-sub"><span id="stat-total">0</span> no total</div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="panel filter-panel">
-        <h2>Encontre uma oferta</h2>
-        <div class="sub">Clique numa loja ou categoria, ou busque por produto.</div>
-
-        <div class="search-row">
-          <span class="icon">🔍</span>
-          <input type="text" id="search-input" placeholder="Busque por produto, marca ou palavra…" />
+        <div class="brand-copy">
+          <p class="lead">As melhores ofertas e cupons da Amazon, Shopee, Mercado Livre e muito mais! 🛍️</p>
+          <p>💸 Economize de verdade com promoções selecionadas todos os dias.</p>
+          <ul class="perks">
+            <li>✅ Ofertas e cupons exclusivos</li>
+            <li>✅ Grátis e sem enrolação</li>
+          </ul>
+          <p class="tagline">Menos preço, mais economia! 🚀</p>
         </div>
 
-        <select class="sort-select" id="sort-select" style="margin-bottom: 16px;">
-          <option value="newest">Mais recentes primeiro</option>
-          <option value="oldest">Mais antigas primeiro</option>
-        </select>
+        <div class="brand-strip">
+          <div class="strip-item">
+            <span class="strip-icon">🏬</span>
+            <div>
+              <div class="strip-label">Lojas na vitrine</div>
+              <div class="strip-value" id="stat-stores">Várias lojas</div>
+            </div>
+          </div>
+          <div class="strip-item">
+            <span class="strip-icon">🎯</span>
+            <div>
+              <div class="strip-label">Curadoria diária</div>
+              <div class="strip-value">Achados que valem a pena</div>
+            </div>
+          </div>
+          <div class="strip-item">
+            <span class="strip-icon live"><span class="dot"></span></span>
+            <div>
+              <div class="strip-label">Atualização · <span class="live-text">AO VIVO</span></div>
+              <div class="strip-value">Novas ofertas todos os dias</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <div class="filter-group">
-          <div class="filter-label">Loja</div>
-          <div class="chips-row" id="store-chips"><!-- preenchido via JS --></div>
+      <section class="panel filter-panel">
+        <div class="filter-head">
+          <span class="filter-icon">☰</span>
+          <div>
+            <h2>Encontre por loja</h2>
+            <div class="sub">Escolha uma loja ou pesquise uma oferta específica.</div>
+          </div>
         </div>
 
-        <div class="filter-group" style="margin-bottom: 0;">
-          <div class="filter-label">Categoria</div>
-          <div class="chips-row" id="category-chips"><!-- preenchido via JS --></div>
+        <div class="filter-body">
+          <div class="store-scroll">
+            <div class="store-chips" id="store-chips"><!-- preenchido via JS --></div>
+            <button type="button" class="scroll-btn" id="store-next" aria-label="Mais lojas">›</button>
+          </div>
+
+          <div class="search-row">
+            <span class="icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Busque por produto, marca ou modelo" />
+          </div>
+
+          <div class="select-row">
+            <select class="sort-select" id="category-select" aria-label="Categoria">
+              <option value="all">Todas as categorias</option>
+            </select>
+            <select class="sort-select" id="sort-select" aria-label="Ordem">
+              <option value="newest">Mais recentes</option>
+              <option value="oldest">Mais antigas</option>
+            </select>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
 
     <div class="section-head">
@@ -857,7 +1134,8 @@
   const searchInput = document.getElementById("search-input");
   const sortSelect = document.getElementById("sort-select");
   const storeChipsEl = document.getElementById("store-chips");
-  const categoryChipsEl = document.getElementById("category-chips");
+  const categorySelect = document.getElementById("category-select");
+  const statStores = document.getElementById("stat-stores");
 
   function formatDate(iso) {
     const d = new Date(iso);
@@ -956,21 +1234,25 @@
   function buildStoreChips() {
     const counts = { all: allAds.length };
     for (const ad of allAds) {
-      const s = detectStore(ad.text).key;
-      counts[s] = (counts[s] || 0) + 1;
+      const k = detectStore(ad.text).key;
+      counts[k] = (counts[k] || 0) + 1;
     }
-    const chips = [{ key: "all", label: "Todas as lojas" }].concat(
-      STORES.filter((s) => counts[s.key] > 0).map((s) => ({ key: s.key, label: s.label }))
+    const chips = [{ key: "all", label: "Todas as lojas", ico: "🏬" }].concat(
+      STORES.filter((st) => counts[st.key] > 0).map((st) => ({ key: st.key, label: st.label, store: st }))
     );
     if (counts[DEFAULT_STORE.key]) {
-      chips.push({ key: DEFAULT_STORE.key, label: DEFAULT_STORE.label });
+      chips.push({ key: DEFAULT_STORE.key, label: DEFAULT_STORE.label, ico: "🏷️" });
     }
 
     storeChipsEl.innerHTML = "";
     for (const c of chips) {
-      const el = document.createElement("div");
+      const el = document.createElement("button");
+      el.type = "button";
       el.className = "chip" + (activeStore === c.key ? " active" : "");
-      el.innerHTML = `${c.label} <span class="count">${counts[c.key] || 0}</span>`;
+      const ico = c.store
+        ? `<span class="ico" style="background:${c.store.color}; color:${c.store.dark ? "#1a1a1a" : "#fff"}">${c.store.icon}</span>`
+        : `<span class="ico">${c.ico}</span>`;
+      el.innerHTML = `${ico}${c.label} <span class="count">${counts[c.key] || 0}</span>`;
       el.addEventListener("click", () => {
         activeStore = c.key;
         buildStoreChips();
@@ -978,34 +1260,35 @@
       });
       storeChipsEl.appendChild(el);
     }
+    const stores = STORES.filter((st) => counts[st.key] > 0).length;
+    statStores.textContent = stores > 0 ? `${stores} identificada${stores > 1 ? "s" : ""} + outras` : "Várias lojas";
   }
 
+  // Categorias num seletor ("Todas as categorias", "💻 Informática (4)"...).
   function buildCategoryChips() {
-    const counts = { all: allAds.length };
+    const counts = {};
     for (const ad of allAds) {
-      const c = detectCategory(ad.text).key;
-      counts[c] = (counts[c] || 0) + 1;
+      const k = detectCategory(ad.text).key;
+      counts[k] = (counts[k] || 0) + 1;
     }
-    const chips = [{ key: "all", label: "Todas" }].concat(
-      CATEGORIES.filter((c) => counts[c.key] > 0).map((c) => ({ key: c.key, label: `${c.icon} ${c.label}` }))
+    const opts = [{ key: "all", label: "Todas as categorias" }].concat(
+      CATEGORIES.filter((c) => counts[c.key] > 0).map((c) => ({ key: c.key, label: `${c.icon} ${c.label} (${counts[c.key]})` }))
     );
     if (counts[DEFAULT_CATEGORY.key]) {
-      chips.push({ key: DEFAULT_CATEGORY.key, label: `${DEFAULT_CATEGORY.icon} ${DEFAULT_CATEGORY.label}` });
+      opts.push({ key: DEFAULT_CATEGORY.key, label: `${DEFAULT_CATEGORY.icon} ${DEFAULT_CATEGORY.label} (${counts[DEFAULT_CATEGORY.key]})` });
     }
-
-    categoryChipsEl.innerHTML = "";
-    for (const c of chips) {
-      const el = document.createElement("div");
-      el.className = "chip category" + (activeCategory === c.key ? " active" : "");
-      el.innerHTML = `${c.label} <span class="count">${counts[c.key] || 0}</span>`;
-      el.addEventListener("click", () => {
-        activeCategory = c.key;
-        buildCategoryChips();
-        renderGrid();
-      });
-      categoryChipsEl.appendChild(el);
-    }
+    if (!opts.some((o) => o.key === activeCategory)) activeCategory = "all";
+    categorySelect.innerHTML = opts
+      .map((o) => `<option value="${o.key}"${o.key === activeCategory ? " selected" : ""}>${escapeHtml(o.label)}</option>`)
+      .join("");
   }
+  categorySelect.addEventListener("change", (e) => {
+    activeCategory = e.target.value;
+    renderGrid();
+  });
+  document.getElementById("store-next").addEventListener("click", () => {
+    storeChipsEl.scrollBy({ left: 220, behavior: "smooth" });
+  });
 
   function updateStats() {
     statTotal.textContent = serverTotal ?? allAds.length;
