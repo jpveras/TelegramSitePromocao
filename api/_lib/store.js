@@ -7,6 +7,7 @@
 // Estrutura no Redis:
 //   ads:next_id                -> contador de ids
 //   ads:index                  -> sorted set (score = id) com todos os ids
+//   ads:bytime                 -> sorted set (score = data do post em ms) para contar por periodo
 //   ad:<id>                    -> JSON do anuncio
 //   tg:<chat_id>:<message_id>  -> id do anuncio (evita duplicar e permite editar)
 //   chats:seen                 -> hash chat_id -> nome dos chats que falaram com o bot
@@ -95,6 +96,7 @@ async function upsertAd(ad) {
   await redis([
     ["SET", `ad:${id}`, toStored(record)],
     ["ZADD", "ads:index", String(id), String(id)],
+    ["ZADD", "ads:bytime", String(postedMs(record)), String(id)],
   ]);
   return { ad: record, created: true };
 }
@@ -141,6 +143,32 @@ async function listSeenChats() {
   return chats;
 }
 
+function postedMs(ad) {
+  const t = Date.parse(ad.posted_at || ad.received_at || "");
+  return Number.isFinite(t) ? t : Date.now();
+}
+
+// Anuncios salvos antes de existir o ads:bytime entram nele aqui, uma vez so.
+async function backfillByTime() {
+  const [indexCount, timeCount] = await redis([["ZCARD", "ads:index"], ["ZCARD", "ads:bytime"]]);
+  if (Number(timeCount) >= Number(indexCount)) return;
+  const [ids] = await redis([["ZRANGE", "ads:index", "0", "-1"]]);
+  for (let i = 0; i < ids.length; i += 200) {
+    const ads = await fetchByIds(ids.slice(i, i + 200));
+    if (ads.length === 0) continue;
+    const args = [];
+    for (const ad of ads) args.push(String(postedMs(ad)), String(ad.id));
+    await redis([["ZADD", "ads:bytime", ...args]]);
+  }
+}
+
+// Quantos anuncios foram postados desde "sinceMs" (ex.: ultimas 24h).
+async function countSince(sinceMs) {
+  await backfillByTime();
+  const [count] = await redis([["ZCOUNT", "ads:bytime", String(sinceMs), "+inf"]]);
+  return Number(count) || 0;
+}
+
 async function countAds() {
   const [count] = await redis([["ZCARD", "ads:index"]]);
   return Number(count) || 0;
@@ -153,6 +181,7 @@ module.exports = {
   listAds,
   listAdsAfter,
   countAds,
+  countSince,
   rememberChat,
   listSeenChats,
 };

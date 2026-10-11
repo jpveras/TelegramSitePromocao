@@ -3,7 +3,7 @@
 //   GET /api/ads?limit=60&before=123  -> mais antigos que o id 123 (botao "carregar mais")
 //   GET /api/ads?after=123            -> novos desde o id 123 (feed ao vivo)
 
-const { isConfigured, listAds, listAdsAfter, countAds } = require("./_lib/store");
+const { isConfigured, listAds, listAdsAfter, countAds, countSince } = require("./_lib/store");
 
 // O que vai para o navegador: sem ids internos do Telegram. A foto passa
 // pela rota /api/photo, para o token do bot nunca aparecer no site.
@@ -39,11 +39,12 @@ module.exports = async function handler(req, res) {
   const after = toInt(query.after);
 
   try {
-    const [ads, total] = await Promise.all([
+    const [ads, total, last24h] = await Promise.all([
       after !== null ? listAdsAfter(after) : listAds({ limit, before }),
       countAds(),
+      countSince(Date.now() - 24 * 60 * 60 * 1000),
     ]);
-    res.status(200).json({ configured: true, total, ads: ads.map(toPublic) });
+    res.status(200).json({ configured: true, total, last24h, ads: ads.map(toPublic) });
   } catch (err) {
     console.error("[ads] Falha ao listar anuncios:", err.message);
     res.status(500).json({ error: "Falha ao carregar anuncios" });

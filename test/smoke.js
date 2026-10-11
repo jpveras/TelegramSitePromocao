@@ -44,11 +44,23 @@ function fakeRedisServer() {
       }
       case "ZADD": {
         if (!zsets.has(args[0])) zsets.set(args[0], new Map());
-        zsets.get(args[0]).set(args[2], Number(args[1]));
+        for (let i = 1; i < args.length; i += 2) zsets.get(args[0]).set(args[i + 1], Number(args[i]));
         return 1;
       }
       case "ZCARD": return (zsets.get(args[0]) || new Map()).size;
-      case "ZRANGE": return zrangeByScore(args[0], args.slice(1));
+      case "ZRANGE": {
+        if (!args.includes("BYSCORE")) {
+          const all = [...(zsets.get(args[0]) || new Map())].sort((x, y) => x[1] - y[1]).map(([m]) => m);
+          const start = Number(args[1]), stop = Number(args[2]);
+          return all.slice(start, stop === -1 ? undefined : stop + 1);
+        }
+        return zrangeByScore(args[0], args.slice(1));
+      }
+      case "ZCOUNT": {
+        const min = Number(args[1]);
+        const max = args[2] === "+inf" ? Infinity : Number(args[2]);
+        return [...(zsets.get(args[0]) || new Map()).values()].filter((v) => v >= min && v <= max).length;
+      }
       case "MGET": return args.map((k) => (kv.has(k) ? kv.get(k) : null));
       case "HSET": {
         if (!hashes.has(args[0])) hashes.set(args[0], new Map());
@@ -144,6 +156,8 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   // Listagem: mais recente primeiro, sem dados internos do Telegram.
   r = await call(ads, { query: { limit: "10" } });
   assert.strictEqual(r.data.total, 2);
+  // Os dois exemplos tem data de 2025 (1760000000), fora das ultimas 24h.
+  assert.strictEqual(r.data.last24h, 0);
   assert.deepStrictEqual(r.data.ads.map((a) => a.id), [2, 1]);
   assert.strictEqual(r.data.ads[1].text, "Air Fryer R$ 229,90");
   assert.strictEqual(r.data.ads[1].photo_url, "/api/photo?ad=1&v=2");
@@ -156,6 +170,12 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   assert.deepStrictEqual(r.data.ads.map((a) => a.id), [2]);
   r = await call(ads, { query: { after: "2" } });
   assert.deepStrictEqual(r.data.ads, []);
+
+  // Post de agora entra na contagem das ultimas 24h.
+  r = await call(telegram, { method: "POST", headers: ok,
+    body: { message: { message_id: 13, date: Math.floor(Date.now() / 1000), chat: { id: -100111 }, text: "Novo R$ 10" } } });
+  r = await call(ads, { query: {} });
+  assert.deepStrictEqual([r.data.total, r.data.last24h], [3, 1]);
 
   server.close();
   console.log("OK: webhook, edicao, filtro de chat, listagem, paginacao e feed ao vivo");

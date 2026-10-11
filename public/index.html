@@ -787,8 +787,18 @@
     scrollbar-width: none;
     padding: 2px 52px 4px 0;
     margin: 0;
-    -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
-            mask-image: linear-gradient(90deg, #000 85%, transparent);
+  }
+  .store-scroll.has-next .store-chips {
+    -webkit-mask-image: linear-gradient(90deg, #000 82%, transparent);
+            mask-image: linear-gradient(90deg, #000 82%, transparent);
+  }
+  .store-scroll.has-prev .store-chips {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%);
+            mask-image: linear-gradient(90deg, transparent, #000 18%);
+  }
+  .store-scroll.has-prev.has-next .store-chips {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
   }
   .store-chips::-webkit-scrollbar { display: none; }
   .store-chips .chip {
@@ -818,6 +828,9 @@
     font-weight: 900;
     flex-shrink: 0;
   }
+  .scroll-btn[hidden] { display: none; }
+  .scroll-btn.prev { left: 0; right: auto; z-index: 1; }
+  .scroll-btn.next { z-index: 1; }
   .scroll-btn {
     position: absolute;
     right: 0;
@@ -956,8 +969,9 @@
 
         <div class="filter-body">
           <div class="store-scroll">
+            <button type="button" class="scroll-btn prev" id="store-prev" aria-label="Voltar lojas" hidden>‹</button>
             <div class="store-chips" id="store-chips"><!-- preenchido via JS --></div>
-            <button type="button" class="scroll-btn" id="store-next" aria-label="Mais lojas">›</button>
+            <button type="button" class="scroll-btn next" id="store-next" aria-label="Mais lojas" hidden>›</button>
           </div>
 
           <div class="search-row">
@@ -1260,6 +1274,7 @@
       });
       storeChipsEl.appendChild(el);
     }
+    requestAnimationFrame(updateStoreArrows);
     const stores = STORES.filter((st) => counts[st.key] > 0).length;
     statStores.textContent = stores > 0 ? `${stores} identificada${stores > 1 ? "s" : ""} + outras` : "Várias lojas";
   }
@@ -1286,14 +1301,28 @@
     activeCategory = e.target.value;
     renderGrid();
   });
-  document.getElementById("store-next").addEventListener("click", () => {
-    storeChipsEl.scrollBy({ left: 220, behavior: "smooth" });
-  });
+  // Setas das lojas: "‹" aparece depois de rolar, "›" some ao chegar no fim.
+  const storeScrollEl = storeChipsEl.parentElement;
+  const storePrev = document.getElementById("store-prev");
+  const storeNext = document.getElementById("store-next");
+  function updateStoreArrows() {
+    const max = storeChipsEl.scrollWidth - storeChipsEl.clientWidth;
+    const hasPrev = storeChipsEl.scrollLeft > 4;
+    const hasNext = storeChipsEl.scrollLeft < max - 4;
+    storePrev.hidden = !hasPrev;
+    storeNext.hidden = !hasNext;
+    storeScrollEl.classList.toggle("has-prev", hasPrev);
+    storeScrollEl.classList.toggle("has-next", hasNext);
+  }
+  storePrev.addEventListener("click", () => storeChipsEl.scrollBy({ left: -220, behavior: "smooth" }));
+  storeNext.addEventListener("click", () => storeChipsEl.scrollBy({ left: 220, behavior: "smooth" }));
+  storeChipsEl.addEventListener("scroll", updateStoreArrows, { passive: true });
+  window.addEventListener("resize", updateStoreArrows);
 
   function updateStats() {
     statTotal.textContent = serverTotal ?? allAds.length;
     const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    statRecent.textContent = allAds.filter((a) => new Date(a.posted_at).getTime() >= dayAgo).length;
+    statRecent.textContent = serverLast24h ?? allAds.filter((a) => new Date(a.posted_at).getTime() >= dayAgo).length;
   }
 
   function renderGrid() {
@@ -1368,12 +1397,14 @@
   const POLL_MS = 5000;
   let newestId = 0;
   let serverTotal = null;
+  let serverLast24h = null;
 
   async function fetchAds(params) {
     const res = await fetch(`/api/ads?${params}`, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (typeof data.total === "number") serverTotal = data.total;
+    if (typeof data.last24h === "number") serverLast24h = data.last24h;
     if (data.configured === false) {
       statusDot.classList.add("off");
       statusText.textContent = "aguardando configuração";
@@ -1407,8 +1438,12 @@
     }
   }
 
+  let loadingMore = false;
   async function loadMore() {
+    if (loadingMore || loadMoreBtn.hidden) return;
+    loadingMore = true;
     loadMoreBtn.disabled = true;
+    loadMoreBtn.textContent = "Carregando ofertas…";
     try {
       const ads = await fetchAds(`limit=60&before=${oldestId}`);
       if (ads.length === 0) {
@@ -1421,9 +1456,24 @@
       refreshAll();
     } finally {
       loadMoreBtn.disabled = false;
+      loadMoreBtn.textContent = "Carregar mais antigos";
+      loadingMore = false;
     }
+    // Se a tela ainda nao encheu (ou um filtro escondeu tudo), continua carregando.
+    requestAnimationFrame(() => {
+      const r = document.getElementById("load-more-wrap").getBoundingClientRect();
+      if (!loadMoreBtn.hidden && r.top < window.innerHeight + 600) loadMore();
+    });
   }
   loadMoreBtn.addEventListener("click", loadMore);
+
+  // Rolagem infinita: ao chegar perto do fim da lista, busca os mais antigos.
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(
+      (entries) => { if (entries.some((e) => e.isIntersecting)) loadMore(); },
+      { rootMargin: "0px 0px 600px 0px" }
+    ).observe(document.getElementById("load-more-wrap"));
+  }
 
   async function pollNew() {
     try {
@@ -1432,6 +1482,7 @@
         statusDot.classList.remove("off");
         statusText.textContent = "AO VIVO";
       }
+      updateStats();
       if (ads.length > 0) {
         const known = new Set(allAds.map((a) => a.id));
         const fresh = ads.filter((a) => !known.has(a.id));
