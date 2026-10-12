@@ -134,9 +134,35 @@
 
 <script>
   const $ = (id) => document.getElementById(id);
-  let key = "";
   let days = 7;
-  try { key = localStorage.getItem("pv_panel_key") || ""; } catch {}
+
+  // Sessao do admin expira 24h depois do ultimo acesso. Toda vez que a
+  // pagina abre com uma sessao valida, o prazo reinicia (saveSession).
+  const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+  function saveSession(k) {
+    try {
+      localStorage.setItem("pv_panel_key", k);
+      localStorage.setItem("pv_panel_key_ts", String(Date.now()));
+    } catch {}
+  }
+  function clearSession() {
+    try {
+      localStorage.removeItem("pv_panel_key");
+      localStorage.removeItem("pv_panel_key_ts");
+    } catch {}
+  }
+  function loadSession() {
+    try {
+      const k = localStorage.getItem("pv_panel_key") || "";
+      const ts = Number(localStorage.getItem("pv_panel_key_ts")) || 0;
+      if (k && ts && Date.now() - ts < SESSION_TTL_MS) return k;
+      if (k) clearSession();
+      return "";
+    } catch {
+      return "";
+    }
+  }
+  let key = loadSession();
 
   const fmt = (n) => Number(n || 0).toLocaleString("pt-BR");
   const pct = (a, b) => (b > 0 ? `${((a / b) * 100).toFixed(1).replace(".", ",")}%` : "—");
@@ -230,10 +256,12 @@
     if (!key) { $("login").hidden = false; $("dash").hidden = true; return; }
     try {
       await load();
+      saveSession(key); // abriu o admin com sessao valida: reinicia as 24h
       $("login").hidden = true;
       $("dash").hidden = false;
       loadBot(false);
     } catch (err) {
+      if (err.message === "auth") { key = ""; clearSession(); }
       $("login").hidden = false;
       $("dash").hidden = true;
       $("login-error").textContent = err.message === "auth" ? "Chave incorreta." : `Erro: ${err.message}`;
@@ -243,12 +271,12 @@
   $("login").addEventListener("submit", (e) => {
     e.preventDefault();
     key = $("key").value.trim();
-    try { localStorage.setItem("pv_panel_key", key); } catch {}
+    saveSession(key);
     start();
   });
   $("logout").addEventListener("click", () => {
     key = "";
-    try { localStorage.removeItem("pv_panel_key"); } catch {}
+    clearSession();
     start();
   });
   $("refresh").addEventListener("click", () => { load().catch(() => {}); loadBot(false); });
