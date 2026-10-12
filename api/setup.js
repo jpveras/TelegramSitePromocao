@@ -49,19 +49,25 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const set = await telegram("setWebhook", {
-    url: webhookUrl,
-    secret_token: WEBHOOK_SECRET,
-    allowed_updates: ["message", "channel_post", "edited_message", "edited_channel_post"],
-  });
+  // ?check=1 so consulta o status (usado pela area de administracao),
+  // sem registrar o webhook de novo.
+  const onlyCheck = (req.query || {}).check === "1";
+  const set = onlyCheck
+    ? { ok: true }
+    : await telegram("setWebhook", {
+        url: webhookUrl,
+        secret_token: WEBHOOK_SECRET,
+        allowed_updates: ["message", "channel_post", "edited_message", "edited_channel_post"],
+      });
   const info = await telegram("getWebhookInfo");
+  const registered = info.result && info.result.url === webhookUrl;
   const [total, chats] = await Promise.all([countAds(), listSeenChats()]);
 
   res.status(200).json({
-    ok: Boolean(set.ok),
+    ok: Boolean(set.ok) && Boolean(registered),
     bot: `@${bot.result.username}`,
     webhook: webhookUrl,
-    webhook_registrado: set.ok ? "sim" : set.description,
+    webhook_registrado: !set.ok ? set.description : registered ? "sim" : "não",
     mensagens_pendentes_no_telegram: info.result ? info.result.pending_update_count : null,
     ultimo_erro_do_telegram: info.result ? info.result.last_error_message || null : null,
     chat_filtrado: CHAT_ID || "nenhum (salva mensagens de todos os chats onde o bot esta)",

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex, nofollow" />
-<title>Painel · Promoções do Veras</title>
+<title>Administração · Promoções do Veras</title>
 <link rel="icon" type="image/png" href="favicon.png" />
 <style>
   :root {
@@ -63,17 +63,25 @@
   .login button { width: 100%; background: var(--accent); color: #fff; border: none; }
   .error { color: #ff6b6b; font-size: 13.5px; margin-top: 8px; }
   .muted { color: var(--muted); }
+  .section-title { font-size: 17px; margin: 6px 0 12px; }
+  .pill { display: inline-block; margin-left: 8px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; vertical-align: middle; background: #22252d; color: var(--muted); }
+  .pill.ok { background: rgba(63, 201, 107, 0.14); color: var(--green); }
+  .pill.bad { background: rgba(255, 107, 107, 0.14); color: #ff6b6b; }
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px 18px; margin-bottom: 14px; }
+  .status-grid div { font-size: 14px; }
+  .status-grid span { display: block; color: var(--muted); font-size: 11.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
+  .status-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 </style>
 </head>
 <body>
   <header>
-    <div class="brand"><img src="logo.png" alt="" /> Painel · Promoções do Veras</div>
+    <div class="brand"><img src="logo.png" alt="" /> Administração · Promoções do Veras</div>
     <a href="/">← Voltar ao site</a>
   </header>
 
   <main>
     <form class="login" id="login" hidden>
-      <h1>Entrar no painel</h1>
+      <h1>Área de administração</h1>
       <div class="sub">Use a mesma chave <b>SETUP_KEY</b> cadastrada na Vercel.</div>
       <input type="password" id="key" placeholder="Sua SETUP_KEY" autocomplete="current-password" required />
       <button class="btn" type="submit">Ver números</button>
@@ -81,7 +89,7 @@
     </form>
 
     <div id="dash" hidden>
-      <h1>Números do site</h1>
+      <h1>Administração</h1>
       <div class="sub" id="period-label">Contagem anônima de visitas e cliques.</div>
 
       <div class="toolbar">
@@ -95,6 +103,16 @@
         <button type="button" class="btn" id="logout">Sair</button>
       </div>
 
+      <section class="box status" id="bot-box">
+        <h2>Status do bot <span class="pill" id="bot-pill">verificando…</span></h2>
+        <div class="status-grid" id="bot-status"></div>
+        <div class="status-actions">
+          <button type="button" class="btn" id="bot-check">↻ Verificar de novo</button>
+          <button type="button" class="btn" id="bot-relink" title="Registra o webhook do bot de novo no Telegram">Religar bot ao site</button>
+        </div>
+      </section>
+
+      <h2 class="section-title">Visitas e cliques</h2>
       <div class="grid" id="kpis"></div>
 
       <section class="box">
@@ -175,12 +193,46 @@
         .map(([l, v]) => `<tr><td>${l}</td><td>${fmt(v)}</td></tr>`).join("");
   }
 
+  async function loadBot(relink) {
+    const pill = $("bot-pill");
+    pill.className = "pill"; pill.textContent = relink ? "religando…" : "verificando…";
+    try {
+      const res = await fetch(`/api/setup?key=${encodeURIComponent(key)}${relink ? "" : "&check=1"}`, { cache: "no-store" });
+      const d = await res.json();
+      if (d.falta_configurar) {
+        pill.className = "pill bad"; pill.textContent = "configuração incompleta";
+        $("bot-status").innerHTML = `<div><span>Falta configurar</span>${esc(d.falta_configurar.join(", "))}</div>`;
+        return;
+      }
+      if (d.erro) {
+        pill.className = "pill bad"; pill.textContent = "erro";
+        $("bot-status").innerHTML = `<div><span>Erro</span>${esc(d.erro)}</div>`;
+        return;
+      }
+      const ok = d.ok && !d.ultimo_erro_do_telegram;
+      pill.className = "pill " + (ok ? "ok" : "bad");
+      pill.textContent = ok ? "funcionando" : "atenção";
+      const chats = (d.chats_vistos || []).map((c) => esc(c.name || c.chat_id)).join("<br>") || "—";
+      $("bot-status").innerHTML = [
+        ["Bot", esc(d.bot || "—")],
+        ["Ligado ao site", d.webhook_registrado === "sim" ? "✅ sim" : `⚠️ ${esc(String(d.webhook_registrado))}`],
+        ["Mensagens na fila do Telegram", fmt(d.mensagens_pendentes_no_telegram)],
+        ["Último erro do Telegram", d.ultimo_erro_do_telegram ? `⚠️ ${esc(d.ultimo_erro_do_telegram)}` : "nenhum"],
+        ["Anúncios salvos", fmt(d.anuncios_salvos)],
+        ["Chats que falaram com o bot", chats],
+      ].map(([l, v]) => `<div><span>${l}</span>${v}</div>`).join("");
+    } catch {
+      pill.className = "pill bad"; pill.textContent = "sem resposta";
+    }
+  }
+
   async function start() {
     if (!key) { $("login").hidden = false; $("dash").hidden = true; return; }
     try {
       await load();
       $("login").hidden = true;
       $("dash").hidden = false;
+      loadBot(false);
     } catch (err) {
       $("login").hidden = false;
       $("dash").hidden = true;
@@ -199,7 +251,9 @@
     try { localStorage.removeItem("pv_panel_key"); } catch {}
     start();
   });
-  $("refresh").addEventListener("click", () => load().catch(() => {}));
+  $("refresh").addEventListener("click", () => { load().catch(() => {}); loadBot(false); });
+  $("bot-check").addEventListener("click", () => loadBot(false));
+  $("bot-relink").addEventListener("click", () => loadBot(true));
   $("range").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-days]");
     if (!b) return;

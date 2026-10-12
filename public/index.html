@@ -535,6 +535,34 @@
   .footer-links { margin-top: 6px; }
   .footer-links a { color: var(--muted); text-decoration: none; }
   .footer-links a:hover { color: var(--accent); }
+  .footer-admin { margin-top: 10px; }
+  .footer-admin a { color: var(--muted-soft); font-size: 12px; text-decoration: none; }
+  .footer-admin a:hover { color: var(--accent); }
+  .admin-modal { position: fixed; inset: 0; z-index: 110; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .admin-modal[hidden] { display: none; }
+  .admin-card {
+    position: relative; width: min(380px, 100%); background: #15171c; border: 1px solid #2a2d36;
+    border-radius: 22px; padding: 28px 24px 22px; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,.6);
+    animation: pop 0.25s ease;
+  }
+  .admin-lock {
+    width: 56px; height: 56px; margin: 0 auto 10px; border-radius: 16px; display: flex; align-items: center;
+    justify-content: center; font-size: 26px; background: rgba(255,122,26,.12);
+  }
+  .admin-card h2 { margin: 0 0 6px; font-size: 21px; }
+  .admin-card p { margin: 0 0 16px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .admin-card p strong { color: var(--text); }
+  .admin-card input {
+    width: 100%; padding: 13px 14px; border-radius: 12px; border: 1px solid #2a2d36; background: var(--bg);
+    color: var(--text); font-size: 15px; outline: none;
+  }
+  .admin-card input:focus { border-color: var(--accent); }
+  .admin-error { min-height: 20px; margin: 8px 0 4px; color: #ff6b6b; font-size: 13px; }
+  .admin-submit {
+    width: 100%; padding: 13px; border: none; border-radius: 12px; background: var(--accent); color: #fff;
+    font-weight: 800; font-size: 15px; cursor: pointer;
+  }
+  .admin-submit:disabled { opacity: 0.6; cursor: default; }
 
   .card .actions {
     display: flex;
@@ -1078,7 +1106,23 @@
       <a href="https://t.me/PromocoesdoVeras" target="_blank" rel="noopener noreferrer">Telegram</a> ·
       <a href="https://www.instagram.com/promocoesdoveras/" target="_blank" rel="noopener noreferrer">Instagram</a>
     </div>
+    <div class="footer-admin">
+      <a href="/admin" id="admin-link">🔒 Administração</a>
+    </div>
   </footer>
+
+  <div class="admin-modal" id="admin-modal" hidden role="dialog" aria-modal="true" aria-labelledby="admin-title">
+    <div class="exit-backdrop" data-admin-close></div>
+    <form class="admin-card" id="admin-form">
+      <button type="button" class="exit-x" data-admin-close aria-label="Fechar">×</button>
+      <div class="admin-lock">🔒</div>
+      <h2 id="admin-title">Área de administração</h2>
+      <p>Digite a sua <strong>SETUP_KEY</strong> para ver os números do site e o status do bot.</p>
+      <input type="password" id="admin-key" placeholder="SETUP_KEY" autocomplete="current-password" required />
+      <div class="admin-error" id="admin-error"></div>
+      <button type="submit" class="admin-submit" id="admin-submit">Entrar</button>
+    </form>
+  </div>
 
 <script>
   // ---------- Reconhecimento de loja a partir do texto da mensagem ----------
@@ -1620,6 +1664,44 @@
     }
   }, true);
 
+  // ---------- Area de administracao ----------
+  // Pede a SETUP_KEY aqui mesmo; se estiver certa, guarda neste navegador e
+  // abre o painel em /admin.
+  const adminModal = document.getElementById("admin-modal");
+  const adminKey = document.getElementById("admin-key");
+  const adminError = document.getElementById("admin-error");
+  const adminSubmit = document.getElementById("admin-submit");
+  document.getElementById("admin-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    let saved = "";
+    try { saved = localStorage.getItem("pv_panel_key") || ""; } catch {}
+    if (saved) { location.href = "/admin"; return; }
+    adminError.textContent = "";
+    adminModal.hidden = false;
+    setTimeout(() => adminKey.focus(), 50);
+  });
+  adminModal.addEventListener("click", (e) => { if (e.target.closest("[data-admin-close]")) adminModal.hidden = true; });
+  document.getElementById("admin-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const key = adminKey.value.trim();
+    if (!key) return;
+    adminSubmit.disabled = true;
+    adminSubmit.textContent = "Verificando…";
+    adminError.textContent = "";
+    try {
+      const res = await fetch(`/api/stats?days=1&key=${encodeURIComponent(key)}`, { cache: "no-store" });
+      if (res.status === 401) throw new Error("Chave incorreta.");
+      if (!res.ok) throw new Error("Não foi possível verificar agora. Tente de novo.");
+      try { localStorage.setItem("pv_panel_key", key); } catch {}
+      location.href = "/admin";
+    } catch (err) {
+      adminError.textContent = err.message;
+    } finally {
+      adminSubmit.disabled = false;
+      adminSubmit.textContent = "Entrar";
+    }
+  });
+
   // ---------- Aviso de saida (intencao de saida) ----------
   // Navegadores nao deixam mostrar mensagem propria ao fechar a aba, entao o
   // aviso aparece quando a pessoa esta prestes a sair: no computador, quando o
@@ -1631,7 +1713,7 @@
     try { return sessionStorage.getItem("pv_exit") === "1"; } catch { return false; }
   }
   function openExitModal() {
-    if (joinedWhatsApp || exitAlreadyShown() || !exitModal.hidden) return;
+    if (joinedWhatsApp || exitAlreadyShown() || !exitModal.hidden || !adminModal.hidden) return;
     if (Date.now() - pageOpenedAt < 8000) return; // da tempo de a pessoa ver o site
     try { sessionStorage.setItem("pv_exit", "1"); } catch {}
     exitModal.hidden = false;
@@ -1639,7 +1721,7 @@
   }
   function closeExitModal() { exitModal.hidden = true; }
   exitModal.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) closeExitModal(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeExitModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeExitModal(); adminModal.hidden = true; } });
 
   document.addEventListener("mouseout", (e) => {
     if (!e.relatedTarget && e.clientY <= 0) openExitModal();
