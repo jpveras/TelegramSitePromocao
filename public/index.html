@@ -52,6 +52,13 @@
     font-size: 15px;
   }
   .topbar .brand img { width: 28px; height: 28px; border-radius: 50%; display: block; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .admin-btn {
+    width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
+    color: var(--muted); background: #14161b; border: 1px solid #262a33; transition: color .15s ease, border-color .15s ease;
+  }
+  .admin-btn svg { width: 17px; height: 17px; }
+  .admin-btn:hover { color: var(--accent); border-color: var(--accent); }
   .status {
     font-size: 13px;
     color: var(--muted);
@@ -947,9 +954,12 @@
 <body>
   <div class="topbar">
     <div class="brand"><img src="logo.png" alt="" /> Promoções do Veras</div>
-    <div class="status">
-      <span class="dot" id="status-dot"></span>
-      <span id="status-text">conectando…</span>
+    <div class="topbar-right">
+      <div class="status">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-text">conectando…</span>
+      </div>
+      <a href="/admin" class="admin-btn" id="admin-top" aria-label="Administração" title="Administração"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor"/></svg></a>
     </div>
   </div>
 
@@ -1671,7 +1681,7 @@
   const adminKey = document.getElementById("admin-key");
   const adminError = document.getElementById("admin-error");
   const adminSubmit = document.getElementById("admin-submit");
-  document.getElementById("admin-link").addEventListener("click", (e) => {
+  function openAdmin(e) {
     e.preventDefault();
     let saved = "";
     try { saved = localStorage.getItem("pv_panel_key") || ""; } catch {}
@@ -1679,7 +1689,9 @@
     adminError.textContent = "";
     adminModal.hidden = false;
     setTimeout(() => adminKey.focus(), 50);
-  });
+  }
+  document.getElementById("admin-link").addEventListener("click", openAdmin);
+  document.getElementById("admin-top").addEventListener("click", openAdmin);
   adminModal.addEventListener("click", (e) => { if (e.target.closest("[data-admin-close]")) adminModal.hidden = true; });
   document.getElementById("admin-form").addEventListener("submit", async (e) => {
     e.preventDefault();
