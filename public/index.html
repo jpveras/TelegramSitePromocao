@@ -992,6 +992,7 @@
                 <div class="highlight-label">Últimas 24h</div>
                 <div class="highlight-value"><span id="stat-recent">0</span> ofertas</div>
                 <div class="highlight-sub"><span id="stat-total">0</span> no total</div>
+                <div class="highlight-sub">🖱️ <span id="stat-clicks">0</span> cliques em ofertas</div>
               </div>
             </div>
           </div>
@@ -1651,6 +1652,17 @@
   }
   track("visit");
 
+  // ---------- Contador de cliques visivel na pagina ----------
+  const statClicks = document.getElementById("stat-clicks");
+  async function loadClicksCounter() {
+    try {
+      const res = await fetch("/api/clicks", { cache: "no-store" });
+      const data = await res.json();
+      statClicks.textContent = Number(data.clicks || 0).toLocaleString("pt-BR");
+    } catch {}
+  }
+  loadClicksCounter();
+
   let joinedWhatsApp = false;
   document.addEventListener("click", (e) => {
     const el = e.target.closest("a, button");
@@ -1658,6 +1670,7 @@
     if (el.matches(".btn-offer[href]")) {
       const card = el.closest(".card");
       track("offer", { a: card ? Number(card.dataset.id) : undefined });
+      statClicks.textContent = (Number(statClicks.textContent.replace(/\D/g, "")) + 1).toLocaleString("pt-BR");
     } else if (el.matches(".btn-coupon[data-coupon]")) {
       track("coupon");
     } else if (el.id === "exit-cta") {
