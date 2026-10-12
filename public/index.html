@@ -52,20 +52,6 @@
     font-size: 15px;
   }
   .topbar .brand img { width: 28px; height: 28px; border-radius: 50%; display: block; }
-  .topbar-right { display: flex; align-items: center; gap: 14px; }
-  .admin-btn {
-    width: 34px; height: 34px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
-    color: var(--muted); background: #14161b; border: 1px solid #262a33; transition: color .15s ease, border-color .15s ease;
-  }
-  .admin-btn svg { width: 17px; height: 17px; }
-  .admin-btn:hover { color: var(--accent); border-color: var(--accent); }
-  .status {
-    font-size: 13px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
   .dot {
     width: 8px;
     height: 8px;
@@ -515,62 +501,97 @@
   }
   .cta-note { margin-top: 9px; font-size: 12.5px; color: var(--muted); }
 
-  .wa-float {
+  .wa-float, .clicks-float {
     position: fixed;
     right: 20px;
-    bottom: 20px;
     z-index: 30;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    width: 206px;
+    height: 56px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    text-decoration: none;
+  }
+  .wa-float {
+    bottom: 20px;
     background: #25d366;
     color: #062b15;
     font-weight: 800;
-    font-size: 14px;
-    text-decoration: none;
-    padding: 12px 18px 12px 14px;
-    border-radius: 999px;
+    font-size: 14.5px;
+    padding: 0 16px 0 14px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 4px rgba(37, 211, 102, 0.18);
     transition: transform 0.15s ease;
   }
-  .wa-float svg { width: 26px; height: 26px; }
+  .wa-float svg { width: 26px; height: 26px; flex-shrink: 0; }
   .wa-float:hover { transform: scale(1.04); }
+
+  .clicks-float {
+    bottom: 86px;
+    background: linear-gradient(180deg, #181b22, #121419);
+    border: 1px solid rgba(63, 201, 107, 0.4);
+    padding: 0 14px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(63, 201, 107, 0.1);
+    animation: fadein 0.35s ease;
+  }
+  .clicks-float .icon {
+    position: relative;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    line-height: 1;
+  }
+  .clicks-float .count-badge {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: -11px;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--green);
+    color: #062b15;
+    font-size: 10px;
+    font-weight: 900;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 2px #15171c;
+    font-variant-numeric: tabular-nums;
+  }
+  .clicks-float .text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+  .clicks-float .num {
+    font-weight: 900;
+    font-size: 14px;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .clicks-float .label {
+    font-size: 8.5px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--green);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   @media (max-width: 600px) {
-    .wa-float { padding: 13px; right: 14px; bottom: 14px; }
-    .wa-float span { display: none; }
+    .wa-float, .clicks-float { width: 56px; padding: 0; justify-content: center; right: 14px; }
+    .wa-float { bottom: 14px; }
+    .clicks-float { bottom: 78px; }
+    .wa-float span, .clicks-float .text { display: none; }
+    .clicks-float .count-badge { display: flex; }
   }
   .footer-links { margin-top: 6px; }
   .footer-links a { color: var(--muted); text-decoration: none; }
   .footer-links a:hover { color: var(--accent); }
-  .footer-admin { margin-top: 10px; }
-  .footer-admin a { color: var(--muted-soft); font-size: 12px; text-decoration: none; }
-  .footer-admin a:hover { color: var(--accent); }
-  .admin-modal { position: fixed; inset: 0; z-index: 110; display: flex; align-items: center; justify-content: center; padding: 16px; }
-  .admin-modal[hidden] { display: none; }
-  .admin-card {
-    position: relative; width: min(380px, 100%); background: #15171c; border: 1px solid #2a2d36;
-    border-radius: 22px; padding: 28px 24px 22px; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,.6);
-    animation: pop 0.25s ease;
-  }
-  .admin-lock {
-    width: 56px; height: 56px; margin: 0 auto 10px; border-radius: 16px; display: flex; align-items: center;
-    justify-content: center; font-size: 26px; background: rgba(255,122,26,.12);
-  }
-  .admin-card h2 { margin: 0 0 6px; font-size: 21px; }
-  .admin-card p { margin: 0 0 16px; color: var(--muted); font-size: 14px; line-height: 1.5; }
-  .admin-card p strong { color: var(--text); }
-  .admin-card input {
-    width: 100%; padding: 13px 14px; border-radius: 12px; border: 1px solid #2a2d36; background: var(--bg);
-    color: var(--text); font-size: 15px; outline: none;
-  }
-  .admin-card input:focus { border-color: var(--accent); }
-  .admin-error { min-height: 20px; margin: 8px 0 4px; color: #ff6b6b; font-size: 13px; }
-  .admin-submit {
-    width: 100%; padding: 13px; border: none; border-radius: 12px; background: var(--accent); color: #fff;
-    font-weight: 800; font-size: 15px; cursor: pointer;
-  }
-  .admin-submit:disabled { opacity: 0.6; cursor: default; }
-
   .card .actions {
     display: flex;
     flex-direction: column;
@@ -954,13 +975,6 @@
 <body>
   <div class="topbar">
     <div class="brand"><img src="logo.png" alt="" /> Promoções do Veras</div>
-    <div class="topbar-right">
-      <div class="status">
-        <span class="dot" id="status-dot"></span>
-        <span id="status-text">conectando…</span>
-      </div>
-      <a href="/admin" class="admin-btn" id="admin-top" aria-label="Administração" title="Administração"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor"/></svg></a>
-    </div>
   </div>
 
   <main>
@@ -992,7 +1006,6 @@
                 <div class="highlight-label">Últimas 24h</div>
                 <div class="highlight-value"><span id="stat-recent">0</span> ofertas</div>
                 <div class="highlight-sub"><span id="stat-total">0</span> no total</div>
-                <div class="highlight-sub">🖱️ <span id="stat-clicks">0</span> cliques em ofertas</div>
               </div>
             </div>
           </div>
@@ -1082,6 +1095,17 @@
     </div>
   </main>
 
+  <div class="clicks-float" aria-live="polite">
+    <span class="icon">
+      🛍️
+      <span class="count-badge js-click-count">74</span>
+    </span>
+    <span class="text">
+      <span class="num"><span class="js-click-count">74</span></span>
+      <span class="label">Ofertas aproveitadas</span>
+    </span>
+  </div>
+
   <a class="wa-float" href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer" aria-label="Entrar no canal do WhatsApp">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span>Entre no canal</span>
   </a>
@@ -1117,23 +1141,7 @@
       <a href="https://t.me/PromocoesdoVeras" target="_blank" rel="noopener noreferrer">Telegram</a> ·
       <a href="https://www.instagram.com/promocoesdoveras/" target="_blank" rel="noopener noreferrer">Instagram</a>
     </div>
-    <div class="footer-admin">
-      <a href="/admin" id="admin-link">🔒 Administração</a>
-    </div>
   </footer>
-
-  <div class="admin-modal" id="admin-modal" hidden role="dialog" aria-modal="true" aria-labelledby="admin-title">
-    <div class="exit-backdrop" data-admin-close></div>
-    <form class="admin-card" id="admin-form">
-      <button type="button" class="exit-x" data-admin-close aria-label="Fechar">×</button>
-      <div class="admin-lock">🔒</div>
-      <h2 id="admin-title">Área de administração</h2>
-      <p>Digite a sua <strong>SETUP_KEY</strong> para ver os números do site e o status do bot.</p>
-      <input type="password" id="admin-key" placeholder="SETUP_KEY" autocomplete="current-password" required />
-      <div class="admin-error" id="admin-error"></div>
-      <button type="submit" class="admin-submit" id="admin-submit">Entrar</button>
-    </form>
-  </div>
 
 <script>
   // ---------- Reconhecimento de loja a partir do texto da mensagem ----------
@@ -1255,8 +1263,6 @@
   const feedEl = document.getElementById("feed");
   const emptyEl = document.getElementById("empty-msg");
   const loadMoreBtn = document.getElementById("load-more");
-  const statusDot = document.getElementById("status-dot");
-  const statusText = document.getElementById("status-text");
   const statTotal = document.getElementById("stat-total");
   const statRecent = document.getElementById("stat-recent");
   const searchInput = document.getElementById("search-input");
@@ -1519,10 +1525,6 @@
     const data = await res.json();
     if (typeof data.total === "number") serverTotal = data.total;
     if (typeof data.last24h === "number") serverLast24h = data.last24h;
-    if (data.configured === false) {
-      statusDot.classList.add("off");
-      statusText.textContent = "aguardando configuração";
-    }
     return data.ads || [];
   }
 
@@ -1547,8 +1549,7 @@
       }
       refreshAll();
     } catch (err) {
-      statusDot.classList.add("off");
-      statusText.textContent = "sem conexão";
+      console.error("[feed] Falha ao carregar anuncios:", err.message);
     }
   }
 
@@ -1592,10 +1593,6 @@
   async function pollNew() {
     try {
       const ads = await fetchAds(`after=${newestId}`);
-      if (statusText.textContent !== "aguardando configuração") {
-        statusDot.classList.remove("off");
-        statusText.textContent = "AO VIVO";
-      }
       updateStats();
       if (ads.length > 0) {
         const known = new Set(allAds.map((a) => a.id));
@@ -1607,8 +1604,7 @@
         }
       }
     } catch (err) {
-      statusDot.classList.add("off");
-      statusText.textContent = "reconectando…";
+      console.error("[feed] Falha ao verificar novos anuncios:", err.message);
     } finally {
       setTimeout(pollNew, document.hidden ? POLL_MS * 3 : POLL_MS);
     }
@@ -1653,12 +1649,20 @@
   track("visit");
 
   // ---------- Contador de cliques visivel na pagina ----------
-  const statClicks = document.getElementById("stat-clicks");
+  // Comeca em 74 (base de vitrine) e soma os cliques reais registrados.
+  // Dois elementos mostram o mesmo numero: o texto ao lado da sacola (desktop)
+  // e o selinho sobre a sacola (mobile, quando a caixa vira so um icone).
+  const CLICKS_BASE = 74;
+  const clickCountEls = document.querySelectorAll(".js-click-count");
+  function setClicksCount(n) {
+    const formatted = Number(n).toLocaleString("pt-BR");
+    clickCountEls.forEach((el) => { el.textContent = formatted; });
+  }
   async function loadClicksCounter() {
     try {
       const res = await fetch("/api/clicks", { cache: "no-store" });
       const data = await res.json();
-      statClicks.textContent = Number(data.clicks || 0).toLocaleString("pt-BR");
+      setClicksCount(CLICKS_BASE + Number(data.clicks || 0));
     } catch {}
   }
   loadClicksCounter();
@@ -1670,7 +1674,7 @@
     if (el.matches(".btn-offer[href]")) {
       const card = el.closest(".card");
       track("offer", { a: card ? Number(card.dataset.id) : undefined });
-      statClicks.textContent = (Number(statClicks.textContent.replace(/\D/g, "")) + 1).toLocaleString("pt-BR");
+      setClicksCount(Number(clickCountEls[0].textContent.replace(/\D/g, "")) + 1);
     } else if (el.matches(".btn-coupon[data-coupon]")) {
       track("coupon");
     } else if (el.id === "exit-cta") {
@@ -1687,46 +1691,6 @@
     }
   }, true);
 
-  // ---------- Area de administracao ----------
-  // Pede a SETUP_KEY aqui mesmo; se estiver certa, guarda neste navegador e
-  // abre o painel em /admin.
-  const adminModal = document.getElementById("admin-modal");
-  const adminKey = document.getElementById("admin-key");
-  const adminError = document.getElementById("admin-error");
-  const adminSubmit = document.getElementById("admin-submit");
-  function openAdmin(e) {
-    e.preventDefault();
-    let saved = "";
-    try { saved = localStorage.getItem("pv_panel_key") || ""; } catch {}
-    if (saved) { location.href = "/admin"; return; }
-    adminError.textContent = "";
-    adminModal.hidden = false;
-    setTimeout(() => adminKey.focus(), 50);
-  }
-  document.getElementById("admin-link").addEventListener("click", openAdmin);
-  document.getElementById("admin-top").addEventListener("click", openAdmin);
-  adminModal.addEventListener("click", (e) => { if (e.target.closest("[data-admin-close]")) adminModal.hidden = true; });
-  document.getElementById("admin-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const key = adminKey.value.trim();
-    if (!key) return;
-    adminSubmit.disabled = true;
-    adminSubmit.textContent = "Verificando…";
-    adminError.textContent = "";
-    try {
-      const res = await fetch(`/api/stats?days=1&key=${encodeURIComponent(key)}`, { cache: "no-store" });
-      if (res.status === 401) throw new Error("Chave incorreta.");
-      if (!res.ok) throw new Error("Não foi possível verificar agora. Tente de novo.");
-      try { localStorage.setItem("pv_panel_key", key); } catch {}
-      location.href = "/admin";
-    } catch (err) {
-      adminError.textContent = err.message;
-    } finally {
-      adminSubmit.disabled = false;
-      adminSubmit.textContent = "Entrar";
-    }
-  });
-
   // ---------- Aviso de saida (intencao de saida) ----------
   // Navegadores nao deixam mostrar mensagem propria ao fechar a aba, entao o
   // aviso aparece quando a pessoa esta prestes a sair: no computador, quando o
@@ -1738,7 +1702,7 @@
     try { return sessionStorage.getItem("pv_exit") === "1"; } catch { return false; }
   }
   function openExitModal() {
-    if (joinedWhatsApp || exitAlreadyShown() || !exitModal.hidden || !adminModal.hidden) return;
+    if (joinedWhatsApp || exitAlreadyShown() || !exitModal.hidden) return;
     if (Date.now() - pageOpenedAt < 8000) return; // da tempo de a pessoa ver o site
     try { sessionStorage.setItem("pv_exit", "1"); } catch {}
     exitModal.hidden = false;
@@ -1746,7 +1710,7 @@
   }
   function closeExitModal() { exitModal.hidden = true; }
   exitModal.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) closeExitModal(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeExitModal(); adminModal.hidden = true; } });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeExitModal(); });
 
   document.addEventListener("mouseout", (e) => {
     if (!e.relatedTarget && e.clientY <= 0) openExitModal();
