@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Painel · Promoções do Veras</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<style>
+  :root {
+    --bg: #0b0d12; --card: #15171c; --border: #23262e; --text: #eef0f3;
+    --muted: #8b93a1; --soft: #5f6676; --accent: #ff7a1a; --green: #3fc96b; --wa: #25d366;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 24px; border-bottom: 1px solid var(--border);
+  }
+  header .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+  header img { width: 30px; height: 30px; border-radius: 50%; }
+  header a { color: var(--muted); font-size: 13px; text-decoration: none; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
+  .seg { display: inline-flex; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 4px; }
+  .seg button {
+    border: none; background: none; color: var(--muted); padding: 8px 14px; border-radius: 9px;
+    font-weight: 700; font-size: 13.5px; cursor: pointer;
+  }
+  .seg button.on { background: var(--accent); color: #fff; }
+  .btn {
+    border: 1px solid var(--border); background: var(--card); color: var(--text);
+    padding: 9px 14px; border-radius: 12px; font-weight: 700; font-size: 13.5px; cursor: pointer;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 26px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 16px 18px; }
+  .kpi .label { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+  .kpi .value { font-size: 30px; font-weight: 900; letter-spacing: -0.03em; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .kpi .note { color: var(--soft); font-size: 12px; margin-top: 2px; }
+  .kpi.main { border-color: rgba(255, 122, 26, 0.5); background: linear-gradient(180deg, rgba(255,122,26,0.12), var(--card)); }
+  .kpi.wa .value { color: var(--wa); }
+  section.box { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; margin-bottom: 22px; overflow-x: auto; }
+  section.box h2 { font-size: 17px; margin: 0 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 9px 10px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; }
+  tr:last-child td { border-bottom: none; }
+  .top li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .top li:last-child { border-bottom: none; }
+  .top ol { margin: 0; padding-left: 20px; }
+  .top b { color: var(--accent); white-space: nowrap; }
+  .login { max-width: 380px; margin: 60px auto; background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 24px; }
+  .login input {
+    width: 100%; margin: 12px 0; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); font-size: 15px;
+  }
+  .login button { width: 100%; background: var(--accent); color: #fff; border: none; }
+  .error { color: #ff6b6b; font-size: 13.5px; margin-top: 8px; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand"><img src="logo.png" alt="" /> Painel · Promoções do Veras</div>
+    <a href="/">← Voltar ao site</a>
+  </header>
+
+  <main>
+    <form class="login" id="login" hidden>
+      <h1>Entrar no painel</h1>
+      <div class="sub">Use a mesma chave <b>SETUP_KEY</b> cadastrada na Vercel.</div>
+      <input type="password" id="key" placeholder="Sua SETUP_KEY" autocomplete="current-password" required />
+      <button class="btn" type="submit">Ver números</button>
+      <div class="error" id="login-error"></div>
+    </form>
+
+    <div id="dash" hidden>
+      <h1>Números do site</h1>
+      <div class="sub" id="period-label">Contagem anônima de visitas e cliques.</div>
+
+      <div class="toolbar">
+        <div class="seg" id="range">
+          <button type="button" data-days="1">Hoje</button>
+          <button type="button" data-days="7" class="on">7 dias</button>
+          <button type="button" data-days="30">30 dias</button>
+          <button type="button" data-days="90">90 dias</button>
+        </div>
+        <button type="button" class="btn" id="refresh">↻ Atualizar</button>
+        <button type="button" class="btn" id="logout">Sair</button>
+      </div>
+
+      <div class="grid" id="kpis"></div>
+
+      <section class="box">
+        <h2>Dia a dia</h2>
+        <table id="days"></table>
+      </section>
+
+      <section class="box top">
+        <h2>Ofertas mais clicadas no período</h2>
+        <div id="top"></div>
+      </section>
+
+      <section class="box">
+        <h2>Desde o início</h2>
+        <table id="alltime"></table>
+      </section>
+    </div>
+  </main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  let key = "";
+  let days = 7;
+  try { key = localStorage.getItem("pv_panel_key") || ""; } catch {}
+
+  const fmt = (n) => Number(n || 0).toLocaleString("pt-BR");
+  const pct = (a, b) => (b > 0 ? `${((a / b) * 100).toFixed(1).replace(".", ",")}%` : "—");
+  const esc = (s) => { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; };
+  const dayLabel = (d) => { const [y, m, dd] = d.split("-"); return `${dd}/${m}`; };
+
+  async function load() {
+    const res = await fetch(`/api/stats?days=${days}&key=${encodeURIComponent(key)}`, { cache: "no-store" });
+    if (res.status === 401) throw new Error("auth");
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    render(data);
+  }
+
+  function sum(rows, k) { return rows.reduce((t, r) => t + (r[k] || 0), 0); }
+
+  function render(data) {
+    const rows = data.perDay;
+    const visits = sum(rows, "visit");
+    const offer = sum(rows, "offer");
+    const wa = sum(rows, "whatsapp") + sum(rows, "exit_whatsapp");
+    const uniqueToday = rows[0] ? rows[0].unique : 0;
+
+    $("period-label").textContent =
+      days === 1 ? "Hoje (horário de Brasília). Contagem anônima de visitas e cliques."
+                 : `Últimos ${days} dias (horário de Brasília). Contagem anônima de visitas e cliques.`;
+
+    const kpis = [
+      ["Visitas", visits, `${fmt(uniqueToday)} visitante(s) único(s) hoje`, "main"],
+      ["Cliques em “Ver oferta”", offer, `${pct(offer, visits)} das visitas`, ""],
+      ["Cupons copiados", sum(rows, "coupon"), "", ""],
+      ["Cliques no WhatsApp", wa, `${fmt(sum(rows, "exit_whatsapp"))} vieram do aviso de saída`, "wa"],
+      ["Telegram", sum(rows, "telegram"), "", ""],
+      ["Instagram", sum(rows, "instagram"), "", ""],
+      ["Aviso de saída exibido", sum(rows, "exit_shown"), `${pct(sum(rows, "exit_whatsapp"), sum(rows, "exit_shown"))} foram para o WhatsApp`, ""],
+    ];
+    $("kpis").innerHTML = kpis.map(([l, v, n, c]) =>
+      `<div class="kpi ${c}"><div class="label">${l}</div><div class="value">${fmt(v)}</div>${n ? `<div class="note">${n}</div>` : ""}</div>`
+    ).join("");
+
+    $("days").innerHTML =
+      `<tr><th>Dia</th><th>Visitas</th><th>Únicos</th><th>Ver oferta</th><th>Cupons</th><th>WhatsApp</th><th>Telegram</th><th>Instagram</th><th>Aviso → WhatsApp</th></tr>` +
+      rows.map((r) => `<tr><td>${dayLabel(r.day)}</td><td>${fmt(r.visit)}</td><td>${fmt(r.unique)}</td><td>${fmt(r.offer)}</td><td>${fmt(r.coupon)}</td><td>${fmt(r.whatsapp)}</td><td>${fmt(r.telegram)}</td><td>${fmt(r.instagram)}</td><td>${fmt(r.exit_whatsapp)}/${fmt(r.exit_shown)}</td></tr>`).join("");
+
+    $("top").innerHTML = data.topOffers.length
+      ? `<ol>${data.topOffers.map((o) => `<li><span>${esc(o.title)}</span><b>${fmt(o.clicks)} clique(s)</b></li>`).join("")}</ol>`
+      : `<div class="muted">Nenhum clique em oferta no período ainda.</div>`;
+
+    const t = data.total;
+    $("alltime").innerHTML =
+      `<tr><th>Métrica</th><th>Total</th></tr>` +
+      [["Visitas", t.visit], ["Visitantes únicos", t.unique], ["Cliques em “Ver oferta”", t.offer], ["Cupons copiados", t.coupon],
+       ["Cliques no WhatsApp", t.whatsapp + t.exit_whatsapp], ["Cliques no Telegram", t.telegram], ["Cliques no Instagram", t.instagram]]
+        .map(([l, v]) => `<tr><td>${l}</td><td>${fmt(v)}</td></tr>`).join("");
+  }
+
+  async function start() {
+    if (!key) { $("login").hidden = false; $("dash").hidden = true; return; }
+    try {
+      await load();
+      $("login").hidden = true;
+      $("dash").hidden = false;
+    } catch (err) {
+      $("login").hidden = false;
+      $("dash").hidden = true;
+      $("login-error").textContent = err.message === "auth" ? "Chave incorreta." : `Erro: ${err.message}`;
+    }
+  }
+
+  $("login").addEventListener("submit", (e) => {
+    e.preventDefault();
+    key = $("key").value.trim();
+    try { localStorage.setItem("pv_panel_key", key); } catch {}
+    start();
+  });
+  $("logout").addEventListener("click", () => {
+    key = "";
+    try { localStorage.removeItem("pv_panel_key"); } catch {}
+    start();
+  });
+  $("refresh").addEventListener("click", () => load().catch(() => {}));
+  $("range").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-days]");
+    if (!b) return;
+    days = Number(b.dataset.days);
+    for (const x of $("range").querySelectorAll("button")) x.classList.toggle("on", x === b);
+    load().catch(() => {});
+  });
+  start();
+</script>
+</body>
+</html>

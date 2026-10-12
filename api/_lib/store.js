@@ -182,6 +182,7 @@ module.exports = {
   listAdsAfter,
   countAds,
   countSince,
+  redis,
   rememberChat,
   listSeenChats,
 };

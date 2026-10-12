@@ -50,9 +50,11 @@ function fakeRedisServer() {
       case "ZCARD": return (zsets.get(args[0]) || new Map()).size;
       case "ZRANGE": {
         if (!args.includes("BYSCORE")) {
-          const all = [...(zsets.get(args[0]) || new Map())].sort((x, y) => x[1] - y[1]).map(([m]) => m);
+          const rev = args.includes("REV");
+          const sorted = [...(zsets.get(args[0]) || new Map())].sort((x, y) => (rev ? y[1] - x[1] : x[1] - y[1]));
           const start = Number(args[1]), stop = Number(args[2]);
-          return all.slice(start, stop === -1 ? undefined : stop + 1);
+          const slice = sorted.slice(start, stop === -1 ? undefined : stop + 1);
+          return args.includes("WITHSCORES") ? slice.flatMap(([m, sc]) => [m, String(sc)]) : slice.map(([m]) => m);
         }
         return zrangeByScore(args[0], args.slice(1));
       }
@@ -62,6 +64,28 @@ function fakeRedisServer() {
         return [...(zsets.get(args[0]) || new Map()).values()].filter((v) => v >= min && v <= max).length;
       }
       case "MGET": return args.map((k) => (kv.has(k) ? kv.get(k) : null));
+      case "EXPIRE": return 1;
+      case "DEL": { zsets.delete(args[0]); kv.delete(args[0]); return 1; }
+      case "PFADD": {
+        if (!hashes.has(args[0])) hashes.set(args[0], new Map());
+        for (const v of args.slice(1)) hashes.get(args[0]).set(v, "1");
+        return 1;
+      }
+      case "PFCOUNT": return (hashes.get(args[0]) || new Map()).size;
+      case "ZINCRBY": {
+        if (!zsets.has(args[0])) zsets.set(args[0], new Map());
+        const z = zsets.get(args[0]);
+        z.set(args[2], (z.get(args[2]) || 0) + Number(args[1]));
+        return String(z.get(args[2]));
+      }
+      case "ZUNIONSTORE": {
+        const out = new Map();
+        for (const k of args.slice(2, 2 + Number(args[1]))) {
+          for (const [m, sc] of zsets.get(k) || new Map()) out.set(m, (out.get(m) || 0) + sc);
+        }
+        zsets.set(args[0], out);
+        return out.size;
+      }
       case "HSET": {
         if (!hashes.has(args[0])) hashes.set(args[0], new Map());
         hashes.get(args[0]).set(args[1], args[2]);
@@ -176,6 +200,32 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
     body: { message: { message_id: 13, date: Math.floor(Date.now() / 1000), chat: { id: -100111 }, text: "Novo R$ 10" } } });
   r = await call(ads, { query: {} });
   assert.deepStrictEqual([r.data.total, r.data.last24h], [3, 1]);
+
+  // Contador de visitas e cliques + painel.
+  process.env.SETUP_KEY = "chave-teste";
+  const track = require("../api/track");
+  const stats = require("../api/stats");
+  const send = (body) => call(track, { method: "POST", body: JSON.stringify(body) });
+  await send({ e: "visit", v: "aaaa1111bbbb" });
+  await send({ e: "visit", v: "aaaa1111bbbb" });
+  await send({ e: "visit", v: "cccc2222dddd" });
+  await send({ e: "offer", v: "aaaa1111bbbb", a: 1 });
+  await send({ e: "offer", v: "cccc2222dddd", a: 1 });
+  await send({ e: "offer", v: "cccc2222dddd", a: 2 });
+  await send({ e: "coupon" });
+  await send({ e: "exit_shown" });
+  await send({ e: "exit_whatsapp" });
+  r = await send({ e: "hack" }); // evento desconhecido e ignorado
+  assert.strictEqual(r.status, 204);
+  r = await call(stats, { query: { key: "errada" } });
+  assert.strictEqual(r.status, 401);
+  r = await call(stats, { query: { key: "chave-teste", days: "7" } });
+  const today = r.data.perDay[0];
+  assert.deepStrictEqual([today.visit, today.unique, today.offer, today.coupon, today.exit_whatsapp], [3, 2, 3, 1, 1]);
+  assert.deepStrictEqual(r.data.topOffers.map((o) => [o.id, o.clicks]), [[1, 2], [2, 1]]);
+  assert.strictEqual(r.data.topOffers[0].title, "Air Fryer R$ 229,90");
+  assert.strictEqual(r.data.total.visit, 3);
+  console.log("OK: contador de visitas/cliques e painel");
 
   server.close();
   console.log("OK: webhook, edicao, filtro de chat, listagem, paginacao e feed ao vivo");

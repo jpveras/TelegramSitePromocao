@@ -878,6 +878,42 @@
     .filter-head, .filter-body { padding-left: 20px; padding-right: 20px; }
     .select-row { grid-template-columns: 1fr; }
   }
+  /* ---------- Aviso de saida ---------- */
+  .exit-modal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .exit-modal[hidden] { display: none; }
+  .exit-backdrop { position: absolute; inset: 0; background: rgba(5, 6, 9, 0.72); backdrop-filter: blur(4px); animation: fadein 0.2s ease; }
+  .exit-card {
+    position: relative;
+    width: min(440px, 100%);
+    background: radial-gradient(120% 120% at 100% 0%, rgba(255, 122, 26, 0.16), transparent 55%), #15171c;
+    border: 1px solid rgba(255, 122, 26, 0.45);
+    border-radius: 24px;
+    padding: 30px 26px 22px;
+    text-align: center;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    animation: pop 0.28s cubic-bezier(.2, 1.4, .4, 1);
+  }
+  @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .exit-x {
+    position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; border-radius: 50%;
+    border: none; background: transparent; color: var(--muted); font-size: 24px; cursor: pointer;
+  }
+  .exit-x:hover { color: var(--text); background: #22252d; }
+  .exit-logo { width: 72px; height: 72px; border-radius: 50%; box-shadow: 0 0 0 3px #15171c, 0 0 0 5px #f5c518; }
+  .exit-kicker { margin-top: 14px; color: var(--accent); font-weight: 800; font-size: 13px; letter-spacing: 0.04em; }
+  .exit-card h2 { margin: 6px 0 10px; font-size: 23px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.2; }
+  .exit-card p { margin: 0 0 12px; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+  .exit-card p strong { color: var(--text); }
+  .exit-perks { list-style: none; padding: 0; margin: 0 0 18px; display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 16px; font-size: 13.5px; }
+  .exit-cta {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    background: #25d366; color: #062b15; font-weight: 900; font-size: 15.5px; text-decoration: none;
+    padding: 15px 16px; border-radius: 14px; box-shadow: 0 10px 26px rgba(37, 211, 102, 0.35);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  .exit-cta svg { width: 22px; height: 22px; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+  .exit-skip { margin-top: 12px; background: none; border: none; color: var(--muted-soft); font-size: 12.5px; cursor: pointer; text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -1010,6 +1046,29 @@
   <a class="wa-float" href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer" aria-label="Entrar no canal do WhatsApp">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span>Entre no canal</span>
   </a>
+
+  <div class="exit-modal" id="exit-modal" hidden role="dialog" aria-modal="true" aria-labelledby="exit-title">
+    <div class="exit-backdrop" data-close></div>
+    <div class="exit-card">
+      <button type="button" class="exit-x" data-close aria-label="Fechar">×</button>
+      <img class="exit-logo" src="logo.png" alt="" />
+      <div class="exit-kicker">⚠️ Espera! Antes de sair…</div>
+      <h2 id="exit-title">Não perca a próxima oferta relâmpago</h2>
+      <p>
+        As melhores promoções e cupons <strong>esgotam em minutos</strong>.
+        No nosso canal do WhatsApp você recebe cada oferta assim que ela sai,
+        direto no celular, antes de acabar.
+      </p>
+      <ul class="exit-perks">
+        <li>✅ Ofertas e cupons exclusivos</li>
+        <li>✅ 100% grátis, sai quando quiser</li>
+      </ul>
+      <a class="exit-cta" id="exit-cta" href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> Quero entrar no canal do WhatsApp
+      </a>
+      <button type="button" class="exit-skip" data-close>Agora não, prefiro pagar mais caro</button>
+    </div>
+  </div>
 
   <footer class="site-footer">
     © <span id="footer-year">2026</span> <strong>Promoções do Veras</strong> · JP Veras Tech.
@@ -1514,6 +1573,88 @@
   });
 
   loadInitial().then(() => setTimeout(pollNew, POLL_MS));
+
+  // ---------- Contador anonimo de visitas e cliques ----------
+  // Sem dados pessoais: so o tipo do evento e um id aleatorio deste navegador.
+  const visitorId = (() => {
+    try {
+      let v = localStorage.getItem("pv_vid");
+      if (!v) {
+        v = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now()).replace(/-/g, "");
+        localStorage.setItem("pv_vid", v);
+      }
+      return v;
+    } catch {
+      return (String(Math.random()).slice(2) + Date.now()).slice(0, 32);
+    }
+  })();
+  function track(e, extra) {
+    const body = JSON.stringify({ e, v: visitorId, ...(extra || {}) });
+    try {
+      if (navigator.sendBeacon && navigator.sendBeacon("/api/track", new Blob([body], { type: "application/json" }))) return;
+    } catch {}
+    fetch("/api/track", { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => {});
+  }
+  track("visit");
+
+  let joinedWhatsApp = false;
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("a, button");
+    if (!el) return;
+    if (el.matches(".btn-offer[href]")) {
+      const card = el.closest(".card");
+      track("offer", { a: card ? Number(card.dataset.id) : undefined });
+    } else if (el.matches(".btn-coupon[data-coupon]")) {
+      track("coupon");
+    } else if (el.id === "exit-cta") {
+      joinedWhatsApp = true;
+      track("exit_whatsapp");
+      closeExitModal();
+    } else if (el.href && el.href.includes("whatsapp.com")) {
+      joinedWhatsApp = true;
+      track("whatsapp");
+    } else if (el.href && el.href.includes("t.me/")) {
+      track("telegram");
+    } else if (el.href && el.href.includes("instagram.com")) {
+      track("instagram");
+    }
+  }, true);
+
+  // ---------- Aviso de saida (intencao de saida) ----------
+  // Navegadores nao deixam mostrar mensagem propria ao fechar a aba, entao o
+  // aviso aparece quando a pessoa esta prestes a sair: no computador, quando o
+  // mouse sobe para a barra de abas/endereco; no celular, quando ela rola
+  // rapido de volta ao topo depois de ter navegado. Uma vez por visita.
+  const exitModal = document.getElementById("exit-modal");
+  const pageOpenedAt = Date.now();
+  function exitAlreadyShown() {
+    try { return sessionStorage.getItem("pv_exit") === "1"; } catch { return false; }
+  }
+  function openExitModal() {
+    if (joinedWhatsApp || exitAlreadyShown() || !exitModal.hidden) return;
+    if (Date.now() - pageOpenedAt < 8000) return; // da tempo de a pessoa ver o site
+    try { sessionStorage.setItem("pv_exit", "1"); } catch {}
+    exitModal.hidden = false;
+    track("exit_shown");
+  }
+  function closeExitModal() { exitModal.hidden = true; }
+  exitModal.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) closeExitModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeExitModal(); });
+
+  document.addEventListener("mouseout", (e) => {
+    if (!e.relatedTarget && e.clientY <= 0) openExitModal();
+  });
+
+  if (matchMedia("(hover: none)").matches) {
+    let lastY = window.scrollY, lastT = Date.now(), maxY = 0;
+    window.addEventListener("scroll", () => {
+      const y = window.scrollY, t = Date.now();
+      maxY = Math.max(maxY, y);
+      const speed = (lastY - y) / Math.max(t - lastT, 1); // px/ms subindo
+      if (maxY > 1200 && y < 400 && speed > 1.2) openExitModal();
+      lastY = y; lastT = t;
+    }, { passive: true });
+  }
 </script>
 </body>
 </html>
