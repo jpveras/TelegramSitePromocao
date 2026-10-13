@@ -648,6 +648,19 @@
     line-height: 1.6;
   }
   .site-footer strong { color: var(--muted); font-weight: 600; }
+  .footer-legal { margin-top: 8px; display: flex; justify-content: center; gap: 22px; }
+  .footer-legal a { color: var(--muted); text-decoration: none; font-size: 13px; }
+  .footer-legal a:hover { color: var(--accent); }
+  .trust { max-width: 1280px; margin: 10px auto 0; padding: 26px 24px 22px; border-top: 1px solid var(--border-soft); }
+  .trust-title { font-size: 12px; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .trust-badges { display: flex; flex-wrap: wrap; gap: 12px; }
+  .trust-badge {
+    display: inline-flex; align-items: center; gap: 10px; padding: 11px 20px; border-radius: 999px;
+    border: 1px solid #2a2d36; background: #14161b; color: var(--text); font-size: 14px; font-weight: 700;
+    text-decoration: none;
+  }
+  .trust-badge svg { width: 20px; height: 20px; color: var(--green); flex-shrink: 0; }
+  a.trust-badge:hover { border-color: var(--green); }
 
   .empty {
     text-align: center;
@@ -1133,6 +1146,14 @@
     </div>
   </div>
 
+  <section class="trust" aria-labelledby="trust-title">
+    <div class="trust-title" id="trust-title">Segurança</div>
+    <div class="trust-badges">
+      <span class="trust-badge" title="Conexão criptografada (HTTPS) em todo o site"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Certificado SSL</span>
+      <a class="trust-badge" href="/privacidade.html" title="Veja como tratamos os dados"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6L12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.8 12.2l2.2 2.2 4.2-4.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Dados protegidos pela LGPD</a>
+    </div>
+  </section>
+
   <footer class="site-footer">
     © <span id="footer-year">2026</span> <strong>Promoções do Veras</strong> · JP Veras Tech.
     Todos os direitos reservados.
@@ -1140,6 +1161,10 @@
       <a href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer">WhatsApp</a> ·
       <a href="https://t.me/PromocoesdoVeras" target="_blank" rel="noopener noreferrer">Telegram</a> ·
       <a href="https://www.instagram.com/promocoesdoveras/" target="_blank" rel="noopener noreferrer">Instagram</a>
+    </div>
+    <div class="footer-legal">
+      <a href="/privacidade.html">Privacidade</a>
+      <a href="/cookies.html">Cookies</a>
     </div>
   </footer>
 
@@ -1640,6 +1665,7 @@
     }
   })();
   function track(e, extra) {
+    try { if (localStorage.getItem("pv_optout") === "1") return; } catch {}
     const body = JSON.stringify({ e, v: visitorId, ...(extra || {}) });
     try {
       if (navigator.sendBeacon && navigator.sendBeacon("/api/track", new Blob([body], { type: "application/json" }))) return;

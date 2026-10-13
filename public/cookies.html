@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cookies · Promoções do Veras</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+<link rel="stylesheet" href="legal.css" />
+</head>
+<body>
+  <header>
+    <a class="brand" href="/"><img src="logo.png" alt="" /> Promoções do Veras</a>
+    <a class="back" href="/">← Voltar às ofertas</a>
+  </header>
+  <main>
+    <h1>Cookies e armazenamento</h1>
+    <div class="updated">Última atualização: 12 de outubro de 2026</div>
+
+    <p>
+      O Promoções do Veras <strong>não usa cookies de publicidade nem de rastreamento</strong>, e não
+      instala ferramentas de terceiros para seguir você pela internet. Usamos apenas o
+      armazenamento do próprio navegador, para as funções abaixo.
+    </p>
+
+    <table>
+      <tr><th>Nome</th><th>Para que serve</th><th>Duração</th></tr>
+      <tr><td><code>pv_vid</code></td><td>Código aleatório usado só na contagem anônima de visitantes únicos.</td><td>Até você limpar os dados do site</td></tr>
+      <tr><td><code>pv_exit</code></td><td>Lembra que o aviso "não perca a próxima oferta" já apareceu, para não repetir.</td><td>Até fechar a aba</td></tr>
+      <tr><td><code>pv_optout</code></td><td>Guarda a sua escolha de não ser contado (só existe se você desativar abaixo).</td><td>Até você limpar os dados do site</td></tr>
+      <tr><td><code>pv_panel_key</code></td><td>Usado apenas pelo administrador do site, para manter o acesso ao painel.</td><td>24 horas sem uso</td></tr>
+    </table>
+
+    <div class="box">
+      <strong>Contagem anônima de visitas e cliques</strong>
+      <p style="margin:6px 0 0">Ajuda a saber quais ofertas interessam mais. Não identifica você.</p>
+      <div class="status" id="status"></div>
+      <button class="btn" id="toggle" type="button"></button>
+    </div>
+
+    <h2>Ao clicar em uma oferta</h2>
+    <p>
+      Você é levado ao site da loja (Amazon, Shopee, Mercado Livre e outras) por um link de
+      afiliado. A loja e o programa de afiliados podem usar cookies próprios para registrar a
+      indicação. Esses cookies são da loja e seguem a política de privacidade dela.
+    </p>
+
+    <h2>Como apagar</h2>
+    <p>
+      Você pode apagar tudo a qualquer momento nas configurações do seu navegador, em "Dados do site"
+      ou "Cookies e dados de sites". Mais detalhes na nossa <a href="/privacidade.html">Política de Privacidade</a>.
+    </p>
+  </main>
+  <footer>
+    © 2026 Promoções do Veras · JP Veras Tech. Todos os direitos reservados.<br />
+    <a href="/privacidade.html">Privacidade</a><a href="/cookies.html">Cookies</a>
+  </footer>
+<script>
+  const statusEl = document.getElementById("status");
+  const btn = document.getElementById("toggle");
+  function isOff() { try { return localStorage.getItem("pv_optout") === "1"; } catch { return false; } }
+  function render() {
+    const off = isOff();
+    statusEl.className = "status" + (off ? "" : " on");
+    statusEl.textContent = off ? "Desativada: suas visitas não são contadas." : "Ativada.";
+    btn.textContent = off ? "Voltar a permitir a contagem" : "Não contar minhas visitas";
+    btn.className = off ? "btn secondary" : "btn";
+  }
+  btn.addEventListener("click", () => {
+    try {
+      if (isOff()) localStorage.removeItem("pv_optout");
+      else { localStorage.setItem("pv_optout", "1"); localStorage.removeItem("pv_vid"); }
+    } catch {}
+    render();
+  });
+  render();
+</script>
+</body>
+</html>
