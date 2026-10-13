@@ -861,10 +861,22 @@
   }
   .best-deal[hidden] { display: none; }
   .best-deal .bd-off { font-size: 20px; font-weight: 900; color: var(--green); white-space: nowrap; }
-  .best-deal .bd-text { flex: 1; min-width: 0; }
+  .best-deal .bd-text { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
   .best-deal .bd-label { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-  .best-deal .bd-name { font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .best-deal .bd-price { font-size: 15px; font-weight: 900; color: var(--accent); white-space: nowrap; }
+  .best-deal .bd-name { display: block; max-width: 100%; font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .best-deal .bd-price { flex-shrink: 0; font-size: 15px; font-weight: 900; color: var(--accent); white-space: nowrap; }
+  .best-deal .bd-off { flex-shrink: 0; }
+  .best-deal .bd-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 600px) {
+    .best-deal { gap: 10px; padding: 12px; }
+    .best-deal .bd-off { font-size: 18px; }
+    .best-deal .bd-label { letter-spacing: 0.03em; font-size: 10.5px; }
+    .best-deal .hide-sm { display: none; }
+    /* No celular o nome pode ocupar 2 linhas antes das reticencias. */
+    .best-deal .bd-name {
+      white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3;
+    }
+  }
   .best-deal:hover { border-color: var(--accent); }
   .filter-panel h2 { font-size: 19px; font-weight: 800; margin: 0 0 3px; }
   .filter-panel .sub { margin: 0; font-size: 13.5px; }
@@ -1119,7 +1131,7 @@
             <a class="best-deal" id="best-deal" href="#" target="_blank" rel="noopener noreferrer" hidden>
               <span class="bd-off" id="bd-off"></span>
               <span class="bd-text">
-                <span class="bd-label">🔥 Maior desconto agora</span>
+                <span class="bd-label">🔥 Maior desconto<span class="hide-sm"> agora</span></span>
                 <span class="bd-name" id="bd-name"></span>
               </span>
               <span class="bd-price" id="bd-price"></span>
@@ -1637,7 +1649,9 @@
       bestDealEl.href = best.url;
       bestDealEl.dataset.ad = best.ad.id;
       document.getElementById("bd-off").textContent = `-${best.off}%`;
-      document.getElementById("bd-name").textContent = extractProductName(best.ad.text) || firstLine(best.ad.text);
+      const bdName = extractProductName(best.ad.text) || firstLine(best.ad.text);
+      document.getElementById("bd-name").textContent = bdName;
+      bestDealEl.title = bdName;
       document.getElementById("bd-price").textContent = best.now || "";
     } else {
       bestDealEl.hidden = true;
