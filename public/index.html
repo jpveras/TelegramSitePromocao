@@ -830,19 +830,42 @@
     padding: 26px 28px 22px;
     border-bottom: 1px solid #23262e;
   }
+  /* Icone decorativo (nao e botao): sem fundo de botao, sem clique. */
   .filter-icon {
-    width: 46px;
-    height: 46px;
-    border-radius: 13px;
-    background: rgba(255, 122, 26, 0.12);
     color: var(--accent);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    font-weight: 800;
     flex-shrink: 0;
+    pointer-events: none;
   }
+  .filter-icon svg { width: 30px; height: 30px; }
+
+  /* ---------- Cupons ativos e maior desconto ---------- */
+  .spotlight { border-top: 1px solid #23262e; padding-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .spot-title { font-size: 12px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .coupon-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .coupon-chip {
+    display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: 10px;
+    border: 1px dashed rgba(255, 122, 26, 0.6); background: rgba(255, 122, 26, 0.08); color: var(--accent);
+    font: inherit; font-size: 13px; font-weight: 800; letter-spacing: 0.02em; cursor: pointer;
+  }
+  .coupon-chip small { color: var(--muted); font-weight: 600; letter-spacing: 0; }
+  .coupon-chip:hover { background: rgba(255, 122, 26, 0.16); }
+  .coupon-chip.copied { border-style: solid; border-color: var(--green); color: var(--green); background: rgba(63, 201, 107, 0.1); }
+  .spot-empty { color: var(--muted-soft); font-size: 13px; }
+  .best-deal {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; text-decoration: none;
+    background: linear-gradient(90deg, rgba(255, 122, 26, 0.16), rgba(255, 122, 26, 0.04));
+    border: 1px solid rgba(255, 122, 26, 0.4); color: var(--text);
+  }
+  .best-deal[hidden] { display: none; }
+  .best-deal .bd-off { font-size: 20px; font-weight: 900; color: var(--green); white-space: nowrap; }
+  .best-deal .bd-text { flex: 1; min-width: 0; }
+  .best-deal .bd-label { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .best-deal .bd-name { font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .best-deal .bd-price { font-size: 15px; font-weight: 900; color: var(--accent); white-space: nowrap; }
+  .best-deal:hover { border-color: var(--accent); }
   .filter-panel h2 { font-size: 19px; font-weight: 800; margin: 0 0 3px; }
   .filter-panel .sub { margin: 0; font-size: 13.5px; }
   .filter-body { padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 16px; }
@@ -1061,7 +1084,7 @@
 
       <section class="panel filter-panel">
         <div class="filter-head">
-          <span class="filter-icon">☰</span>
+          <span class="filter-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V4.8c0-.7.6-1.3 1.3-1.3h7.8c.35 0 .68.14.92.38l7.4 7.4c.5.5.5 1.33 0 1.84l-7.8 7.8c-.5.5-1.33.5-1.84 0l-7.4-7.4a1.3 1.3 0 0 1-.38-.92z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="8.2" cy="8.2" r="1.6" fill="currentColor"/></svg></span>
           <div>
             <h2>Encontre por loja</h2>
             <div class="sub">Escolha uma loja ou pesquise uma oferta específica.</div>
@@ -1088,6 +1111,19 @@
               <option value="newest">Mais recentes</option>
               <option value="oldest">Mais antigas</option>
             </select>
+          </div>
+
+          <div class="spotlight">
+            <div class="spot-title">🎟️ Cupons ativos agora · toque para copiar</div>
+            <div class="coupon-chips" id="coupon-chips"><span class="spot-empty">Carregando cupons…</span></div>
+            <a class="best-deal" id="best-deal" href="#" target="_blank" rel="noopener noreferrer" hidden>
+              <span class="bd-off" id="bd-off"></span>
+              <span class="bd-text">
+                <span class="bd-label">🔥 Maior desconto agora</span>
+                <span class="bd-name" id="bd-name"></span>
+              </span>
+              <span class="bd-price" id="bd-price"></span>
+            </a>
           </div>
         </div>
       </section>
@@ -1561,7 +1597,62 @@
     buildStoreChips();
     buildCategoryChips();
     renderGrid();
+    buildSpotlight();
   }
+
+  // Cupons que aparecem nas ofertas das ultimas 24h (os mais usados primeiro)
+  // e a oferta com maior desconto no mesmo periodo.
+  const couponChipsEl = document.getElementById("coupon-chips");
+  const bestDealEl = document.getElementById("best-deal");
+  function buildSpotlight() {
+    const since = Date.now() - 24 * 60 * 60 * 1000;
+    const recent = allAds.filter((a) => new Date(a.posted_at).getTime() >= since);
+    const pool = recent.length ? recent : allAds.slice(0, 30);
+
+    const coupons = new Map();
+    for (const ad of pool) {
+      const c = extractCoupon(ad.text);
+      if (!c) continue;
+      const cur = coupons.get(c) || { code: c, count: 0, last: 0 };
+      cur.count += 1;
+      cur.last = Math.max(cur.last, ad.id);
+      coupons.set(c, cur);
+    }
+    const top = [...coupons.values()].sort((a, b) => b.count - a.count || b.last - a.last).slice(0, 6);
+    couponChipsEl.innerHTML = top.length
+      ? top.map((c) => `<button type="button" class="coupon-chip" data-code="${escapeHtml(c.code)}" title="Copiar cupom">${escapeHtml(c.code)} <small>${c.count} oferta${c.count > 1 ? "s" : ""}</small></button>`).join("")
+      : `<span class="spot-empty">Nenhum cupom nas ofertas das últimas 24h.</span>`;
+
+    let best = null;
+    for (const ad of pool) {
+      const url = extractUrl(ad.text);
+      if (!url) continue;
+      const { now, old } = extractPrices(ad.text);
+      const off = parseInt(String(extractDiscount(ad.text, old, now) || "").replace(/\D/g, ""), 10);
+      if (!off || off >= 95) continue;
+      if (!best || off > best.off) best = { ad, url, now, off };
+    }
+    if (best) {
+      bestDealEl.hidden = false;
+      bestDealEl.href = best.url;
+      bestDealEl.dataset.ad = best.ad.id;
+      document.getElementById("bd-off").textContent = `-${best.off}%`;
+      document.getElementById("bd-name").textContent = extractProductName(best.ad.text) || firstLine(best.ad.text);
+      document.getElementById("bd-price").textContent = best.now || "";
+    } else {
+      bestDealEl.hidden = true;
+    }
+  }
+  couponChipsEl.addEventListener("click", async (e) => {
+    const chip = e.target.closest(".coupon-chip");
+    if (!chip) return;
+    const ok = await copyText(chip.dataset.code);
+    track("coupon");
+    const original = chip.innerHTML;
+    chip.classList.add("copied");
+    chip.textContent = ok ? `${chip.dataset.code} copiado ✓` : "Selecione e copie";
+    setTimeout(() => { chip.classList.remove("copied"); chip.innerHTML = original; }, 1800);
+  });
 
   async function loadInitial() {
     try {
@@ -1697,7 +1788,9 @@
   document.addEventListener("click", (e) => {
     const el = e.target.closest("a, button");
     if (!el) return;
-    if (el.matches(".btn-offer[href]")) {
+    if (el.matches(".best-deal")) {
+      track("offer", { a: Number(el.dataset.ad) || undefined });
+    } else if (el.matches(".btn-offer[href]")) {
       const card = el.closest(".card");
       track("offer", { a: card ? Number(card.dataset.id) : undefined });
       setClicksCount(Number(clickCountEls[0].textContent.replace(/\D/g, "")) + 1);
