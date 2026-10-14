@@ -2252,7 +2252,9 @@
     try {
       const res = await fetch("/api/hot", { cache: "no-store" });
       const data = await res.json();
-      hotList = (data.items || []).filter((x) => x.ad);
+      // So ofertas recentes (48h) e com 2+ cliques contam como "em alta".
+      const since = Date.now() - 48 * 60 * 60 * 1000;
+      hotList = (data.items || []).filter((x) => x.ad && x.clicks >= 2 && new Date(x.ad.posted_at).getTime() >= since);
       hotPeriod = data.period || "today";
       hotMap = new Map(hotList.map((x) => [x.id, x.clicks]));
       if (allAds.length) refreshAll();
