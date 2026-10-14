@@ -1,0 +1,40 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Numero da versao: o GitHub Actions passa o numero da compilacao.
+def buildNumber = (System.getenv('GITHUB_RUN_NUMBER') ?: '1') as Integer
+
+android {
+    namespace 'br.com.promocoesdoveras.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'br.com.promocoesdoveras.app'
+        minSdk 23
+        targetSdk 34
+        versionCode buildNumber
+        versionName "1.${buildNumber}"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(System.getenv('KEYSTORE_PATH') ?: 'release.jks')
+            storePassword System.getenv('KEYSTORE_PASSWORD')
+            keyAlias 'promocoes'
+            keyPassword System.getenv('KEYSTORE_PASSWORD')
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

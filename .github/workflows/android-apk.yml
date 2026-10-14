@@ -1,0 +1,71 @@
+# Gera o APK do app Android (pasta android/) e publica em Releases.
+# Link fixo para baixar a versao mais recente:
+#   https://github.com/jpveras/TelegramSitePromocao/releases/latest/download/promocoes-do-veras.apk
+# Roda quando algo muda em android/ ou manualmente (aba Actions > Run workflow).
+#
+# Assinatura: se os segredos ANDROID_KEYSTORE_B64 e ANDROID_KEYSTORE_PASSWORD
+# existirem, usa essa chave (permite atualizar o app por cima). Sem eles, cria
+# uma chave nova a cada compilacao (para atualizar, desinstale e instale de novo).
+name: App Android (APK)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "android/**"
+      - ".github/workflows/android-apk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Chave de assinatura
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "KEYSTORE_PASSWORD=$KS_PASS" >> "$GITHUB_ENV"
+          else
+            PASS=$(openssl rand -hex 16)
+            echo "::add-mask::$PASS"
+            keytool -genkeypair -keystore "$RUNNER_TEMP/release.jks" -alias promocoes \
+              -keyalg RSA -keysize 2048 -validity 10000 -storepass "$PASS" -keypass "$PASS" \
+              -dname "CN=Promocoes do Veras, O=JP Veras Tech, C=BR"
+            echo "KEYSTORE_PASSWORD=$PASS" >> "$GITHUB_ENV"
+          fi
+          echo "KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Compilar APK
+        working-directory: android
+        run: gradle assembleRelease --no-daemon --stacktrace
+
+      - name: Renomear
+        run: cp android/app/build/outputs/apk/release/app-release.apk promocoes-do-veras.apk
+
+      - name: Publicar em Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-v1.${{ github.run_number }}
+          name: App Android v1.${{ github.run_number }}
+          body: |
+            App Android do Promoções do Veras. Baixe o arquivo `promocoes-do-veras.apk` abaixo e abra no celular.
+            Se o Android pedir, permita instalar apps desta fonte.
+          files: promocoes-do-veras.apk
+          make_latest: true
