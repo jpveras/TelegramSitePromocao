@@ -87,7 +87,7 @@ module.exports = async function handler(req, res) {
     if (created || !ad.store_checked_at) {
       try {
         await resolveAd(ad);
-        await backfillStores({ budgetMs: 4000, max: 8 });
+        await backfillStores({ budgetMs: 12000, max: 20 });
       } catch (err) {
         console.error("[telegram] Falha ao identificar loja:", err.message);
       }
