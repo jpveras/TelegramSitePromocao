@@ -2,6 +2,7 @@
 // (ou editada) no grupo/canal, e o anuncio e salvo no banco na hora.
 
 const { upsertAd, rememberChat } = require("./_lib/store");
+const { resolveAd, backfillStores } = require("./_lib/resolve");
 
 const { webhookSecret } = require("./_lib/secret");
 
@@ -81,6 +82,16 @@ module.exports = async function handler(req, res) {
       posted_at: new Date((msg.date || Date.now() / 1000) * 1000).toISOString(),
     });
     console.log(`[telegram] Anuncio ${created ? "salvo" : "atualizado"} (id=${ad.id})`);
+    // Descobre a loja pelo link (e aproveita para identificar alguns
+    // anuncios antigos). Falhas aqui nunca impedem o anuncio de ser salvo.
+    if (created || !ad.store_checked_at) {
+      try {
+        await resolveAd(ad);
+        await backfillStores({ budgetMs: 4000, max: 8 });
+      } catch (err) {
+        console.error("[telegram] Falha ao identificar loja:", err.message);
+      }
+    }
     res.status(200).json({ ok: true, id: ad.id });
   } catch (err) {
     console.error("[telegram] Falha ao salvar anuncio:", err.message);

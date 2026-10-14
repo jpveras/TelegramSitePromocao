@@ -71,6 +71,7 @@
   .status-grid div { font-size: 14px; }
   .status-grid span { display: block; color: var(--muted); font-size: 11.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
   .status-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .stores-msg { margin-top: 10px; font-size: 13px; color: var(--muted, #8b93a1); }
 </style>
 </head>
 <body>
@@ -109,7 +110,9 @@
         <div class="status-actions">
           <button type="button" class="btn" id="bot-check">↻ Verificar de novo</button>
           <button type="button" class="btn" id="bot-relink" title="Registra o webhook do bot de novo no Telegram">Religar bot ao site</button>
+          <button type="button" class="btn" id="stores-run" title="Abre o link das ofertas antigas e descobre a loja (Amazon, Shopee...)">🏬 Identificar lojas das ofertas antigas</button>
         </div>
+        <div class="stores-msg" id="stores-msg" hidden></div>
       </section>
 
       <h2 class="section-title">Visitas e cliques</h2>
@@ -197,6 +200,8 @@
       ["Cliques no WhatsApp", wa, `${fmt(sum(rows, "exit_whatsapp"))} vieram do aviso de saída`, "wa"],
       ["Telegram", sum(rows, "telegram"), "", ""],
       ["Instagram", sum(rows, "instagram"), "", ""],
+      ["Ofertas compartilhadas", sum(rows, "share"), "pelo botão Compartilhar", ""],
+      ["Instalaram o app", sum(rows, "install"), "adicionaram o site à tela inicial", ""],
       ["Aviso de saída exibido", sum(rows, "exit_shown"), `${pct(sum(rows, "exit_whatsapp"), sum(rows, "exit_shown"))} foram para o WhatsApp`, ""],
     ];
     $("kpis").innerHTML = kpis.map(([l, v, n, c]) =>
@@ -282,6 +287,29 @@
   $("refresh").addEventListener("click", () => { load().catch(() => {}); loadBot(false); });
   $("bot-check").addEventListener("click", () => loadBot(false));
   $("bot-relink").addEventListener("click", () => loadBot(true));
+  // Cada chamada identifica ~30 ofertas; repete sozinho ate acabar.
+  $("stores-run").addEventListener("click", async () => {
+    const btn = $("stores-run"), msg = $("stores-msg");
+    btn.disabled = true; msg.hidden = false;
+    const tally = {};
+    let doneTotal = 0;
+    try {
+      for (let round = 0; round < 60; round++) {
+        const res = await fetch(`/api/stores?key=${encodeURIComponent(key)}`, { cache: "no-store" });
+        const d = await res.json();
+        if (!d.ok) throw new Error(d.error || "falhou");
+        doneTotal += d.processados_agora;
+        for (const [k, v] of Object.entries(d.lojas || {})) tally[k] = (tally[k] || 0) + v;
+        const resumo = Object.entries(tally).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}: ${v}`).join(" · ");
+        msg.textContent = `Identificadas ${doneTotal} ofertas${resumo ? " (" + resumo + ")" : ""}. Faltam cerca de ${d.faltam_aprox}.`;
+        if (d.faltam_aprox <= 0) { msg.textContent += " ✅ Concluído."; break; }
+      }
+    } catch (err) {
+      msg.textContent = `Parou: ${err.message}. Pode clicar de novo para continuar.`;
+    } finally {
+      btn.disabled = false;
+    }
+  });
   $("range").addEventListener("click", (e) => {
     const b = e.target.closest("button[data-days]");
     if (!b) return;

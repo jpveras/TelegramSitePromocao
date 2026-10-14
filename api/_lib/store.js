@@ -106,6 +106,15 @@ async function getAd(id) {
   return raw ? JSON.parse(raw) : null;
 }
 
+// Acrescenta campos a um anuncio ja salvo (ex.: a loja descoberta pelo link).
+async function saveAdFields(id, fields) {
+  const current = await getAd(id);
+  if (!current) return null;
+  const updated = { ...current, ...fields };
+  await redis([["SET", `ad:${id}`, toStored(updated)]]);
+  return updated;
+}
+
 async function fetchByIds(ids) {
   if (!ids || ids.length === 0) return [];
   const [rawList] = await redis([["MGET", ...ids.map((id) => `ad:${id}`)]]);
@@ -178,6 +187,7 @@ module.exports = {
   isConfigured,
   upsertAd,
   getAd,
+  saveAdFields,
   listAds,
   listAdsAfter,
   countAds,

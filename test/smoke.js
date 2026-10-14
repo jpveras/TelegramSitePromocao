@@ -227,6 +227,37 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   assert.strictEqual(r.data.total.visit, 3);
   console.log("OK: contador de visitas/cliques e painel");
 
+  // Loja: o anuncio 1 tem link amzn.to -> amazon, sem precisar abrir o link.
+  r = await call(ads, { query: { limit: "10" } });
+  assert.strictEqual(r.data.ads.find((a) => a.id === 1).store, "amazon");
+  assert.strictEqual(r.data.ads.find((a) => a.id === 2).store, "outros");
+
+  // Link encurtado: segue redirecionamento e tambem pagina intermediaria.
+  const { resolveStoreFromUrl } = require("../api/_lib/resolve");
+  const shortener = http.createServer((req, res) => {
+    if (req.url === "/a") { res.writeHead(302, { Location: "/b" }); return res.end(); }
+    if (req.url === "/b") { res.writeHead(301, { Location: "https://www.mercadolivre.com.br/p/MLB1" }); return res.end(); }
+    if (req.url === "/page") { res.writeHead(200, { "Content-Type": "text/html" }); return res.end('<a href="https://s.shopee.com.br/abc">Comprar</a>'); }
+    res.writeHead(404); res.end();
+  });
+  await new Promise((ok) => shortener.listen(0, "127.0.0.1", ok));
+  const base = `http://127.0.0.1:${shortener.address().port}`;
+  assert.strictEqual((await resolveStoreFromUrl(`${base}/a`)).store, "mercadolivre");
+  assert.strictEqual((await resolveStoreFromUrl(`${base}/page`)).store, "shopee");
+  assert.strictEqual((await resolveStoreFromUrl(`${base}/404`)).store, null);
+  shortener.close();
+  console.log("OK: loja identificada pelo link");
+
+  // Pagina da oferta (previa do WhatsApp).
+  const oferta = require("../api/oferta");
+  r = await call(oferta, { query: { id: "1" }, headers: { host: "promocoesdoveras.com.br" } });
+  assert.strictEqual(r.status, 200);
+  assert.ok(r.data.includes('og:image" content="https://promocoesdoveras.com.br/api/photo?ad=1&amp;v=2"'));
+  assert.ok(r.data.includes("Air Fryer R$ 229,90") && r.data.includes("Amazon"));
+  r = await call(oferta, { query: { id: "999" }, headers: { host: "x.com" } });
+  assert.strictEqual(r.status, 404);
+  console.log("OK: pagina da oferta");
+
   server.close();
   console.log("OK: webhook, edicao, filtro de chat, listagem, paginacao e feed ao vivo");
 })().catch((err) => {

@@ -6,6 +6,18 @@
     {
       "source": "/admin",
       "destination": "/painel.html"
+    },
+    {
+      "source": "/oferta/:id",
+      "destination": "/api/oferta?id=:id"
     }
-  ]
+  ],
+  "functions": {
+    "api/telegram.js": {
+      "maxDuration": 30
+    },
+    "api/stores.js": {
+      "maxDuration": 30
+    }
+  }
 }

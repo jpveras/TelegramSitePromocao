@@ -19,6 +19,8 @@ const EVENTS = {
   instagram: "Cliques no Instagram",
   exit_shown: "Aviso de saída exibido",
   exit_whatsapp: "Aviso de saída → WhatsApp",
+  share: "Ofertas compartilhadas",
+  install: "Site instalado como app",
 };
 const KEEP_SECONDS = 400 * 24 * 60 * 60; // guarda o detalhe diario por ~13 meses
 

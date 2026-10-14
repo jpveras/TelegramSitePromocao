@@ -14,6 +14,8 @@ function toPublic(ad) {
     // o que cortava o preco no site. Remove-os so na exibicao.
     text: ad.text ? ad.text.replace(/[\u200b-\u200d\u2060\ufeff]/g, "") : ad.text,
     posted_at: ad.posted_at,
+    // Loja descoberta pelo link (api/_lib/resolve.js); null = ainda nao verificada.
+    store: ad.store || null,
     updated_at: ad.updated_at || null,
     // "v=2" invalida a copia em cache das fotos servidas antes com tipo errado.
     photo_url: ad.photo_file_id ? `/api/photo?ad=${ad.id}&v=2` : null,
