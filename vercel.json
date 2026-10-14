@@ -19,5 +19,12 @@
     "api/stores.js": {
       "maxDuration": 30
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/app",
+      "destination": "https://github.com/jpveras/TelegramSitePromocao/releases/latest/download/promocoes-do-veras.apk",
+      "permanent": false
+    }
+  ]
 }

@@ -30,6 +30,8 @@
       t = window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
     }
     document.documentElement.setAttribute("data-theme", t);
+    // Dentro do app Android (APK) esconde o que so faz sentido no navegador.
+    if (/PromocoesVerasApp/.test(navigator.userAgent)) document.documentElement.classList.add("in-app");
   })();
 </script>
 <style>
@@ -1220,6 +1222,7 @@
     .filter-panel .search-row input { font-size: 15px; }
     .hide-sm { display: none; }
   }
+  .in-app .hide-in-app, .in-app .install-btn { display: none !important; }
 </style>
 </head>
 <body>
@@ -1450,6 +1453,7 @@
       <a href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer">WhatsApp</a> ·
       <a href="https://t.me/PromocoesdoVeras" target="_blank" rel="noopener noreferrer">Telegram</a> ·
       <a href="https://www.instagram.com/promocoesdoveras/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <span class="hide-in-app"> · <a href="/app" title="Baixar o app para Android (APK)">📱 App Android</a></span>
     </div>
     <div class="footer-legal">
       <a href="/privacidade.html">Privacidade</a>
