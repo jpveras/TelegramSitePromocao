@@ -227,6 +227,13 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   assert.strictEqual(r.data.total.visit, 3);
   console.log("OK: contador de visitas/cliques e painel");
 
+  // Mais clicadas (publico)
+  const hot = require("../api/hot");
+  r = await call(hot, {});
+  assert.deepStrictEqual(r.data.items.map((x) => [x.id, x.clicks]), [[1, 2], [2, 1]]);
+  assert.ok(r.data.items[0].ad.text.includes("Air Fryer") && !("chat_id" in r.data.items[0].ad));
+  console.log("OK: mais clicadas");
+
   // Loja: o anuncio 1 tem link amzn.to -> amazon, sem precisar abrir o link.
   r = await call(ads, { query: { limit: "10" } });
   assert.strictEqual(r.data.ads.find((a) => a.id === 1).store, "amazon");

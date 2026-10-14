@@ -38,7 +38,7 @@ main{max-width:520px;margin:0 auto;padding:18px 16px 60px}
 h1{font-size:19px;line-height:1.35;margin:0 0 12px}
 .old{color:var(--muted);text-decoration:line-through;font-size:14px}
 .off{background:rgba(63,201,107,.14);color:var(--green);font-weight:800;font-size:12.5px;padding:2px 7px;border-radius:6px;margin-left:6px}
-.now{font-size:32px;font-weight:900;color:var(--accent);margin:2px 0 8px}
+.now{font-size:32px;font-weight:900;color:var(--text);margin:2px 0 8px}
 .pay{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .pay span{font-size:12.5px;font-weight:700;padding:4px 9px;border-radius:8px;background:var(--soft);color:var(--text)}
 .rating{font-size:13.5px;color:var(--muted);margin-bottom:14px}
@@ -104,7 +104,7 @@ module.exports = async function handler(req, res) {
     ${d.pix || d.installments ? `<div class="pay">${d.pix ? "<span>💠 Preço no Pix</span>" : ""}${d.installments ? `<span>💳 ${esc(d.installments)}</span>` : ""}</div>` : ""}
     ${d.rating ? `<div class="rating">⭐ <b>${esc(d.rating)}</b> de avaliação</div>` : ""}
     ${d.coupon ? `<button class="coupon" id="coupon" data-code="${esc(d.coupon)}">🏷️ <span class="code">Cupom: ${esc(d.coupon)}</span><span class="hint">copiar</span></button>` : ""}
-    ${d.url ? `<a class="go" id="go" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">Ver oferta na loja ›</a>` : ""}
+    ${d.url ? `<a class="go" id="go" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">${storeLabel ? `Ver ${["mercadolivre","aliexpress","carrefour"].includes(ad.store) ? "no" : "na"} ${esc(storeLabel)}` : "Ver oferta na loja"} ›</a>` : ""}
     <div class="row">
       <button type="button" id="share">📤 Compartilhar</button>
       <a href="/">🛍️ Mais ofertas</a>

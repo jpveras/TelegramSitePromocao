@@ -1282,6 +1282,108 @@
     .card .offer-row { flex: 1 1 100%; }
     .btn-share { width: 46px; }
   }
+
+  /* ---------- Conversao (14/10 noite 2) ---------- */
+  /* Preco em destaque neutro; laranja fica so no botao. */
+  .price-now-row .now { color: var(--text); }
+  .btn-offer { text-transform: none; letter-spacing: 0; font-size: 15px; font-weight: 800; }
+  .btn-offer .chev { font-size: 18px; }
+  /* Desconto grande em cima da foto */
+  .off-badge {
+    position: absolute; left: 12px; bottom: 12px; z-index: 1; background: #e8344e; color: #fff;
+    font-weight: 900; font-size: 16px; letter-spacing: -0.01em; padding: 5px 10px; border-radius: 10px;
+    box-shadow: 0 6px 16px rgba(232, 52, 78, 0.35);
+  }
+  .off-badge.big { font-size: 18px; top: 10px; left: 10px; bottom: auto; }
+  .hot-tag {
+    position: absolute; left: 12px; top: 44px; z-index: 1; font-size: 11.5px; font-weight: 800; color: #fff;
+    padding: 4px 9px; border-radius: 999px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); white-space: nowrap;
+  }
+  .hot-tag.solo { top: 12px; }
+  .hot-tag.hot { background: linear-gradient(90deg, #ff5a1f, #ff8a00); }
+  .hot-tag.flash { background: #7c3aed; }
+  /* Oferta destaque */
+  .brand-panel.has-deal .brand-copy { display: none; }
+  .hero-deal {
+    margin: 4px 32px 22px; display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 22px; align-items: center;
+    padding: 16px; border-radius: 20px; border: 1px solid rgba(255, 122, 26, 0.45);
+    background: radial-gradient(120% 140% at 100% 0%, rgba(255, 122, 26, 0.14), transparent 60%), var(--surface);
+  }
+  .hero-deal[hidden] { display: none; }
+  .hd-img { position: relative; aspect-ratio: 1 / 1; background: #fff; border-radius: 14px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .hd-img img { width: 88%; height: 88%; object-fit: contain; }
+  .hd-kicker { font-size: 11.5px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .hd-name { font-size: 19px; font-weight: 800; line-height: 1.3; margin: 0 0 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .hd-prices { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .hd-old { font-size: 14px; color: var(--muted-soft); text-decoration: line-through; }
+  .hd-price { font-size: 32px; font-weight: 900; letter-spacing: -0.03em; color: var(--text); line-height: 1.1; }
+  .hd-pay { font-size: 12.5px; font-weight: 700; color: var(--muted); margin-top: 4px; }
+  .hd-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .hd-cta {
+    background: var(--accent); color: #fff; font-weight: 900; font-size: 15px; text-decoration: none;
+    padding: 12px 20px; border-radius: 12px; box-shadow: 0 10px 24px rgba(255, 122, 26, 0.35); transition: filter 0.15s ease;
+  }
+  .hd-cta:hover { filter: brightness(1.08); }
+  .hd-coupon {
+    border: 1px dashed var(--accent); background: var(--coupon-bg); color: var(--accent); font: inherit;
+    font-size: 13px; font-weight: 800; padding: 10px 12px; border-radius: 12px; cursor: pointer;
+  }
+  .hd-coupon small { color: var(--muted); font-weight: 700; margin-left: 4px; }
+  .hd-coupon.copied { border-style: solid; border-color: var(--green); color: var(--green); }
+  /* Categorias em icones */
+  .cat-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 16px; }
+  .cat-row::-webkit-scrollbar { display: none; }
+  .cat-chip {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 16px; border-radius: 999px;
+    border: 1px solid var(--surface-line); background: var(--surface); color: var(--text); font: inherit;
+    font-size: 14px; font-weight: 700; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .cat-chip .ci { font-size: 17px; }
+  .cat-chip small { color: var(--muted); font-weight: 700; font-size: 12px; }
+  .cat-chip:hover { border-color: var(--accent); }
+  .cat-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .cat-chip.active small { color: rgba(255, 255, 255, 0.85); }
+  /* Computador: compartilhar vira um botao redondo no canto da foto,
+     e o botao da loja ocupa a largura toda. */
+  @media (min-width: 601px) {
+    .card { container-type: inline-size; position: relative; }
+    .card .btn-share {
+      position: absolute; top: calc(75cqw - 48px); right: 12px; z-index: 2; width: 36px; height: 36px;
+      border-radius: 50%; background: rgba(255, 255, 255, 0.95); color: #1a1d24; border: 1px solid #e3e6eb;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .card .btn-share svg { width: 17px; height: 17px; }
+    .card .btn-share:hover { color: var(--accent); border-color: var(--accent); }
+    .btn-offer { white-space: nowrap; }
+  }
+  @media (max-width: 720px) {
+    .hero-deal { display: none !important; }
+    .cat-row { margin: 0 -14px; padding: 2px 14px 12px; }
+    .cat-chip { height: 36px; padding: 0 13px; font-size: 13px; }
+  }
+  @media (max-width: 600px) {
+    .off-badge { left: 4px; bottom: 4px; font-size: 12px; padding: 3px 6px; border-radius: 7px; }
+    .hot-tag { display: none; }
+    .btn-offer { font-size: 14px; }
+  }
+
+  /* Convite ao canal do WhatsApp no fim do painel de filtros */
+  .hero .filter-panel { display: flex; flex-direction: column; }
+  .hero .filter-panel .filter-body { flex: 1; }
+  .wa-card {
+    margin-top: auto; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px;
+    background: rgba(37, 211, 102, 0.1); border: 1px solid rgba(37, 211, 102, 0.4); color: var(--text); text-decoration: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .wa-card:hover { border-color: #25d366; background: rgba(37, 211, 102, 0.16); }
+  .wa-ico { flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; background: #25d366; color: #fff; display: flex; align-items: center; justify-content: center; }
+  .wa-ico svg { width: 24px; height: 24px; }
+  .wa-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .wa-text b { font-size: 14.5px; }
+  .wa-text small { font-size: 12px; color: var(--muted); }
+  .wa-go { flex-shrink: 0; background: #25d366; color: #062b15; font-weight: 900; font-size: 13.5px; padding: 9px 14px; border-radius: 10px; }
+  :root[data-theme="light"] .hd-img { border: 1px solid var(--line); }
+  @media (max-width: 720px) { .wa-card { display: none; } }
 </style>
 </head>
 <body>
@@ -1349,8 +1451,10 @@
           <p class="tagline">Menos preço, mais economia! 🚀</p>
         </div>
 
+        <div class="hero-deal" id="hero-deal" hidden></div>
+
         <div class="fresh" id="fresh" hidden>
-          <div class="fresh-title"><span class="live-dot"></span> Acabou de chegar</div>
+          <div class="fresh-title"><span class="live-dot"></span> <span id="fresh-label">Mais clicadas hoje</span></div>
           <div class="fresh-row" id="fresh-row"></div>
         </div>
 
@@ -1430,6 +1534,12 @@
               <span class="bd-price" id="bd-price"></span>
             </a>
           </div>
+
+          <a class="wa-card" href="https://whatsapp.com/channel/0029VbBX1t66buMHs99zHP2c" target="_blank" rel="noopener noreferrer">
+            <span class="wa-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.05 2a9.9 9.9 0 0 0-8.5 14.98L2 22l5.17-1.5A9.9 9.9 0 1 0 12.05 2zm5.42 13.98c-.23.65-1.33 1.24-1.86 1.32-.48.07-1.08.1-1.74-.11-.4-.13-.92-.3-1.58-.58-2.78-1.2-4.6-4-4.74-4.18-.14-.19-1.13-1.5-1.13-2.87 0-1.36.71-2.03.97-2.31.25-.28.55-.35.74-.35h.53c.17 0 .4-.06.62.48.23.55.78 1.9.85 2.04.07.14.11.3.02.48-.09.19-.14.3-.28.46-.14.16-.29.36-.42.48-.14.14-.28.29-.12.57.16.28.72 1.19 1.55 1.93 1.07.95 1.97 1.25 2.25 1.39.28.14.44.12.6-.07.17-.19.7-.81.88-1.09.19-.28.37-.23.62-.14.26.09 1.62.77 1.9.9.28.15.46.22.53.34.07.12.07.67-.16 1.31z"/></svg></span>
+            <span class="wa-text"><b>Receba cada oferta no WhatsApp</b><small>Grátis · as promoções chegam na hora, antes de esgotar</small></span>
+            <span class="wa-go">Entrar ›</span>
+          </a>
         </div>
       </section>
     </div>
@@ -1438,6 +1548,8 @@
       <h2>Ofertas do Dia</h2>
       <span class="badge" id="live-badge"><span class="dot"></span> <span id="live-text">Ao vivo</span></span>
     </div>
+
+    <div class="cat-row" id="cat-row" role="tablist" aria-label="Categorias"></div>
 
     <div class="grid" id="feed"></div>
     <div class="empty" id="empty-msg" hidden>
@@ -1555,6 +1667,19 @@
     }
     return DEFAULT_STORE;
   }
+
+  // Texto do botao com o nome da loja: "Ver na Amazon", "Ver no Mercado Livre".
+  const STORE_PREP = { mercadolivre: "no", aliexpress: "no", carrefour: "no" };
+  function ctaLabel(store) {
+    if (!store || store.key === "outros") return "Ver oferta";
+    return `Ver ${STORE_PREP[store.key] || "na"} ${store.label}`;
+  }
+
+  // Mais clicadas (api/hot): id -> cliques, na ordem do ranking.
+  let hotMap = new Map();
+  let hotList = [];
+  let hotPeriod = "today";
+  function hotRank(id) { const i = hotList.findIndex((x) => x.id === id); return i < 0 ? 99 : i; }
 
   // O servidor abre o link encurtado e descobre a loja (ad.store). Quando
   // ainda nao verificou, tenta pelo texto da mensagem.
@@ -1726,6 +1851,12 @@
     const category = detectCategory(ad.text);
     const url = extractUrl(ad.text);
     const { now, old, discount, coupon, pix, installments } = info(ad);
+    const offNum = info(ad).off && info(ad).off < 95 ? info(ad).off : 0;
+    // Selo: "Em alta" (mais clicadas) ou "Relampago" (desconto de 50% ou mais).
+    const hotClicks = hotMap.get(ad.id) || 0;
+    const tag = hotClicks >= 3 && hotRank(ad.id) < 6
+      ? { cls: "hot", text: `🔥 Em alta · ${hotClicks} cliques` }
+      : offNum >= 50 ? { cls: "flash", text: "⚡ Relâmpago" } : null;
     const ageMs = Date.now() - new Date(ad.posted_at).getTime();
     const isNew = ageMs < 15 * 60 * 1000;
     const isStale = ageMs > 48 * 60 * 60 * 1000;
@@ -1753,7 +1884,7 @@
     const categoryLabel = category.key !== "outros" ? `${category.icon} ${category.label}` : "";
 
     card.innerHTML = `
-      <div class="thumb">${thumbInner}${storeBadge}${isNew ? `<span class="new-badge">Novo</span>` : ""}</div>
+      <div class="thumb">${thumbInner}${storeBadge}${tag ? `<span class="hot-tag ${tag.cls}${store.key === "outros" ? " solo" : ""}">${tag.text}</span>` : ""}${isNew ? `<span class="new-badge">Novo</span>` : ""}${offNum ? `<span class="off-badge">-${offNum}%</span>` : ""}</div>
       <div class="body">
         <p class="title" title="${headline}">${title}</p>
         <div class="category"><span class="cat">${categoryLabel}</span><span class="ago" title="${formatDate(ad.posted_at)}">${timeAgo(ad.posted_at)}</span></div>
@@ -1761,8 +1892,8 @@
           <div class="price-old-row">
             ${
               old
-                ? `<span class="old">${escapeHtml(old)}</span>${discount ? `<span class="off">${discount}</span>` : ""}`
-                : `<span class="label">Oferta por</span>${discount ? `<span class="off">${discount}</span>` : ""}`
+                ? `<span class="old">${escapeHtml(old)}</span>`
+                : `<span class="label">Oferta por</span>`
             }
           </div>
           <div class="price-now-row">
@@ -1786,7 +1917,7 @@
           <div class="offer-row">
           ${
             url
-              ? `<a class="btn-offer" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Ver oferta <span class="chev">›</span></a>`
+              ? `<a class="btn-offer" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${ctaLabel(store)} <span class="chev">›</span></a>`
               : `<span class="btn-offer disabled">Sem link direto</span>`
           }
             <button type="button" class="btn-share" aria-label="Compartilhar oferta" title="Compartilhar">
@@ -2055,16 +2186,116 @@
     buildStoreChips();
     buildCategoryChips();
     renderGrid();
+    buildHeroDeal();
     buildSpotlight();
     buildFresh();
+    buildCatRow();
     updateLiveBadge();
   }
+
+  // ---------- Oferta destaque (painel da esquerda) ----------
+  // A mais clicada hoje; sem cliques suficientes, o maior desconto das 24h.
+  let heroAdId = null;
+  const heroEl = document.getElementById("hero-deal");
+  const brandPanelEl = document.querySelector(".brand-panel");
+  function recentPool() {
+    const since = Date.now() - 24 * 60 * 60 * 1000;
+    const recent = allAds.filter((a) => new Date(a.posted_at).getTime() >= since);
+    return recent.length ? recent : allAds.slice(0, 30);
+  }
+  function biggestDiscounts(exclude) {
+    return recentPool()
+      .filter((a) => a.photo_url && extractUrl(a.text) && info(a).off && info(a).off < 95 && !exclude.has(a.id))
+      .sort((a, b) => info(b).off - info(a).off);
+  }
+  function buildHeroDeal() {
+    let ad = null, kicker = "";
+    const top = hotList.find((x) => x.clicks >= 2 && x.ad && x.ad.photo_url && extractUrl(x.ad.text));
+    if (top) {
+      ad = allAds.find((a) => a.id === top.id) || top.ad;
+      kicker = `🔥 Mais clicada ${hotPeriod === "today" ? "hoje" : "agora"} · ${top.clicks} cliques`;
+    } else {
+      ad = biggestDiscounts(new Set())[0] || null;
+      kicker = "⚡ Maior desconto do momento";
+    }
+    heroAdId = ad ? ad.id : null;
+    heroEl.hidden = !ad;
+    brandPanelEl.classList.toggle("has-deal", !!ad);
+    if (!ad) return;
+    const st = storeOf(ad);
+    const i = info(ad);
+    const name = extractProductName(ad.text) || firstLine(ad.text);
+    const url = extractUrl(ad.text);
+    heroEl.innerHTML = `
+      <div class="hd-img">${ad.photo_url ? `<img src="${escapeHtml(ad.photo_url)}" alt="" />` : `<span class="placeholder">🏷️</span>`}${i.off && i.off < 95 ? `<span class="off-badge big">-${i.off}%</span>` : ""}</div>
+      <div class="hd-info">
+        <div class="hd-kicker">${escapeHtml(kicker)}</div>
+        <p class="hd-name" title="${escapeHtml(name)}">${escapeHtml(name)}</p>
+        <div class="hd-prices">${i.old ? `<span class="hd-old">${escapeHtml(i.old)}</span>` : ""}<span class="hd-price">${escapeHtml(i.now || "Confira")}</span></div>
+        ${i.pix || i.installments ? `<div class="hd-pay">${i.pix ? "💠 Pix" : ""}${i.pix && i.installments ? " · " : ""}${i.installments ? `💳 ${escapeHtml(i.installments)}` : ""}</div>` : ""}
+        <div class="hd-actions">
+          <a class="hd-cta" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" data-ad="${ad.id}">${ctaLabel(st)} ›</a>
+          ${i.coupon ? `<button type="button" class="hd-coupon" data-code="${escapeHtml(i.coupon)}">🎟️ ${escapeHtml(i.coupon)} <small>copiar</small></button>` : ""}
+        </div>
+      </div>`;
+  }
+  heroEl.addEventListener("click", async (e) => {
+    const c = e.target.closest(".hd-coupon");
+    if (!c) return;
+    const ok = await copyText(c.dataset.code);
+    track("coupon");
+    c.classList.add("copied");
+    c.innerHTML = ok ? `✓ ${escapeHtml(c.dataset.code)} copiado` : "Selecione e copie";
+  });
+
+  async function loadHot() {
+    try {
+      const res = await fetch("/api/hot", { cache: "no-store" });
+      const data = await res.json();
+      hotList = (data.items || []).filter((x) => x.ad);
+      hotPeriod = data.period || "today";
+      hotMap = new Map(hotList.map((x) => [x.id, x.clicks]));
+      if (allAds.length) refreshAll();
+    } catch {}
+  }
+  loadHot();
+  setInterval(loadHot, 120000);
+
+  // ---------- Categorias em icones (acima da grade) ----------
+  const catRowEl = document.getElementById("cat-row");
+  function buildCatRow() {
+    const counts = {};
+    for (const ad of allAds) { const k = detectCategory(ad.text).key; counts[k] = (counts[k] || 0) + 1; }
+    const items = [{ key: "all", icon: "✨", label: "Tudo", n: allAds.length }]
+      .concat(CATEGORIES.filter((c) => counts[c.key]).sort((a, b) => counts[b.key] - counts[a.key]).map((c) => ({ key: c.key, icon: c.icon, label: c.label, n: counts[c.key] })));
+    if (items.length < 3) { catRowEl.innerHTML = ""; return; }
+    catRowEl.innerHTML = items.map((c) => `<button type="button" role="tab" class="cat-chip${activeCategory === c.key ? " active" : ""}" data-cat="${c.key}" aria-selected="${activeCategory === c.key}"><span class="ci">${c.icon}</span>${escapeHtml(c.label)} <small>${c.n}</small></button>`).join("");
+  }
+  catRowEl.addEventListener("click", (e) => {
+    const b = e.target.closest(".cat-chip");
+    if (!b) return;
+    activeCategory = b.dataset.cat;
+    categorySelect.value = activeCategory;
+    renderGrid();
+    buildCatRow();
+  });
+  categorySelect.addEventListener("change", buildCatRow);
 
   // "Acabou de chegar": as 5 ofertas mais novas com foto, no painel da esquerda.
   const freshEl = document.getElementById("fresh");
   const freshRow = document.getElementById("fresh-row");
   function buildFresh() {
-    const items = allAds.filter((a) => a.photo_url).sort((a, b) => b.id - a.id).slice(0, 6);
+    // Mais clicadas (sem a oferta destaque); completa com os maiores descontos.
+    const seen = new Set([heroAdId]);
+    let items = [];
+    for (const x of hotList) {
+      if (items.length >= 6 || seen.has(x.id) || !x.ad.photo_url) continue;
+      items.push(allAds.find((a) => a.id === x.id) || x.ad); seen.add(x.id);
+    }
+    const hotCount = items.length;
+    for (const a of biggestDiscounts(seen)) { if (items.length >= 6) break; items.push(a); seen.add(a.id); }
+    document.getElementById("fresh-label").textContent =
+      hotCount >= 3 ? (hotPeriod === "today" ? "Mais clicadas hoje" : "Em alta agora") : "Maiores descontos de hoje";
     freshEl.hidden = items.length < 3;
     freshRow.innerHTML = items.map((ad) => {
       const st = storeOf(ad);
@@ -2093,9 +2324,10 @@
     const newest = allAds.reduce((m, a) => Math.max(m, new Date(a.posted_at).getTime() || 0), 0);
     if (!newest) { liveText.textContent = "Ao vivo"; return; }
     const min = Math.floor((Date.now() - newest) / 60000);
-    liveText.textContent = min < 1 ? "Ao vivo · nova oferta agora"
-      : min < 60 ? `Ao vivo · última oferta há ${min} min`
-      : "Ao vivo · atualizado todos os dias";
+    const detail = min < 1 ? "nova oferta agora"
+      : min < 60 ? `última oferta há ${min} min`
+      : "atualizado todos os dias";
+    liveText.innerHTML = `Ao vivo<span class="hide-sm"> · ${detail}</span>`;
   }
   setInterval(updateLiveBadge, 30000);
 
@@ -2127,7 +2359,7 @@
       const url = extractUrl(ad.text);
       if (!url) continue;
       const { now, off } = info(ad);
-      if (!off || off >= 95) continue;
+      if (!off || off >= 95 || ad.id === heroAdId) continue;
       if (!best || off > best.off) best = { ad, url, now, off };
     }
     if (best) {
@@ -2350,7 +2582,9 @@
   document.addEventListener("click", (e) => {
     const el = e.target.closest("a, button");
     if (!el) return;
-    if (el.matches(".best-deal")) {
+    if (el.matches(".hd-cta")) {
+      track("offer", { a: Number(el.dataset.ad) || undefined });
+    } else if (el.matches(".best-deal")) {
       track("offer", { a: Number(el.dataset.ad) || undefined });
     } else if (el.matches(".btn-offer[href]")) {
       const card = el.closest(".card");
