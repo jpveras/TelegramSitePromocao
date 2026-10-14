@@ -1,4 +1,5 @@
-:root { --bg:#0b0d12; --card:#15171c; --border:#23262e; --text:#eef0f3; --muted:#8b93a1; --accent:#ff7a1a; --green:#3fc96b; }
+:root { --bg:#0b0d12; --card:#15171c; --border:#23262e; --text:#eef0f3; --muted:#8b93a1; --accent:#ff7a1a; --green:#3fc96b; --body:#cfd3da; --code:#1d2027; --soft:#22252d; color-scheme:dark; }
+:root[data-theme="light"] { --bg:#f4f5f8; --card:#ffffff; --border:#e4e7ec; --text:#15181f; --muted:#5b6372; --accent:#f06a0a; --green:#1e9e4f; --body:#3a414d; --code:#eceef2; --soft:#e7e9ee; color-scheme:light; }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif; line-height:1.65; }
 header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 20px; border-bottom:1px solid var(--border); }
@@ -9,7 +10,7 @@ main { max-width:760px; margin:0 auto; padding:32px 18px 70px; }
 h1 { font-size:30px; letter-spacing:-0.02em; margin:0 0 6px; }
 .updated { color:var(--muted); font-size:14px; margin-bottom:26px; }
 h2 { font-size:19px; margin:30px 0 8px; }
-p, li { color:#cfd3da; font-size:15.5px; }
+p, li { color:var(--body); font-size:15.5px; }
 ul { padding-left:20px; }
 strong { color:var(--text); }
 a { color:var(--accent); }
@@ -17,9 +18,9 @@ a { color:var(--accent); }
 table { width:100%; border-collapse:collapse; font-size:14.5px; }
 th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
 th { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:0.06em; }
-code { background:#1d2027; padding:2px 6px; border-radius:6px; font-size:13.5px; }
+code { background:var(--code); padding:2px 6px; border-radius:6px; font-size:13.5px; }
 .btn { display:inline-block; margin-top:10px; padding:12px 18px; border-radius:12px; border:none; font-weight:800; font-size:15px; cursor:pointer; background:var(--accent); color:#fff; }
-.btn.secondary { background:#22252d; color:var(--text); }
+.btn.secondary { background:var(--soft); color:var(--text); }
 .status { margin-top:10px; font-weight:700; }
 .status.on { color:var(--green); }
 footer { text-align:center; color:var(--muted); font-size:13px; padding:24px; border-top:1px solid var(--border); }

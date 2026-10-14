@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Promoções do Veras</title>
 <link rel="icon" type="image/png" href="favicon.png" />
+<script>
+  // Aplica o tema antes de desenhar a pagina (evita "piscar" no tema errado).
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem("pv_theme"); } catch (e) {}
+    if (t !== "light" && t !== "dark") {
+      t = window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
 <style>
   :root {
     --bg: #0b0d12;
@@ -20,7 +31,68 @@
     --accent-dim: #ff7a1a22;
     --green: #3fc96b;
     --red: #ff5c6c;
+    --topbar-bg: rgba(11, 13, 18, 0.92);
+    --card-grad: linear-gradient(180deg, #17191f, #121419);
+    --panel-grad: linear-gradient(180deg, #15171c, #111317);
+    --panel: #15171c;
+    --surface: #14161b;
+    --surface-2: #1b1d23;
+    --surface-hover: #22252d;
+    --surface-line: #2a2d36;
+    --line: #23262e;
+    --coupon-bg: #1d1712;
+    --coupon-line: #3a2a1c;
+    --coupon-hover: #26190f;
+    --highlight-label: #f0c8a8;
+    color-scheme: dark;
   }
+  /* Tema claro: escolhido no botao da barra superior (ou pelo sistema). */
+  :root[data-theme="light"] {
+    --bg: #f4f5f8;
+    --bg-soft: #eceef2;
+    --card: #ffffff;
+    --card-hover: #f7f8fa;
+    --border: #dfe2e8;
+    --border-soft: #e4e7ec;
+    --text: #15181f;
+    --muted: #5b6372;
+    --muted-soft: #838b99;
+    --accent: #f06a0a;
+    --accent-dim: #f06a0a1f;
+    --green: #1e9e4f;
+    --red: #e0384b;
+    --topbar-bg: rgba(255, 255, 255, 0.9);
+    --card-grad: linear-gradient(180deg, #ffffff, #fafbfc);
+    --panel-grad: linear-gradient(180deg, #ffffff, #f8f9fb);
+    --panel: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f1f2f5;
+    --surface-hover: #eceef2;
+    --surface-line: #dcdfe5;
+    --line: #e4e7ec;
+    --coupon-bg: #fff4ec;
+    --coupon-line: #f7cfae;
+    --coupon-hover: #ffe8d6;
+    --highlight-label: #b4520f;
+    color-scheme: light;
+  }
+  :root[data-theme="light"] .card { box-shadow: 0 4px 16px rgba(20, 24, 33, 0.07); }
+  @media (hover: hover) { :root[data-theme="light"] .card:hover { box-shadow: 0 18px 40px rgba(20, 24, 33, 0.16), 0 0 0 1px rgba(255, 122, 26, 0.3); } }
+  :root[data-theme="light"] .exit-backdrop { background: rgba(20, 24, 33, 0.45); }
+  :root[data-theme="light"] .exit-card { box-shadow: 0 30px 80px rgba(20, 24, 33, 0.25); }
+  body { transition: background-color 0.25s ease, color 0.25s ease; }
+  .theme-toggle {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--surface-line); background: var(--surface); color: var(--text);
+    cursor: pointer; padding: 0; transition: background 0.15s ease, border-color 0.15s ease, transform 0.2s ease;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .theme-toggle:active { transform: scale(0.92); }
+  .theme-toggle svg { width: 18px; height: 18px; }
+  .theme-toggle .sun { display: none; }
+  :root[data-theme="light"] .theme-toggle .sun { display: block; }
+  :root[data-theme="light"] .theme-toggle .moon { display: none; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -40,7 +112,7 @@
     border-bottom: 1px solid var(--border-soft);
     position: sticky;
     top: 0;
-    background: rgba(11, 13, 18, 0.92);
+    background: var(--topbar-bg);
     backdrop-filter: blur(8px);
     z-index: 20;
   }
@@ -288,7 +360,7 @@
   }
   .card {
     position: relative;
-    background: linear-gradient(180deg, #17191f, #121419);
+    background: var(--card-grad);
     border: 1px solid var(--border-soft);
     border-radius: 20px;
     overflow: hidden;
@@ -529,7 +601,7 @@
 
   .clicks-float {
     bottom: 86px;
-    background: linear-gradient(180deg, #181b22, #121419);
+    background: var(--card-grad);
     border: 1px solid rgba(63, 201, 107, 0.4);
     padding: 0 14px;
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(63, 201, 107, 0.1);
@@ -561,7 +633,7 @@
     font-weight: 900;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 0 2px #15171c;
+    box-shadow: 0 0 0 2px var(--panel);
     font-variant-numeric: tabular-nums;
   }
   .clicks-float .text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
@@ -603,9 +675,9 @@
     gap: 8px;
     width: 100%;
     text-align: left;
-    background: #1d1712;
+    background: var(--coupon-bg);
     color: var(--accent);
-    border: 1px solid #3a2a1c;
+    border: 1px solid var(--coupon-line);
     border-radius: 11px;
     padding: 10px 14px;
     font: inherit;
@@ -623,7 +695,7 @@
     flex: 1;
   }
   .btn-coupon .hint { font-weight: 600; font-size: 11px; color: var(--muted); white-space: nowrap; }
-  .btn-coupon:hover { background: #26190f; border-color: var(--accent); }
+  .btn-coupon:hover { background: var(--coupon-hover); border-color: var(--accent); }
   .btn-coupon.copied {
     border-color: var(--green);
     background: rgba(63, 201, 107, 0.1);
@@ -656,7 +728,7 @@
   .trust-badges { display: flex; flex-wrap: wrap; gap: 12px; }
   .trust-badge {
     display: inline-flex; align-items: center; gap: 10px; padding: 11px 20px; border-radius: 999px;
-    border: 1px solid #2a2d36; background: #14161b; color: var(--text); font-size: 14px; font-weight: 700;
+    border: 1px solid var(--surface-line); background: var(--surface); color: var(--text); font-size: 14px; font-weight: 700;
     text-decoration: none;
   }
   .trust-badge svg { width: 20px; height: 20px; color: var(--green); flex-shrink: 0; }
@@ -688,8 +760,8 @@
   .hero > .panel:first-child { display: block; }
   .hero .panel {
     background: radial-gradient(120% 140% at 100% 0%, rgba(255, 122, 26, 0.08), transparent 55%),
-      linear-gradient(180deg, #15171c, #111317);
-    border: 1px solid #23262e;
+      var(--panel-grad);
+    border: 1px solid var(--line);
     border-radius: 26px;
     padding: 0;
     overflow: hidden;
@@ -707,7 +779,7 @@
     width: 96px;
     height: 96px;
     border-radius: 50%;
-    box-shadow: 0 0 0 4px #14161b, 0 0 0 6px #f5c518, 0 10px 30px rgba(245, 197, 24, 0.18);
+    box-shadow: 0 0 0 4px var(--surface), 0 0 0 6px #f5c518, 0 10px 30px rgba(245, 197, 24, 0.18);
   }
   .brand-text h1 {
     margin: 0;
@@ -745,14 +817,14 @@
     width: 46px;
     height: 46px;
     border-radius: 13px;
-    background: #14161b;
-    border: 1px solid #2a2d36;
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
     box-shadow: none !important;
   }
   .btn-join svg { width: 22px; height: 22px; }
-  .btn-join.wa { background: #14161b; color: #25d366; }
-  .btn-join.tg { background: #14161b; color: #2aa7e0; }
-  .btn-join.ig { background: #14161b; color: #e1306c; }
+  .btn-join.wa { background: var(--surface); color: #25d366; }
+  .btn-join.tg { background: var(--surface); color: #2aa7e0; }
+  .btn-join.ig { background: var(--surface); color: #e1306c; }
   .btn-join:hover { border-color: currentColor; transform: translateY(-2px); }
   .highlight {
     display: flex;
@@ -778,7 +850,7 @@
     font-weight: 800;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #f0c8a8;
+    color: var(--highlight-label);
   }
   .highlight-value { font-size: 19px; font-weight: 900; }
   .highlight-sub { font-size: 11.5px; color: var(--muted); }
@@ -791,21 +863,21 @@
     margin-top: auto;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    border-top: 1px solid #23262e;
+    border-top: 1px solid var(--line);
   }
   .strip-item {
     display: flex;
     align-items: center;
     gap: 14px;
     padding: 20px 24px;
-    border-right: 1px solid #23262e;
+    border-right: 1px solid var(--line);
   }
   .strip-item:last-child { border-right: none; }
   .strip-icon {
     width: 42px;
     height: 42px;
     border-radius: 12px;
-    background: #1b1d23;
+    background: var(--surface-2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -828,7 +900,7 @@
     align-items: center;
     gap: 14px;
     padding: 26px 28px 22px;
-    border-bottom: 1px solid #23262e;
+    border-bottom: 1px solid var(--line);
   }
   /* Icone decorativo (nao e botao): sem fundo de botao, sem clique. */
   .filter-icon {
@@ -842,7 +914,7 @@
   .filter-icon svg { width: 30px; height: 30px; }
 
   /* ---------- Cupons ativos e maior desconto ---------- */
-  .spotlight { border-top: 1px solid #23262e; padding-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .spotlight { border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-direction: column; gap: 12px; }
   .spot-title { font-size: 12px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
   .coupon-chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .coupon-chip {
@@ -910,8 +982,8 @@
     border-radius: 14px;
     font-size: 14.5px;
     font-weight: 700;
-    background: #14161b;
-    border-color: #2a2d36;
+    background: var(--surface);
+    border-color: var(--surface-line);
     color: var(--text);
     gap: 9px;
   }
@@ -943,8 +1015,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 1px solid #2a2d36;
-    background: #14161b;
+    border: 1px solid var(--surface-line);
+    background: var(--surface);
     color: var(--text);
     font-size: 22px;
     cursor: pointer;
@@ -955,8 +1027,8 @@
     padding: 16px 18px 16px 48px;
     border-radius: 14px;
     font-size: 15.5px;
-    background: #14161b;
-    border-color: #2a2d36;
+    background: var(--surface);
+    border-color: var(--surface-line);
   }
   .filter-panel .search-row .icon { left: 18px; font-size: 16px; }
   .select-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
@@ -965,8 +1037,8 @@
     border-radius: 14px;
     font-size: 15px;
     font-weight: 700;
-    background: #14161b;
-    border-color: #2a2d36;
+    background: var(--surface);
+    border-color: var(--surface-line);
   }
   @media (max-width: 1100px) {
     .hero { grid-template-columns: 1fr; }
@@ -976,7 +1048,7 @@
     .brand-side { align-items: flex-start; width: 100%; }
     .brand-copy { padding: 16px 20px 20px; }
     .brand-strip { grid-template-columns: 1fr; }
-    .strip-item { border-right: none; border-bottom: 1px solid #23262e; padding: 16px 20px; }
+    .strip-item { border-right: none; border-bottom: 1px solid var(--line); padding: 16px 20px; }
     .strip-item:last-child { border-bottom: none; }
     .brand-panel .avatar { width: 72px; height: 72px; }
     .filter-head, .filter-body { padding-left: 20px; padding-right: 20px; }
@@ -989,7 +1061,7 @@
   .exit-card {
     position: relative;
     width: min(440px, 100%);
-    background: radial-gradient(120% 120% at 100% 0%, rgba(255, 122, 26, 0.16), transparent 55%), #15171c;
+    background: radial-gradient(120% 120% at 100% 0%, rgba(255, 122, 26, 0.16), transparent 55%), var(--panel);
     border: 1px solid rgba(255, 122, 26, 0.45);
     border-radius: 24px;
     padding: 30px 26px 22px;
@@ -1002,8 +1074,8 @@
     position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; border-radius: 50%;
     border: none; background: transparent; color: var(--muted); font-size: 24px; cursor: pointer;
   }
-  .exit-x:hover { color: var(--text); background: #22252d; }
-  .exit-logo { width: 72px; height: 72px; border-radius: 50%; box-shadow: 0 0 0 3px #15171c, 0 0 0 5px #f5c518; }
+  .exit-x:hover { color: var(--text); background: var(--surface-hover); }
+  .exit-logo { width: 72px; height: 72px; border-radius: 50%; box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px #f5c518; }
   .exit-kicker { margin-top: 14px; color: var(--accent); font-weight: 800; font-size: 13px; letter-spacing: 0.04em; }
   .exit-card h2 { margin: 6px 0 10px; font-size: 23px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.2; }
   .exit-card p { margin: 0 0 12px; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
@@ -1023,6 +1095,10 @@
 <body>
   <div class="topbar">
     <div class="brand"><img src="logo.png" alt="" /> Promoções do Veras</div>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Alternar tema claro/escuro" title="Alternar tema claro/escuro">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
   </div>
 
   <main>
@@ -1859,6 +1935,24 @@
       lastY = y; lastT = t;
     }, { passive: true });
   }
+</script>
+<script>
+  (function () {
+    var btn = document.getElementById("theme-toggle");
+    if (!btn) return;
+    function label() {
+      var light = document.documentElement.getAttribute("data-theme") === "light";
+      btn.setAttribute("aria-label", light ? "Ativar tema escuro" : "Ativar tema claro");
+      btn.title = light ? "Tema escuro" : "Tema claro";
+    }
+    label();
+    btn.addEventListener("click", function () {
+      var next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("pv_theme", next); } catch (e) {}
+      label();
+    });
+  })();
 </script>
 </body>
 </html>
