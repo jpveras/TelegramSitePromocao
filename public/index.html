@@ -1476,7 +1476,7 @@
           <div class="strip-item">
             <span class="strip-icon live"><span class="dot"></span></span>
             <div>
-              <div class="strip-label">Atualização · <span class="live-text">AO VIVO</span></div>
+              <div class="strip-label"><span class="live-text">Ao vivo</span></div>
               <div class="strip-value">Novas ofertas todos os dias</div>
             </div>
           </div>
@@ -1679,6 +1679,8 @@
   let hotMap = new Map();
   let hotList = [];
   let hotPeriod = "today";
+  // Numero de cliques so aparece quando impressiona; abaixo disso, o selo fica sem numero.
+  const SHOW_CLICKS_FROM = 30;
   function hotRank(id) { const i = hotList.findIndex((x) => x.id === id); return i < 0 ? 99 : i; }
 
   // O servidor abre o link encurtado e descobre a loja (ad.store). Quando
@@ -1855,7 +1857,7 @@
     // Selo: "Em alta" (mais clicadas) ou "Relampago" (desconto de 50% ou mais).
     const hotClicks = hotMap.get(ad.id) || 0;
     const tag = hotClicks >= 3 && hotRank(ad.id) < 6
-      ? { cls: "hot", text: `🔥 Em alta · ${hotClicks} cliques` }
+      ? { cls: "hot", text: hotClicks >= SHOW_CLICKS_FROM ? `🔥 Em alta · ${hotClicks} cliques` : "🔥 Em alta" }
       : offNum >= 50 ? { cls: "flash", text: "⚡ Relâmpago" } : null;
     const ageMs = Date.now() - new Date(ad.posted_at).getTime();
     const isNew = ageMs < 15 * 60 * 1000;
@@ -2196,6 +2198,7 @@
   // ---------- Oferta destaque (painel da esquerda) ----------
   // A mais clicada hoje; sem cliques suficientes, o maior desconto das 24h.
   let heroAdId = null;
+  let bestAdId = null;
   const heroEl = document.getElementById("hero-deal");
   const brandPanelEl = document.querySelector(".brand-panel");
   function recentPool() {
@@ -2213,7 +2216,7 @@
     const top = hotList.find((x) => x.clicks >= 2 && x.ad && x.ad.photo_url && extractUrl(x.ad.text));
     if (top) {
       ad = allAds.find((a) => a.id === top.id) || top.ad;
-      kicker = `🔥 Mais clicada ${hotPeriod === "today" ? "hoje" : "agora"} · ${top.clicks} cliques`;
+      kicker = `🔥 Mais clicada ${hotPeriod === "today" ? "hoje" : "agora"}${top.clicks >= SHOW_CLICKS_FROM ? ` · ${top.clicks} cliques` : ""}`;
     } else {
       ad = biggestDiscounts(new Set())[0] || null;
       kicker = "⚡ Maior desconto do momento";
@@ -2288,14 +2291,25 @@
   const freshRow = document.getElementById("fresh-row");
   function buildFresh() {
     // Mais clicadas (sem a oferta destaque); completa com os maiores descontos.
-    const seen = new Set([heroAdId]);
+    // Sem repetir a oferta destaque, o "Maior desconto agora" nem o mesmo
+    // produto postado duas vezes (compara pelo nome).
+    const seen = new Set([heroAdId, bestAdId]);
+    const names = new Set([heroAdId, bestAdId].map((id) => {
+      const a = allAds.find((x) => x.id === id);
+      return a ? (extractProductName(a.text) || firstLine(a.text)).toLowerCase().trim() : null;
+    }).filter(Boolean));
     let items = [];
+    const add = (a) => {
+      const n = (extractProductName(a.text) || firstLine(a.text)).toLowerCase().trim();
+      if (seen.has(a.id) || names.has(n)) return false;
+      items.push(a); seen.add(a.id); names.add(n); return true;
+    };
     for (const x of hotList) {
-      if (items.length >= 6 || seen.has(x.id) || !x.ad.photo_url) continue;
-      items.push(allAds.find((a) => a.id === x.id) || x.ad); seen.add(x.id);
+      if (items.length >= 6 || !x.ad.photo_url) continue;
+      add(allAds.find((a) => a.id === x.id) || x.ad);
     }
     const hotCount = items.length;
-    for (const a of biggestDiscounts(seen)) { if (items.length >= 6) break; items.push(a); seen.add(a.id); }
+    for (const a of biggestDiscounts(new Set())) { if (items.length >= 6) break; add(a); }
     document.getElementById("fresh-label").textContent =
       hotCount >= 3 ? (hotPeriod === "today" ? "Mais clicadas hoje" : "Em alta agora") : "Maiores descontos de hoje";
     freshEl.hidden = items.length < 3;
@@ -2364,6 +2378,7 @@
       if (!off || off >= 95 || ad.id === heroAdId) continue;
       if (!best || off > best.off) best = { ad, url, now, off };
     }
+    bestAdId = best ? best.ad.id : null;
     if (best) {
       bestDealEl.hidden = false;
       bestDealEl.href = best.url;
