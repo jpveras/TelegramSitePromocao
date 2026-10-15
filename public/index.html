@@ -1450,6 +1450,10 @@
     .clicks-float .icon { font-size: 21px; }
     main { padding-bottom: 96px; }
   }
+
+  /* Selo "ofertas aproveitadas" (sacola) oculto a pedido em 15/10.
+     Para mostrar de novo, apague esta regra. */
+  .clicks-float { display: none !important; }
 </style>
 </head>
 <body>
@@ -2732,7 +2736,8 @@
       setClicksCount(CLICKS_BASE + Number(data.clicks || 0));
     } catch {}
   }
-  loadClicksCounter();
+  // Selo oculto: so busca o contador se ele estiver visivel.
+  if (getComputedStyle(document.querySelector(".clicks-float")).display !== "none") loadClicksCounter();
 
   let joinedWhatsApp = false;
   document.addEventListener("click", (e) => {
