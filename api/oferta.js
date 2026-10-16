@@ -50,6 +50,7 @@ h1{font-size:19px;line-height:1.35;margin:0 0 12px}
 .row a,.row button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--soft);color:var(--text);font:inherit;font-weight:700;font-size:14px;text-decoration:none;cursor:pointer}
 .note{font-size:12.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.5}
 .wa{margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:14px;background:#25d366;color:#062b15;font-weight:900;text-decoration:none}
+.lt{display:block;text-align:center;margin-top:12px;font-size:14px;font-weight:800;color:var(--accent);text-decoration:none}
 .stale{background:rgba(245,197,24,.14);color:#c99a00;font-size:12.5px;font-weight:700;padding:8px 10px;border-radius:10px;margin-bottom:12px}
 `;
 
@@ -113,6 +114,7 @@ module.exports = async function handler(req, res) {
   </div>
 </div>
 <a class="wa" href="${WHATSAPP}" target="_blank" rel="noopener noreferrer">Receber ofertas no WhatsApp</a>
+<a class="lt" href="https://linktr.ee/jpverastech" target="_blank" rel="noopener noreferrer">🔗 Conheça todos os nossos canais ›</a>
 <script>
 (function(){
   var AD=${ad.id};

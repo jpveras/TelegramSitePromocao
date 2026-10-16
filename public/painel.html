@@ -232,6 +232,7 @@
       ["Cliques no WhatsApp", wa, `${fmt(sum(rows, "exit_whatsapp"))} vieram do aviso de saída`, "wa"],
       ["Telegram", sum(rows, "telegram"), "", ""],
       ["Instagram", sum(rows, "instagram"), "", ""],
+      ["Todos os canais (Linktree)", sum(rows, "channels"), "linktr.ee/jpverastech", ""],
       ["Ofertas compartilhadas", sum(rows, "share"), "pelo botão Compartilhar", ""],
       ["Instalaram o app", sum(rows, "install"), "adicionaram o site à tela inicial", ""],
       ["Aviso de saída exibido", sum(rows, "exit_shown"), `${pct(sum(rows, "exit_whatsapp"), sum(rows, "exit_shown"))} foram para o WhatsApp`, ""],

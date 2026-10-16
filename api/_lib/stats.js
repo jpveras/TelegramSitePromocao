@@ -23,6 +23,7 @@ const EVENTS = {
   share: "Ofertas compartilhadas",
   install: "Site instalado como app",
   view: "Ofertas vistas na tela",
+  channels: "Cliques em \"Todos os canais\" (Linktree)",
 };
 const KEEP_SECONDS = 400 * 24 * 60 * 60; // guarda o detalhe diario por ~13 meses
 
