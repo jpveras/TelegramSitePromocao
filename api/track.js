@@ -3,7 +3,7 @@
 // leva para a loja, sem atrasar o redirecionamento.
 
 const { isConfigured } = require("./_lib/store");
-const { EVENTS, recordEvent } = require("./_lib/stats");
+const { EVENTS, recordEvent, recordViews } = require("./_lib/stats");
 
 function readBody(req) {
   if (req.body && typeof req.body === "object" && !Buffer.isBuffer(req.body)) return req.body;
@@ -27,6 +27,17 @@ module.exports = async function handler(req, res) {
   const body = readBody(req) || {};
   const event = String(body.e || "");
   if (!Object.prototype.hasOwnProperty.call(EVENTS, event) || !isConfigured()) {
+    res.status(204).end();
+    return;
+  }
+  // Visualizacoes chegam em lote: { e: "view", ids: [12, 13, ...] }
+  if (event === "view") {
+    const ids = Array.isArray(body.ids) ? body.ids.filter((n) => Number.isInteger(n) && n > 0) : [];
+    try {
+      await recordViews({ ids });
+    } catch (err) {
+      console.error("[track] Falha ao registrar visualizacoes:", err.message);
+    }
     res.status(204).end();
     return;
   }

@@ -27,9 +27,11 @@ module.exports = async function handler(req, res) {
   const days = Math.min(Math.max(Number.parseInt(query.days, 10) || 7, 1), 90);
   try {
     const stats = await readStats(days);
-    if (stats.topOffers.length > 0) {
-      const [raws] = await redis([["MGET", ...stats.topOffers.map((o) => `ad:${o.id}`)]]);
-      stats.topOffers = stats.topOffers.map((o, i) => {
+    for (const listName of ["topOffers", "topViewed"]) {
+      const list = stats[listName] || [];
+      if (list.length === 0) continue;
+      const [raws] = await redis([["MGET", ...list.map((o) => `ad:${o.id}`)]]);
+      stats[listName] = list.map((o, i) => {
         const ad = raws && raws[i] ? JSON.parse(raws[i]) : null;
         return { ...o, title: ad ? headline(ad.text) : "Anúncio removido" };
       });

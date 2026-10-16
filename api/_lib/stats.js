@@ -6,6 +6,7 @@
 //   st:<AAAA-MM-DD>:<evento>  -> contador do evento no dia
 //   st:<AAAA-MM-DD>:uv        -> HyperLogLog dos visitantes unicos do dia
 //   st:<AAAA-MM-DD>:offers    -> sorted set id do anuncio -> cliques no dia
+//   st:<AAAA-MM-DD>:views     -> sorted set id do anuncio -> vezes que apareceu na tela
 //   st:total:<evento>         -> contador desde o inicio
 
 const { redis } = require("./store");
@@ -21,6 +22,7 @@ const EVENTS = {
   exit_whatsapp: "Aviso de saída → WhatsApp",
   share: "Ofertas compartilhadas",
   install: "Site instalado como app",
+  view: "Ofertas vistas na tela",
 };
 const KEEP_SECONDS = 400 * 24 * 60 * 60; // guarda o detalhe diario por ~13 meses
 
@@ -52,6 +54,24 @@ async function recordEvent({ event, visitorId, adId }) {
   await redis(cmds);
 }
 
+// Ofertas que apareceram na tela (o site manda em lote, uma vez por oferta por visita).
+async function recordViews({ ids }) {
+  const list = [...new Set(ids)].slice(0, 60);
+  if (list.length === 0) return;
+  const day = dayKey();
+  const cmds = [
+    ["INCRBY", `st:${day}:view`, String(list.length)],
+    ["EXPIRE", `st:${day}:view`, String(KEEP_SECONDS)],
+    ["INCRBY", "st:total:view", String(list.length)],
+  ];
+  for (const id of list) {
+    cmds.push(["ZINCRBY", `st:${day}:views`, "1", String(id)]);
+    cmds.push(["ZINCRBY", "st:total:views", "1", String(id)]);
+  }
+  cmds.push(["EXPIRE", `st:${day}:views`, String(KEEP_SECONDS)]);
+  await redis(cmds);
+}
+
 async function readStats(days) {
   const names = Object.keys(EVENTS);
   const list = [];
@@ -79,18 +99,36 @@ async function readStats(days) {
 
   // Ofertas mais clicadas no periodo
   const unionKeys = list.map((d) => `st:${d}:offers`);
-  const tmp = `st:tmp:top:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
-  const [, top] = await redis([
+  const viewKeys = list.map((d) => `st:${d}:views`);
+  const rnd = `${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+  const tmp = `st:tmp:top:${rnd}`;
+  const tmpV = `st:tmp:views:${rnd}`;
+  const [, top, , topV] = await redis([
     ["ZUNIONSTORE", tmp, String(unionKeys.length), ...unionKeys],
     ["ZRANGE", tmp, "0", "9", "REV", "WITHSCORES"],
-    ["DEL", tmp],
+    ["ZUNIONSTORE", tmpV, String(viewKeys.length), ...viewKeys],
+    ["ZRANGE", tmpV, "0", "9", "REV", "WITHSCORES"],
   ]);
   const topOffers = [];
   for (let j = 0; j < (top || []).length; j += 2) {
     topOffers.push({ id: Number(top[j]), clicks: Number(top[j + 1]) });
   }
+  const topViewed = [];
+  for (let j = 0; j < (topV || []).length; j += 2) {
+    topViewed.push({ id: Number(topV[j]), views: Number(topV[j + 1]) });
+  }
+  // Vistas das mais clicadas e cliques das mais vistas (para a taxa de clique).
+  const scoreCmds = [
+    ...topOffers.map((o) => ["ZSCORE", tmpV, String(o.id)]),
+    ...topViewed.map((o) => ["ZSCORE", tmp, String(o.id)]),
+    ["DEL", tmp],
+    ["DEL", tmpV],
+  ];
+  const scores = await redis(scoreCmds);
+  topOffers.forEach((o, i) => { o.views = Number(scores[i]) || 0; });
+  topViewed.forEach((o, i) => { o.clicks = Number(scores[topOffers.length + i]) || 0; });
 
-  return { events: EVENTS, perDay, total, topOffers };
+  return { events: EVENTS, perDay, total, topOffers, topViewed };
 }
 
-module.exports = { EVENTS, recordEvent, readStats, dayKey };
+module.exports = { EVENTS, recordEvent, recordViews, readStats, dayKey };

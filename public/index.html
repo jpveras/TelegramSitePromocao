@@ -2145,6 +2145,7 @@
       for (const ad of list) feedEl.appendChild(buildCard(ad));
     }
     updateStats();
+    if (typeof observeCards === "function") observeCards();
   }
 
   // ---------- Copiar cupom ----------
@@ -2718,6 +2719,47 @@
     fetch("/api/track", { method: "POST", headers: { "Content-Type": "application/json" }, body, keepalive: true }).catch(() => {});
   }
   track("visit");
+
+  // ---------- Visualizacoes por oferta ----------
+  // Conta quando o card fica pelo menos 60% visivel por 1 segundo, uma vez por
+  // oferta por visita. Envia em lote a cada 10 s e ao sair da pagina.
+  const viewedIds = new Set();
+  let viewQueue = [];
+  const viewTimers = new Map();
+  const viewObserver = "IntersectionObserver" in window ? new IntersectionObserver((entries) => {
+    for (const en of entries) {
+      const id = Number(en.target.dataset.id);
+      if (!id || viewedIds.has(id)) continue;
+      if (en.isIntersecting) {
+        if (!viewTimers.has(id)) viewTimers.set(id, setTimeout(() => {
+          viewTimers.delete(id);
+          if (viewedIds.has(id)) return;
+          viewedIds.add(id);
+          viewQueue.push(id);
+        }, 1000));
+      } else if (viewTimers.has(id)) {
+        clearTimeout(viewTimers.get(id));
+        viewTimers.delete(id);
+      }
+    }
+  }, { threshold: 0.6 }) : null;
+  function observeCards() {
+    if (!viewObserver) return;
+    viewObserver.disconnect();
+    for (const t of viewTimers.values()) clearTimeout(t);
+    viewTimers.clear();
+    feedEl.querySelectorAll(".card").forEach((c) => { if (!viewedIds.has(Number(c.dataset.id))) viewObserver.observe(c); });
+  }
+  function flushViews() {
+    if (viewQueue.length === 0) return;
+    const ids = viewQueue.slice(0, 60);
+    viewQueue = viewQueue.slice(60);
+    track("view", { ids });
+  }
+  setInterval(flushViews, 10000);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) flushViews(); });
+  window.addEventListener("pagehide", flushViews);
+  observeCards();
 
   // ---------- Contador de cliques visivel na pagina ----------
   // Comeca em 74 (base de vitrine) e soma os cliques reais registrados.

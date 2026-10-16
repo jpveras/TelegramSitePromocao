@@ -26,5 +26,11 @@
       "destination": "https://github.com/jpveras/TelegramSitePromocao/releases/latest/download/promocoes-do-veras.apk",
       "permanent": false
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/report",
+      "schedule": "0 2 * * *"
+    }
   ]
 }

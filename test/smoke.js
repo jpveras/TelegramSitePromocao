@@ -63,6 +63,15 @@ function fakeRedisServer() {
         const max = args[2] === "+inf" ? Infinity : Number(args[2]);
         return [...(zsets.get(args[0]) || new Map()).values()].filter((v) => v >= min && v <= max).length;
       }
+      case "INCRBY": {
+        const n = Number(kv.get(args[0]) || 0) + Number(args[1]);
+        kv.set(args[0], String(n));
+        return n;
+      }
+      case "ZSCORE": {
+        const z = zsets.get(args[0]);
+        return z && z.has(args[1]) ? String(z.get(args[1])) : null;
+      }
       case "MGET": return args.map((k) => (kv.has(k) ? kv.get(k) : null));
       case "EXPIRE": return 1;
       case "DEL": { zsets.delete(args[0]); kv.delete(args[0]); return 1; }
@@ -215,6 +224,8 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   await send({ e: "coupon" });
   await send({ e: "exit_shown" });
   await send({ e: "exit_whatsapp" });
+  await send({ e: "view", v: "aaaa1111bbbb", ids: [1, 2, 2] });
+  await send({ e: "view", v: "cccc2222dddd", ids: [1, "x", -3] });
   r = await send({ e: "hack" }); // evento desconhecido e ignorado
   assert.strictEqual(r.status, 204);
   r = await call(stats, { query: { key: "errada" } });
@@ -225,6 +236,9 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   assert.deepStrictEqual(r.data.topOffers.map((o) => [o.id, o.clicks]), [[1, 2], [2, 1]]);
   assert.strictEqual(r.data.topOffers[0].title, "Air Fryer R$ 229,90");
   assert.strictEqual(r.data.total.visit, 3);
+  assert.strictEqual(today.view, 3);
+  assert.deepStrictEqual(r.data.topOffers.map((o) => [o.id, o.views]), [[1, 2], [2, 1]]);
+  assert.deepStrictEqual(r.data.topViewed.map((o) => [o.id, o.views, o.clicks]), [[1, 2, 2], [2, 1, 1]]);
   console.log("OK: contador de visitas/cliques e painel");
 
   // Mais clicadas (publico)
@@ -233,6 +247,24 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   assert.deepStrictEqual(r.data.items.map((x) => [x.id, x.clicks]), [[1, 2], [2, 1]]);
   assert.ok(r.data.items[0].ad.text.includes("Air Fryer") && !("chat_id" in r.data.items[0].ad));
   console.log("OK: mais clicadas");
+
+  // Resumo diario: cadastro pelo /start no privado, escolha no painel e texto.
+  r = await call(telegram, { method: "POST", headers: ok,
+    body: { message: { message_id: 1, date: 1, chat: { id: 555, type: "private", first_name: "Joao", username: "jpveras" }, text: "/start" } } });
+  assert.strictEqual(r.data.private, true);
+  const report = require("../api/report");
+  r = await call(report, {});
+  assert.strictEqual(r.status, 401);
+  r = await call(report, { query: { key: "chave-teste", action: "status" } });
+  assert.deepStrictEqual(r.data.candidates, [{ id: "555", name: "Joao (@jpveras)" }]);
+  r = await call(report, { query: { key: "chave-teste", action: "set", chat: "999" } });
+  assert.strictEqual(r.status, 400);
+  r = await call(report, { query: { key: "chave-teste", action: "set", chat: "555" } });
+  assert.strictEqual(r.data.chat, "555");
+  r = await call(report, { query: { key: "chave-teste", action: "preview" } });
+  assert.ok(r.data.text.includes("Promoções do Veras") && r.data.text.includes("cliques em ofertas") && r.data.text.includes("Air Fryer"));
+  if (process.env.SHOW_REPORT) console.log(r.data.text);
+  console.log("OK: resumo diario");
 
   // Loja: o anuncio 1 tem link amzn.to -> amazon, sem precisar abrir o link.
   r = await call(ads, { query: { limit: "10" } });

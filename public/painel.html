@@ -55,6 +55,9 @@
   .top li:last-child { border-bottom: none; }
   .top ol { margin: 0; padding-left: 20px; }
   .top b { color: var(--accent); white-space: nowrap; }
+  .top li .nums { display: flex; gap: 14px; align-items: baseline; white-space: nowrap; font-size: 13px; color: var(--muted, #8b93a1); }
+  .top li .nums b { font-size: 14px; }
+  .small { font-size: 12.5px; margin: -4px 0 10px; }
   .login { max-width: 380px; margin: 60px auto; background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 24px; }
   .login input {
     width: 100%; margin: 12px 0; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--border);
@@ -71,6 +74,10 @@
   .status-grid div { font-size: 14px; }
   .status-grid span { display: block; color: var(--muted); font-size: 11.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
   .status-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .report-steps { margin: 6px 0 12px; padding-left: 20px; font-size: 14px; line-height: 1.8; }
+  .report-steps a { color: var(--accent); }
+  .report-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .report-row select { min-width: 220px; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--card, #15171c); color: var(--text); font: inherit; }
   .stores-msg { margin-top: 10px; font-size: 13px; color: var(--muted, #8b93a1); }
 </style>
 </head>
@@ -115,6 +122,23 @@
         <div class="stores-msg" id="stores-msg" hidden></div>
       </section>
 
+      <section class="box status" id="report-box">
+        <h2>Resumo diário no Telegram <span class="pill" id="report-pill">…</span></h2>
+        <p class="muted small" style="margin-top:0">Todo dia, por volta das 23h, o bot manda para você: visitas, ofertas vistas, cliques, cupons e as ofertas mais clicadas.</p>
+        <ol class="report-steps">
+          <li>No Telegram, abra <a href="https://t.me/PromocoesVerasBot" target="_blank" rel="noopener noreferrer">@PromocoesVerasBot</a> e envie <b>/start</b>.</li>
+          <li>Clique em <b>Atualizar lista</b>, escolha seu nome e clique em <b>Ativar</b>.</li>
+        </ol>
+        <div class="report-row">
+          <select id="report-chat"><option value="">Ninguém mandou /start ainda</option></select>
+          <button type="button" class="btn" id="report-refresh">↻ Atualizar lista</button>
+          <button type="button" class="btn" id="report-save">Ativar</button>
+          <button type="button" class="btn" id="report-test">Enviar agora (teste)</button>
+          <button type="button" class="btn" id="report-off">Desativar</button>
+        </div>
+        <div class="stores-msg" id="report-msg" hidden></div>
+      </section>
+
       <h2 class="section-title">Visitas e cliques</h2>
       <div class="grid" id="kpis"></div>
 
@@ -126,6 +150,12 @@
       <section class="box top">
         <h2>Ofertas mais clicadas no período</h2>
         <div id="top"></div>
+      </section>
+
+      <section class="box top">
+        <h2>Ofertas mais vistas no período</h2>
+        <p class="muted small">Quantas vezes cada oferta apareceu na tela de alguém (uma vez por visita) e quantas viraram clique.</p>
+        <div id="top-viewed"></div>
       </section>
 
       <section class="box">
@@ -193,8 +223,10 @@
       days === 1 ? "Hoje (horário de Brasília). Contagem anônima de visitas e cliques."
                  : `Últimos ${days} dias (horário de Brasília). Contagem anônima de visitas e cliques.`;
 
+    const views = sum(rows, "view");
     const kpis = [
       ["Visitas", visits, `${fmt(uniqueToday)} visitante(s) único(s) hoje`, "main"],
+      ["Ofertas vistas na tela", views, views ? `${pct(offer, views)} viraram clique` : "contagem começou em 15/10", ""],
       ["Cliques em “Ver oferta”", offer, `${pct(offer, visits)} das visitas`, ""],
       ["Cupons copiados", sum(rows, "coupon"), "", ""],
       ["Cliques no WhatsApp", wa, `${fmt(sum(rows, "exit_whatsapp"))} vieram do aviso de saída`, "wa"],
@@ -209,17 +241,22 @@
     ).join("");
 
     $("days").innerHTML =
-      `<tr><th>Dia</th><th>Visitas</th><th>Únicos</th><th>Ver oferta</th><th>Cupons</th><th>WhatsApp</th><th>Telegram</th><th>Instagram</th><th>Aviso → WhatsApp</th></tr>` +
-      rows.map((r) => `<tr><td>${dayLabel(r.day)}</td><td>${fmt(r.visit)}</td><td>${fmt(r.unique)}</td><td>${fmt(r.offer)}</td><td>${fmt(r.coupon)}</td><td>${fmt(r.whatsapp)}</td><td>${fmt(r.telegram)}</td><td>${fmt(r.instagram)}</td><td>${fmt(r.exit_whatsapp)}/${fmt(r.exit_shown)}</td></tr>`).join("");
+      `<tr><th>Dia</th><th>Visitas</th><th>Únicos</th><th>Vistas</th><th>Ver oferta</th><th>Cupons</th><th>WhatsApp</th><th>Telegram</th><th>Instagram</th><th>Aviso → WhatsApp</th></tr>` +
+      rows.map((r) => `<tr><td>${dayLabel(r.day)}</td><td>${fmt(r.visit)}</td><td>${fmt(r.unique)}</td><td>${fmt(r.view)}</td><td>${fmt(r.offer)}</td><td>${fmt(r.coupon)}</td><td>${fmt(r.whatsapp)}</td><td>${fmt(r.telegram)}</td><td>${fmt(r.instagram)}</td><td>${fmt(r.exit_whatsapp)}/${fmt(r.exit_shown)}</td></tr>`).join("");
 
     $("top").innerHTML = data.topOffers.length
-      ? `<ol>${data.topOffers.map((o) => `<li><span>${esc(o.title)}</span><b>${fmt(o.clicks)} clique(s)</b></li>`).join("")}</ol>`
+      ? `<ol>${data.topOffers.map((o) => `<li><span>${esc(o.title)}</span><span class="nums">${o.views ? `${fmt(o.views)} vista(s) · ${pct(o.clicks, o.views)}` : ""}<b>${fmt(o.clicks)} clique(s)</b></span></li>`).join("")}</ol>`
       : `<div class="muted">Nenhum clique em oferta no período ainda.</div>`;
+
+    const tv = data.topViewed || [];
+    $("top-viewed").innerHTML = tv.length
+      ? `<ol>${tv.map((o) => `<li><span>${esc(o.title)}</span><span class="nums">${fmt(o.clicks)} clique(s) · ${pct(o.clicks, o.views)}<b>${fmt(o.views)} vista(s)</b></span></li>`).join("")}</ol>`
+      : `<div class="muted">As visualizações começaram a ser contadas em 15/10; logo aparecem aqui.</div>`;
 
     const t = data.total;
     $("alltime").innerHTML =
       `<tr><th>Métrica</th><th>Total</th></tr>` +
-      [["Visitas", t.visit], ["Visitantes únicos", t.unique], ["Cliques em “Ver oferta”", t.offer], ["Cupons copiados", t.coupon],
+      [["Visitas", t.visit], ["Visitantes únicos", t.unique], ["Ofertas vistas na tela", t.view], ["Cliques em “Ver oferta”", t.offer], ["Cupons copiados", t.coupon],
        ["Cliques no WhatsApp", t.whatsapp + t.exit_whatsapp], ["Cliques no Telegram", t.telegram], ["Cliques no Instagram", t.instagram]]
         .map(([l, v]) => `<tr><td>${l}</td><td>${fmt(v)}</td></tr>`).join("");
   }
@@ -265,6 +302,7 @@
       $("login").hidden = true;
       $("dash").hidden = false;
       loadBot(false);
+      loadReport();
     } catch (err) {
       if (err.message === "auth") { key = ""; clearSession(); }
       $("login").hidden = false;
@@ -285,6 +323,47 @@
     start();
   });
   $("refresh").addEventListener("click", () => { load().catch(() => {}); loadBot(false); });
+  // ---------- Resumo diario no Telegram ----------
+  async function reportApi(params) {
+    const res = await fetch(`/api/report?key=${encodeURIComponent(key)}&${params}`, { cache: "no-store" });
+    return res.json();
+  }
+  function reportMsg(text) { const m = $("report-msg"); m.hidden = false; m.textContent = text; }
+  async function loadReport() {
+    const pill = $("report-pill");
+    try {
+      const d = await reportApi("action=status");
+      const sel = $("report-chat");
+      const cands = d.candidates || [];
+      sel.innerHTML = cands.length
+        ? cands.map((c) => `<option value="${esc(c.id)}"${c.id === d.chat ? " selected" : ""}>${esc(c.name)}</option>`).join("")
+        : `<option value="">Ninguém mandou /start ainda</option>`;
+      const current = cands.find((c) => c.id === d.chat);
+      pill.className = "pill " + (d.chat ? "ok" : "");
+      pill.textContent = d.chat ? `ativo · ${current ? current.name : d.chat}` : "desativado";
+    } catch {
+      pill.className = "pill bad"; pill.textContent = "erro";
+    }
+  }
+  $("report-refresh").addEventListener("click", loadReport);
+  $("report-save").addEventListener("click", async () => {
+    const chat = $("report-chat").value;
+    if (!chat) { reportMsg("Primeiro mande /start para o bot no Telegram e clique em Atualizar lista."); return; }
+    const d = await reportApi(`action=set&chat=${encodeURIComponent(chat)}`);
+    reportMsg(d.ok ? "✅ Ativado! O resumo chega todo dia por volta das 23h." : `Não deu: ${d.error}`);
+    loadReport();
+  });
+  $("report-test").addEventListener("click", async () => {
+    reportMsg("Enviando…");
+    const d = await reportApi("action=send");
+    reportMsg(d.sent ? "✅ Enviado! Confira seu Telegram." : `Não enviado: ${d.reason || d.error}`);
+  });
+  $("report-off").addEventListener("click", async () => {
+    await reportApi("action=set&chat=");
+    reportMsg("Resumo diário desativado.");
+    loadReport();
+  });
+
   $("bot-check").addEventListener("click", () => loadBot(false));
   $("bot-relink").addEventListener("click", () => loadBot(true));
   // Cada chamada identifica ~30 ofertas; repete sozinho ate acabar.

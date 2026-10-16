@@ -5,6 +5,8 @@ const { upsertAd, rememberChat } = require("./_lib/store");
 const { resolveAd, backfillStores } = require("./_lib/resolve");
 
 const { webhookSecret } = require("./_lib/secret");
+const { sendMessage } = require("./_lib/tg");
+const { rememberCandidate, reportChat, sendReport } = require("./_lib/report");
 
 const WEBHOOK_SECRET = webhookSecret();
 // Um ou mais chats separados por virgula (ex.: o canal e o grupo).
@@ -23,6 +25,24 @@ function readBody(req) {
     }
   }
   return null;
+}
+
+async function handlePrivate(msg) {
+  const chatId = String(msg.chat.id);
+  const who = [msg.chat.first_name, msg.chat.last_name].filter(Boolean).join(" ") || "Sem nome";
+  const name = msg.chat.username ? `${who} (@${msg.chat.username})` : who;
+  await rememberCandidate(chatId, name);
+  const text = String(msg.text || "").trim().toLowerCase();
+  const isReportChat = (await reportChat()) === chatId;
+
+  if (isReportChat && text.startsWith("/resumo")) {
+    await sendReport({ force: true });
+    return;
+  }
+  const reply = isReportChat
+    ? "✅ Você já recebe o resumo diário das Promoções do Veras, todo dia por volta das 23h.\nEnvie /resumo para receber o de hoje agora."
+    : "👋 Olá! Este é o bot das <b>Promoções do Veras</b>.\n\nPara receber o resumo diário (visitas, cliques e ofertas mais clicadas), abra o painel em promocoesdoveras.com.br/admin e escolha seu nome em <b>Resumo diário no Telegram</b>.";
+  await sendMessage(chatId, reply);
 }
 
 module.exports = async function handler(req, res) {
@@ -57,6 +77,17 @@ module.exports = async function handler(req, res) {
   console.log(`[telegram] Mensagem de chat_id=${incomingChatId} (${chatName})`);
   // Guarda os chats vistos para a pagina /api/setup mostrar qual e o id certo.
   await rememberChat(incomingChatId, chatName).catch(() => {});
+
+  // Conversa no privado com o bot: cadastro para o resumo diario.
+  if (msg.chat.type === "private" && !update.edited_message) {
+    try {
+      await handlePrivate(msg);
+    } catch (err) {
+      console.error("[telegram] Falha no privado:", err.message);
+    }
+    res.status(200).json({ ok: true, private: true });
+    return;
+  }
 
   if (CHAT_IDS.length > 0 && !CHAT_IDS.includes(incomingChatId)) {
     res.status(200).json({ ok: true, ignored: "outro chat" });
