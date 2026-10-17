@@ -24,6 +24,11 @@ module.exports = async function handler(req, res) {
     res.status(200).json({ error: "Banco não configurado." });
     return;
   }
+  // Tirar / devolver oferta do destaque: ?skip=ID ou ?unskip=ID
+  const skipId = Number.parseInt(query.skip || query.unskip, 10);
+  if (Number.isInteger(skipId) && skipId > 0) {
+    await redis([[query.skip ? "SADD" : "SREM", "hero:skip", String(skipId)]]);
+  }
   const days = Math.min(Math.max(Number.parseInt(query.days, 10) || 7, 1), 90);
   try {
     const stats = await readStats(days);
@@ -36,7 +41,14 @@ module.exports = async function handler(req, res) {
         return { ...o, title: ad ? headline(ad.text) : "Anúncio removido" };
       });
     }
-    res.status(200).json({ days, ...stats });
+    const [skipRaw] = await redis([["SMEMBERS", "hero:skip"]]);
+    const skipIds = (skipRaw || []).map(Number).filter(Boolean);
+    let skipped = [];
+    if (skipIds.length) {
+      const [raws] = await redis([["MGET", ...skipIds.map((id) => `ad:${id}`)]]);
+      skipped = skipIds.map((id, i) => ({ id, title: raws && raws[i] ? headline(JSON.parse(raws[i]).text) : "Anúncio removido" }));
+    }
+    res.status(200).json({ days, ...stats, skipped });
   } catch (err) {
     console.error("[stats] Falha ao ler numeros:", err.message);
     res.status(500).json({ error: "Falha ao ler os números." });

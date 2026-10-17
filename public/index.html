@@ -1801,6 +1801,8 @@
 
   // Mais clicadas (api/hot): id -> cliques, na ordem do ranking.
   let hotMap = new Map();
+  // Ofertas tiradas do destaque pelo painel (cupom expirado etc.).
+  let heroSkip = new Set([982]);
   let hotList = [];
   let hotPeriod = "today";
   // Numero de cliques so aparece quando impressiona; abaixo disso, o selo fica sem numero.
@@ -1993,7 +1995,7 @@
     const { now, old, discount, coupon, pix, installments } = info(ad);
     const offNum = info(ad).off && info(ad).off < 95 ? info(ad).off : 0;
     // Selo: "Em alta" (mais clicadas) ou "Relampago" (desconto de 50% ou mais).
-    const hotClicks = hotMap.get(ad.id) || 0;
+    const hotClicks = heroSkip.has(ad.id) ? 0 : hotMap.get(ad.id) || 0;
     const tag = hotClicks >= 3 && hotRank(ad.id) < 6
       ? { cls: "hot", text: hotClicks >= SHOW_CLICKS_FROM ? `🔥 Em alta · ${hotClicks} cliques` : "🔥 Em alta" }
       : offNum >= 50 ? { cls: "flash", text: "⚡ Relâmpago" } : null;
@@ -2389,12 +2391,12 @@
   }
   function biggestDiscounts(exclude) {
     return recentPool()
-      .filter((a) => a.photo_url && extractUrl(a.text) && info(a).off && info(a).off < 95 && !exclude.has(a.id))
+      .filter((a) => a.photo_url && extractUrl(a.text) && info(a).off && info(a).off < 95 && !exclude.has(a.id) && !heroSkip.has(a.id))
       .sort((a, b) => info(b).off - info(a).off);
   }
   function buildHeroDeal() {
     let ad = null, kicker = "";
-    const top = hotList.find((x) => x.clicks >= 2 && x.ad && x.ad.photo_url && extractUrl(x.ad.text));
+    const top = hotList.find((x) => x.clicks >= 2 && !heroSkip.has(x.id) && x.ad && x.ad.photo_url && extractUrl(x.ad.text));
     if (top) {
       ad = allAds.find((a) => a.id === top.id) || top.ad;
       kicker = `🔥 Mais clicada ${hotPeriod === "today" ? "hoje" : "agora"}${top.clicks >= SHOW_CLICKS_FROM ? ` · ${top.clicks} cliques` : ""}`;
@@ -2438,7 +2440,8 @@
       const data = await res.json();
       // So ofertas recentes (48h) e com 2+ cliques contam como "em alta".
       const since = Date.now() - 48 * 60 * 60 * 1000;
-      hotList = (data.items || []).filter((x) => x.ad && x.clicks >= 2 && new Date(x.ad.posted_at).getTime() >= since);
+      heroSkip = new Set((data.skip || []).map(Number));
+      hotList = (data.items || []).filter((x) => x.ad && x.clicks >= 2 && !heroSkip.has(x.id) && new Date(x.ad.posted_at).getTime() >= since);
       hotPeriod = data.period || "today";
       hotMap = new Map(hotList.map((x) => [x.id, x.clicks]));
       if (allAds.length) refreshAll();
@@ -2556,7 +2559,7 @@
       const url = extractUrl(ad.text);
       if (!url) continue;
       const { now, off } = info(ad);
-      if (!off || off >= 95 || ad.id === heroAdId) continue;
+      if (!off || off >= 95 || ad.id === heroAdId || heroSkip.has(ad.id)) continue;
       if (!best || off > best.off) best = { ad, url, now, off };
     }
     bestAdId = best ? best.ad.id : null;

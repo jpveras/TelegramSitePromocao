@@ -58,6 +58,9 @@
   .top li .nums { display: flex; gap: 14px; align-items: baseline; white-space: nowrap; font-size: 13px; color: var(--muted, #8b93a1); }
   .top li .nums b { font-size: 14px; }
   .small { font-size: 12.5px; margin: -4px 0 10px; }
+  .mini { margin-left: 10px; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted, #8b93a1); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .mini:hover { border-color: var(--accent); color: var(--accent); }
+  .skip-tag { font-style: normal; font-size: 11px; font-weight: 800; color: #ff6b6b; margin-left: 6px; }
   .login { max-width: 380px; margin: 60px auto; background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 24px; }
   .login input {
     width: 100%; margin: 12px 0; padding: 13px 14px; border-radius: 12px; border: 1px solid var(--border);
@@ -153,6 +156,12 @@
       </section>
 
       <section class="box top">
+        <h2>Fora do destaque</h2>
+        <p class="muted small">Ofertas que você tirou do destaque (ex.: cupom expirou). Continuam na lista do site, só não aparecem em destaque, nas Mais clicadas nem como "Em alta".</p>
+        <div id="skipped"></div>
+      </section>
+
+      <section class="box top">
         <h2>Ofertas mais vistas no período</h2>
         <p class="muted small">Quantas vezes cada oferta apareceu na tela de alguém (uma vez por visita) e quantas viraram clique.</p>
         <div id="top-viewed"></div>
@@ -202,8 +211,17 @@
   const esc = (s) => { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; };
   const dayLabel = (d) => { const [y, m, dd] = d.split("-"); return `${dd}/${m}`; };
 
-  async function load() {
-    const res = await fetch(`/api/stats?days=${days}&key=${encodeURIComponent(key)}`, { cache: "no-store" });
+  // Tirar / devolver do destaque
+  document.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-skip],[data-unskip]");
+    if (!b) return;
+    b.disabled = true;
+    const param = b.dataset.skip ? `skip=${b.dataset.skip}` : `unskip=${b.dataset.unskip}`;
+    await load(param);
+  });
+
+  async function load(extra) {
+    const res = await fetch(`/api/stats?days=${days}&key=${encodeURIComponent(key)}${extra ? "&" + extra : ""}`, { cache: "no-store" });
     if (res.status === 401) throw new Error("auth");
     const data = await res.json();
     if (data.error) throw new Error(data.error);
@@ -246,8 +264,16 @@
       rows.map((r) => `<tr><td>${dayLabel(r.day)}</td><td>${fmt(r.visit)}</td><td>${fmt(r.unique)}</td><td>${fmt(r.view)}</td><td>${fmt(r.offer)}</td><td>${fmt(r.coupon)}</td><td>${fmt(r.whatsapp)}</td><td>${fmt(r.telegram)}</td><td>${fmt(r.instagram)}</td><td>${fmt(r.exit_whatsapp)}/${fmt(r.exit_shown)}</td></tr>`).join("");
 
     $("top").innerHTML = data.topOffers.length
-      ? `<ol>${data.topOffers.map((o) => `<li><span>${esc(o.title)}</span><span class="nums">${o.views ? `${fmt(o.views)} vista(s) · ${pct(o.clicks, o.views)}` : ""}<b>${fmt(o.clicks)} clique(s)</b></span></li>`).join("")}</ol>`
+      ? `<ol>${data.topOffers.map((o) => {
+          const off = (data.skipped || []).some((x) => x.id === o.id);
+          return `<li><span>${esc(o.title)}${off ? ' <em class="skip-tag">fora do destaque</em>' : ""}</span><span class="nums">${o.views ? `${fmt(o.views)} vista(s) · ${pct(o.clicks, o.views)}` : ""}<b>${fmt(o.clicks)} clique(s)</b>${off ? "" : `<button type="button" class="mini" data-skip="${o.id}" title="Não mostrar no destaque, nas Mais clicadas nem como Em alta">Tirar do destaque</button>`}</span></li>`;
+        }).join("")}</ol>`
       : `<div class="muted">Nenhum clique em oferta no período ainda.</div>`;
+
+    const sk = data.skipped || [];
+    $("skipped").innerHTML = sk.length
+      ? `<ol>${sk.map((o) => `<li><span>${esc(o.title)} <small class="muted">#${o.id}</small></span><span class="nums"><button type="button" class="mini" data-unskip="${o.id}">Voltar ao destaque</button></span></li>`).join("")}</ol>`
+      : `<div class="muted">Nenhuma oferta fora do destaque.</div>`;
 
     const tv = data.topViewed || [];
     $("top-viewed").innerHTML = tv.length

@@ -72,6 +72,13 @@ function fakeRedisServer() {
         const z = zsets.get(args[0]);
         return z && z.has(args[1]) ? String(z.get(args[1])) : null;
       }
+      case "SADD": {
+        if (!hashes.has(args[0])) hashes.set(args[0], new Map());
+        for (const v of args.slice(1)) hashes.get(args[0]).set(v, "1");
+        return 1;
+      }
+      case "SREM": { const h = hashes.get(args[0]); if (h) for (const v of args.slice(1)) h.delete(v); return 1; }
+      case "SMEMBERS": return [...(hashes.get(args[0]) || new Map()).keys()];
       case "MGET": return args.map((k) => (kv.has(k) ? kv.get(k) : null));
       case "EXPIRE": return 1;
       case "DEL": { zsets.delete(args[0]); kv.delete(args[0]); return 1; }
@@ -246,6 +253,13 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   r = await call(hot, {});
   assert.deepStrictEqual(r.data.items.map((x) => [x.id, x.clicks]), [[1, 2], [2, 1]]);
   assert.ok(r.data.items[0].ad.text.includes("Air Fryer") && !("chat_id" in r.data.items[0].ad));
+  assert.deepStrictEqual(r.data.skip, [982]);
+  r = await call(stats, { query: { key: "chave-teste", skip: "1" } });
+  assert.deepStrictEqual(r.data.skipped.map((x) => x.id).sort(), [1, 982]);
+  r = await call(hot, {});
+  assert.deepStrictEqual(r.data.items.map((x) => x.id), [2]);
+  r = await call(stats, { query: { key: "chave-teste", unskip: "1" } });
+  assert.deepStrictEqual(r.data.skipped.map((x) => x.id), [982]);
   console.log("OK: mais clicadas");
 
   // Resumo diario: cadastro pelo /start no privado, escolha no painel e texto.

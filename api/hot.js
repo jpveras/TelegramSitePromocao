@@ -16,12 +16,18 @@ function pairs(flat) {
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=300");
   if (!isConfigured()) {
-    res.status(200).json({ period: "today", items: [] });
+    res.status(200).json({ period: "today", items: [], skip: [] });
     return;
   }
   try {
     const today = dayKey();
     const yesterday = dayKey(new Date(Date.now() - 86400000));
+    // Ofertas tiradas do destaque pelo painel (ex.: cupom expirou).
+    // Na primeira vez, ja tira a 982 (Headphone Havit, cupom expirado em 17/10).
+    const [seeded] = await redis([["SET", "hero:skip:seeded", "1", "NX"]]);
+    if (seeded === "OK") await redis([["SADD", "hero:skip", "982"]]);
+    const [skipRaw] = await redis([["SMEMBERS", "hero:skip"]]);
+    const skip = (skipRaw || []).map(Number).filter(Boolean);
     let period = "today";
     let [flat] = await redis([["ZRANGE", `st:${today}:offers`, "0", "11", "REV", "WITHSCORES"]]);
     let list = pairs(flat);
@@ -40,7 +46,7 @@ module.exports = async function handler(req, res) {
     list.forEach((x, i) => {
       if (raws[i]) items.push({ id: x.id, clicks: x.clicks, ad: toPublic(JSON.parse(raws[i])) });
     });
-    res.status(200).json({ period, items });
+    res.status(200).json({ period, items: items.filter((x) => !skip.includes(x.id)), skip });
   } catch (err) {
     console.error("[hot] Falha:", err.message);
     res.status(200).json({ period: "today", items: [] });
