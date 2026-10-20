@@ -98,6 +98,7 @@ async function upsertAd(ad) {
     ["ZADD", "ads:index", String(id), String(id)],
     ["ZADD", "ads:bytime", String(postedMs(record)), String(id)],
   ]);
+  countsCache = null;
   return { ad: record, created: true };
 }
 
@@ -158,9 +159,11 @@ function postedMs(ad) {
 }
 
 // Anuncios salvos antes de existir o ads:bytime entram nele aqui, uma vez so.
+let byTimeChecked = false;
 async function backfillByTime() {
+  if (byTimeChecked) return;
   const [indexCount, timeCount] = await redis([["ZCARD", "ads:index"], ["ZCARD", "ads:bytime"]]);
-  if (Number(timeCount) >= Number(indexCount)) return;
+  if (Number(timeCount) >= Number(indexCount)) { byTimeChecked = true; return; }
   const [ids] = await redis([["ZRANGE", "ads:index", "0", "-1"]]);
   for (let i = 0; i < ids.length; i += 200) {
     const ads = await fetchByIds(ids.slice(i, i + 200));
@@ -169,6 +172,7 @@ async function backfillByTime() {
     for (const ad of ads) args.push(String(postedMs(ad)), String(ad.id));
     await redis([["ZADD", "ads:bytime", ...args]]);
   }
+  byTimeChecked = true;
 }
 
 // Quantos anuncios foram postados desde "sinceMs" (ex.: ultimas 24h).
@@ -183,7 +187,21 @@ async function countAds() {
   return Number(count) || 0;
 }
 
+// Total e "ultimas 24h" para o site. Guardados por 2 min na memoria da funcao:
+// o feed ao vivo pergunta a cada 15 s e esses numeros mudam devagar.
+const COUNTS_TTL_MS = 120000;
+let countsCache = null;
+async function getCounts() {
+  if (countsCache && Date.now() - countsCache.at < COUNTS_TTL_MS) return countsCache;
+  await backfillByTime();
+  const since = Date.now() - 24 * 60 * 60 * 1000;
+  const [total, last24h] = await redis([["ZCARD", "ads:index"], ["ZCOUNT", "ads:bytime", String(since), "+inf"]]);
+  countsCache = { at: Date.now(), total: Number(total) || 0, last24h: Number(last24h) || 0 };
+  return countsCache;
+}
+
 module.exports = {
+  getCounts,
   isConfigured,
   upsertAd,
   getAd,

@@ -3,7 +3,7 @@
 //   GET /api/ads?limit=60&before=123  -> mais antigos que o id 123 (botao "carregar mais")
 //   GET /api/ads?after=123            -> novos desde o id 123 (feed ao vivo)
 
-const { isConfigured, listAds, listAdsAfter, countAds, countSince } = require("./_lib/store");
+const { isConfigured, listAds, listAdsAfter, getCounts } = require("./_lib/store");
 const { toPublic } = require("./_lib/public");
 
 function toInt(value) {
@@ -14,8 +14,6 @@ function toInt(value) {
 module.exports = async function handler(req, res) {
   // Cache curto na CDN: varios visitantes perguntando a mesma coisa no mesmo
   // instante recebem a mesma resposta, sem rodar a funcao de novo.
-  res.setHeader("Cache-Control", "public, max-age=0, s-maxage=10, stale-while-revalidate=30");
-
   if (!isConfigured()) {
     res.status(200).json({ configured: false, total: 0, ads: [] });
     return;
@@ -25,12 +23,13 @@ module.exports = async function handler(req, res) {
   const limit = Math.min(toInt(query.limit) || 60, 200);
   const before = toInt(query.before);
   const after = toInt(query.after);
+  // Feed ao vivo (after): 15 s, o mesmo ritmo da pagina. Lista inicial: 30 s.
+  res.setHeader("Cache-Control", `public, max-age=0, s-maxage=${after !== null ? 15 : 30}, stale-while-revalidate=60`);
 
   try {
-    const [ads, total, last24h] = await Promise.all([
+    const [ads, { total, last24h }] = await Promise.all([
       after !== null ? listAdsAfter(after) : listAds({ limit, before }),
-      countAds(),
-      countSince(Date.now() - 24 * 60 * 60 * 1000),
+      getCounts(),
     ]);
     res.status(200).json({ configured: true, total, last24h, ads: ads.map(toPublic) });
   } catch (err) {

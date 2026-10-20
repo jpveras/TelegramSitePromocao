@@ -13,8 +13,10 @@ function pairs(flat) {
   return out;
 }
 
+let seedChecked = false;
+
 module.exports = async function handler(req, res) {
-  res.setHeader("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=300");
+  res.setHeader("Cache-Control", "public, max-age=60, s-maxage=120, stale-while-revalidate=300");
   if (!isConfigured()) {
     res.status(200).json({ period: "today", items: [], skip: [] });
     return;
@@ -24,8 +26,11 @@ module.exports = async function handler(req, res) {
     const yesterday = dayKey(new Date(Date.now() - 86400000));
     // Ofertas tiradas do destaque pelo painel (ex.: cupom expirou).
     // Na primeira vez, ja tira a 982 (Headphone Havit, cupom expirado em 17/10).
-    const [seeded] = await redis([["SET", "hero:skip:seeded", "1", "NX"]]);
-    if (seeded === "OK") await redis([["SADD", "hero:skip", "982"]]);
+    if (!seedChecked) {
+      const [seeded] = await redis([["SET", "hero:skip:seeded", "1", "NX"]]);
+      if (seeded === "OK") await redis([["SADD", "hero:skip", "982"]]);
+      seedChecked = true;
+    }
     const [skipRaw] = await redis([["SMEMBERS", "hero:skip"]]);
     const skip = (skipRaw || []).map(Number).filter(Boolean);
     let period = "today";
