@@ -2,7 +2,7 @@
 // Serve para compartilhar: no WhatsApp o link aparece com a foto, o nome e o
 // preco do produto. Quem abre ve a oferta e vai para a loja com um toque.
 
-const { isConfigured, getAd } = require("./_lib/store");
+const { isConfigured, getAd, listAds } = require("./_lib/store");
 const { describe } = require("./_lib/parse");
 
 const STORES = {
@@ -51,26 +51,100 @@ h1{font-size:19px;line-height:1.35;margin:0 0 12px}
 .note{font-size:12.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.5}
 .wa{margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:14px;background:#25d366;color:#062b15;font-weight:900;text-decoration:none}
 .lt{display:block;text-align:center;margin-top:12px;font-size:14px;font-weight:800;color:var(--accent);text-decoration:none}
+.ph-badge{display:inline-block;font-size:13px;font-weight:800;padding:6px 10px;border-radius:9px;margin:0 0 10px;background:rgba(63,201,107,.14);color:var(--green)}
+.ph-badge.down{background:rgba(255,122,26,.12);color:var(--accent)}
+.flag{display:block;margin:12px auto 0;background:none;border:none;color:var(--muted);font:inherit;font-size:12.5px;cursor:pointer;text-decoration:underline}
+.flag:disabled{text-decoration:none;cursor:default;color:var(--green)}
 .stale{background:rgba(245,197,24,.14);color:#c99a00;font-size:12.5px;font-weight:700;padding:8px 10px;border-radius:10px;margin-bottom:12px}
 `;
 
-function page({ title, desc, image, url, body }) {
+const BRL = (n) => "R$ " + Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const DM = (iso) => { const t = new Date(iso); return isNaN(t) ? "" : t.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "America/Sao_Paulo" }); };
+function historyBadge(ad, d) {
+  const ph = ad.ph; const { parseBRL } = require("./_lib/parse");
+  const now = parseBRL(d.now);
+  if (!ph || !now) return "";
+  if (now < ph.min) return `<div class="ph-badge">📉 Menor preço já visto aqui (antes: ${BRL(ph.min)} em ${DM(ph.minAt)})</div>`;
+  if (ph.prev && now < ph.prev - 0.5) return `<div class="ph-badge down">↓ ${BRL(ph.prev - now)} mais barato que em ${DM(ph.prevAt)}</div>`;
+  return "";
+}
+
+function page({ title, desc, image, url, body, extraCss = "", wide = false }) {
   return `<!doctype html><html lang="pt-br"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(title)}</title><meta name="description" content="${esc(desc)}">
 <meta property="og:type" content="product"><meta property="og:site_name" content="Promoções do Veras">
 <meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}">
 <meta property="og:image" content="${esc(image)}"><meta property="og:url" content="${esc(url)}"><meta property="og:locale" content="pt_BR">
 <meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#0b0d12">
-<link rel="icon" type="image/png" href="/favicon.png"><link rel="manifest" href="/manifest.webmanifest">
-${themeScript()}<style>${CSS}</style></head><body>
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="manifest" href="/manifest.webmanifest"><link rel="canonical" href="${esc(url)}">
+${themeScript()}<style>${CSS}${extraCss}</style></head><body>
 <header><a href="/"><img src="/logo.png" alt=""> Promoções do Veras</a><a class="all" href="/">Ver todas as ofertas ›</a></header>
-<main>${body}</main></body></html>`;
+<main${wide ? ' class="wide"' : ""}>${body}</main></body></html>`;
+}
+
+const LIST_CSS = `
+.intro{color:var(--muted);font-size:15px;line-height:1.6;margin:0 0 18px}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.item{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:var(--text)}
+.item .ph{aspect-ratio:4/3;background:#fff;display:flex;align-items:center;justify-content:center}
+.item .ph img{width:88%;height:88%;object-fit:contain}
+.item .in{padding:12px 14px}
+.item .nm{font-size:14px;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 6px}
+.item .pr{font-size:20px;font-weight:900}
+.item .off{background:rgba(63,201,107,.14);color:var(--green);font-weight:800;font-size:12px;padding:2px 6px;border-radius:6px;margin-left:6px}
+.stores{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 0}
+.stores a{padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--text);text-decoration:none;font-size:13px;font-weight:700}
+main.wide{max-width:1100px}
+`;
+
+const PREP = { mercadolivre: "do", aliexpress: "do", carrefour: "do" };
+
+async function storePage(req, res, origin, key) {
+  const label = STORES[key];
+  if (!label) {
+    res.setHeader("Cache-Control", "no-store");
+    res.status(404).send(page({ title: "Loja não encontrada · Promoções do Veras", desc: "Veja as ofertas de hoje.", image: `${origin}/og.png`, url: `${origin}/`, body: `<div class="card"><div class="body"><h1>Loja não encontrada</h1><a class="go" href="/">Ver ofertas de hoje</a></div></div>` }));
+    return;
+  }
+  const recent = isConfigured() ? await listAds({ limit: 400 }).catch(() => []) : [];
+  const ads = recent.filter((a) => a.store === key).slice(0, 48);
+  const de = `${PREP[key] || "da"} ${label}`;
+  const items = ads.map((a) => {
+    const d = describe(a);
+    return `<a class="item" href="/oferta/${a.id}"><span class="ph">${a.photo_file_id ? `<img src="/api/photo?ad=${a.id}&v=2" alt="${esc(d.name)}" loading="lazy">` : "🏷️"}</span><span class="in"><p class="nm">${esc(d.name)}</p><span class="pr">${esc(d.now || "Confira")}</span>${d.discount ? `<span class="off">-${d.discount}%</span>` : ""}</span></a>`;
+  }).join("");
+  const others = Object.entries(STORES).filter(([k]) => k !== key).map(([k, l]) => `<a href="/loja/${k}">${esc(l)}</a>`).join("");
+  const body = `<h1>Promoções e cupons ${esc(de)} hoje</h1>
+<p class="intro">As melhores ofertas ${esc(de)} selecionadas pelo canal Promoções do Veras, atualizadas ao vivo. ${ads.length ? `${ads.length} ofertas recentes abaixo.` : "Nenhuma oferta recente desta loja agora — confira as de outras lojas."}</p>
+<div class="list">${items}</div>
+<p style="margin-top:22px"><a class="go" href="/">Ver todas as ofertas de hoje ›</a></p>
+<div class="stores">${others}</div>`;
+  res.setHeader("Cache-Control", "public, max-age=60, s-maxage=900, stale-while-revalidate=3600");
+  res.status(200).send(page({
+    title: `Promoções ${de} hoje · ofertas e cupons · Promoções do Veras`,
+    desc: `Ofertas e cupons ${de} atualizados ao vivo: os melhores descontos do dia selecionados pelo Promoções do Veras.`,
+    image: `${origin}/og.png`, url: `${origin}/loja/${key}`, body, extraCss: LIST_CSS, wide: true,
+  }));
+}
+
+async function sitemap(req, res, origin) {
+  const ads = isConfigured() ? await listAds({ limit: 500 }).catch(() => []) : [];
+  const urls = [`<url><loc>${origin}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>`]
+    .concat(Object.keys(STORES).map((k) => `<url><loc>${origin}/loja/${k}</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>`))
+    .concat(ads.map((a) => `<url><loc>${origin}/oferta/${a.id}</loc><lastmod>${String(a.updated_at || a.posted_at || "").slice(0, 10)}</lastmod><priority>0.5</priority></url>`));
+  res.setHeader("Content-Type", "application/xml; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=600, s-maxage=3600");
+  res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.join("")}</urlset>`);
 }
 
 module.exports = async function handler(req, res) {
-  const id = Number.parseInt((req.query || {}).id, 10);
+  const q = req.query || {};
+  const id = Number.parseInt(q.id, 10);
   const host = req.headers["x-forwarded-host"] || req.headers.host || "promocoesdoveras.com.br";
   const origin = `https://${host}`;
+  if (q.sitemap) return sitemap(req, res, origin);
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  if (q.loja) return storePage(req, res, origin, String(q.loja).toLowerCase());
   res.setHeader("Content-Type", "text/html; charset=utf-8");
 
   const ad = Number.isFinite(id) && id > 0 && isConfigured() ? await getAd(id).catch(() => null) : null;
@@ -103,6 +177,7 @@ module.exports = async function handler(req, res) {
     ${d.old ? `<div><span class="old">${esc(d.old)}</span>${d.discount ? `<span class="off">-${d.discount}%</span>` : ""}</div>` : ""}
     <div class="now">${esc(d.now || "Confira o preço")}</div>
     ${d.pix || d.installments ? `<div class="pay">${d.pix ? "<span>💠 Preço no Pix</span>" : ""}${d.installments ? `<span>💳 ${esc(d.installments)}</span>` : ""}</div>` : ""}
+    ${historyBadge(ad, d)}
     ${d.rating ? `<div class="rating">⭐ <b>${esc(d.rating)}</b> de avaliação</div>` : ""}
     ${d.coupon ? `<button class="coupon" id="coupon" data-code="${esc(d.coupon)}">🏷️ <span class="code">Cupom: ${esc(d.coupon)}</span><span class="hint">copiar</span></button>` : ""}
     ${d.url ? `<a class="go" id="go" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">${storeLabel ? `Ver ${["mercadolivre","aliexpress","carrefour"].includes(ad.store) ? "no" : "na"} ${esc(storeLabel)}` : "Ver oferta na loja"} ›</a>` : ""}
@@ -111,6 +186,7 @@ module.exports = async function handler(req, res) {
       <a href="/">🛍️ Mais ofertas</a>
     </div>
     <p class="note">Preços e estoque podem mudar a qualquer momento na loja.</p>
+    <button type="button" class="flag" id="flag">🚩 Esta oferta ou cupom acabou? Avise a gente</button>
   </div>
 </div>
 <a class="wa" href="${WHATSAPP}" target="_blank" rel="noopener noreferrer">Receber ofertas no WhatsApp</a>
@@ -120,6 +196,9 @@ module.exports = async function handler(req, res) {
   var AD=${ad.id};
   function track(e){try{if(localStorage.getItem("pv_optout")==="1")return}catch(x){}var v="";try{v=localStorage.getItem("pv_vid")||""}catch(x){}var b=JSON.stringify({e:e,v:v,a:AD});try{if(navigator.sendBeacon&&navigator.sendBeacon("/api/track",new Blob([b],{type:"application/json"})))return}catch(x){}fetch("/api/track",{method:"POST",headers:{"Content-Type":"application/json"},body:b,keepalive:true}).catch(function(){})}
   var go=document.getElementById("go"); if(go) go.addEventListener("click",function(){track("offer")});
+  var fl=document.getElementById("flag");
+  if(fl){var k="pv_ended_"+AD;try{if(localStorage.getItem(k)){fl.disabled=true;fl.textContent="✓ Obrigado pelo aviso!"}}catch(x){}
+    fl.addEventListener("click",function(){try{if(!localStorage.getItem("pv_vid"))localStorage.setItem("pv_vid",(String(Math.random()).slice(2)+Date.now()).slice(0,32));localStorage.setItem(k,"1")}catch(x){}track("ended");fl.disabled=true;fl.textContent="✓ Obrigado pelo aviso!"});}
   var c=document.getElementById("coupon");
   if(c) c.addEventListener("click",function(){var code=c.dataset.code;(navigator.clipboard?navigator.clipboard.writeText(code):Promise.reject()).catch(function(){var t=document.createElement("textarea");t.value=code;document.body.appendChild(t);t.select();try{document.execCommand("copy")}catch(e){}t.remove()}).finally(function(){c.classList.add("ok");c.querySelector(".hint").textContent="copiado ✓";track("coupon")})});
   document.getElementById("share").addEventListener("click",function(){

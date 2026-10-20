@@ -81,7 +81,8 @@ function fakeRedisServer() {
       case "SMEMBERS": return [...(hashes.get(args[0]) || new Map()).keys()];
       case "MGET": return args.map((k) => (kv.has(k) ? kv.get(k) : null));
       case "EXPIRE": return 1;
-      case "DEL": { zsets.delete(args[0]); kv.delete(args[0]); return 1; }
+      case "DEL": { for (const k of args) { zsets.delete(k); kv.delete(k); hashes.delete(k); } return 1; }
+      case "SCARD": return (hashes.get(args[0]) || new Map()).size;
       case "PFADD": {
         if (!hashes.has(args[0])) hashes.set(args[0], new Map());
         for (const v of args.slice(1)) hashes.get(args[0]).set(v, "1");
@@ -310,6 +311,53 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   r = await call(oferta, { query: { id: "999" }, headers: { host: "x.com" } });
   assert.strictEqual(r.status, 404);
   console.log("OK: pagina da oferta");
+
+  // Historico de preco: mesmo produto anunciado de novo mais barato.
+  const mk = (mid, price) => ({ channel_post: { message_id: mid, date: Math.floor(Date.now() / 1000), chat: { id: -100111 },
+    text: `🔥 Fone Bluetooth XYZ Pro Max\nDe R$ 300,00\n💰 R$ ${price} no Pix\nhttps://amzn.to/abc${mid}` } });
+  r = await call(telegram, { method: "POST", headers: ok, body: mk(201, "150,00") });
+  const idA = r.data.id;
+  r = await call(telegram, { method: "POST", headers: ok, body: mk(202, "120,00") });
+  const idB = r.data.id;
+  r = await call(ads, { query: { limit: "20" } });
+  const adB = r.data.ads.find((a) => a.id === idB);
+  assert.ok(adB.ph && adB.ph.prev === 150 && adB.ph.min === 150 && adB.ph.count === 1, JSON.stringify(adB.ph));
+  assert.strictEqual(r.data.ads.find((a) => a.id === idA).ph, null);
+  console.log("OK: historico de preco");
+
+  // Alertas: comando no privado e combinacao com o nome do produto.
+  const al = require("../api/_lib/alerts");
+  r = await call(telegram, { method: "POST", headers: ok,
+    body: { message: { message_id: 3, date: 1, chat: { id: 777, type: "private", first_name: "Ana" }, text: "/alerta Fone Bluetooth" } } });
+  assert.deepStrictEqual(await al.listAlerts("777"), ["fone bluetooth"]);
+  const payload = "a_" + Buffer.from("air fryer").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  assert.strictEqual(al.decodeStartPayload(payload), "air fryer");
+  assert.ok(al.matches("fone bluetooth", "fone bluetooth xyz pro max"));
+  assert.ok(al.matches("fone", "fones de ouvido"));
+  assert.ok(!al.matches("rtx", "fone bluetooth xyz"));
+  await al.removeAlert("777", "fone bluetooth");
+  assert.deepStrictEqual(await al.listAlerts("777"), []);
+  console.log("OK: alertas");
+
+  // "Acabou": 3 visitantes diferentes -> sai do destaque e ganha o aviso.
+  for (const v of ["vvvv1111aaaa", "vvvv2222bbbb", "vvvv2222bbbb", "vvvv3333cccc"]) await send({ e: "ended", v, a: idB });
+  r = await call(ads, { query: { limit: "20" } });
+  assert.strictEqual(r.data.ads.find((a) => a.id === idB).ended, true);
+  r = await call(stats, { query: { key: "chave-teste" } });
+  assert.deepStrictEqual(r.data.ended.map((o) => [o.id, o.reports, o.skipped]), [[idB, 3, true]]);
+  console.log("OK: avisos de oferta encerrada");
+
+  // Paginas para o Google
+  r = await call(oferta, { query: { loja: "amazon" }, headers: { host: "promocoesdoveras.com.br" } });
+  assert.strictEqual(r.status, 200);
+  assert.ok(r.data.includes("Promoções e cupons da Amazon hoje") && r.data.includes(`/oferta/${idB}`));
+  r = await call(oferta, { query: { loja: "xpto" }, headers: { host: "x" } });
+  assert.strictEqual(r.status, 404);
+  r = await call(oferta, { query: { sitemap: "1" }, headers: { host: "promocoesdoveras.com.br" } });
+  assert.ok(r.data.includes("<urlset") && r.data.includes("/loja/shopee") && r.data.includes(`/oferta/${idB}`));
+  r = await call(oferta, { query: { id: String(idB) }, headers: { host: "promocoesdoveras.com.br" } });
+  assert.ok(r.data.includes("Menor preço já visto aqui"));
+  console.log("OK: paginas de loja, sitemap e historico na pagina da oferta");
 
   server.close();
   console.log("OK: webhook, edicao, filtro de chat, listagem, paginacao e feed ao vivo");

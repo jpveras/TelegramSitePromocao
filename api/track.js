@@ -43,6 +43,30 @@ module.exports = async function handler(req, res) {
   }
   const visitorId = /^[a-z0-9]{8,40}$/i.test(body.v || "") ? body.v : null;
   const adId = Number.isInteger(body.a) && body.a > 0 ? body.a : null;
+  // "Essa oferta acabou": 1 aviso por visitante; com 3 avisos a oferta sai do
+  // destaque sozinha e ganha o aviso no card.
+  if (event === "ended" && adId && visitorId) {
+    try {
+      const { redis, saveAdFields } = require("./_lib/store");
+      const [added, , count] = await redis([
+        ["SADD", `ended:${adId}`, visitorId],
+        ["EXPIRE", `ended:${adId}`, String(30 * 86400)],
+        ["SCARD", `ended:${adId}`],
+      ]);
+      if (Number(added) === 1) {
+        await redis([["ZADD", "ended:ads", String(Number(count) || 1), String(adId)]]);
+        await recordEvent({ event, visitorId, adId });
+        if (Number(count) >= 3) {
+          await redis([["SADD", "hero:skip", String(adId)]]);
+          await saveAdFields(adId, { ended_reported: true });
+        }
+      }
+    } catch (err) {
+      console.error("[track] Falha ao registrar aviso de encerrada:", err.message);
+    }
+    res.status(204).end();
+    return;
+  }
   try {
     await recordEvent({ event, visitorId, adId });
   } catch (err) {

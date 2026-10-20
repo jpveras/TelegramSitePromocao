@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /painel.html
+Disallow: /api/
+Allow: /api/photo
+
+Sitemap: https://promocoesdoveras.com.br/sitemap.xml

@@ -24,6 +24,8 @@ const EVENTS = {
   install: "Site instalado como app",
   view: "Ofertas vistas na tela",
   channels: "Cliques em \"Todos os canais\" (Linktree)",
+  ended: "Avisos de oferta encerrada",
+  alert: "Cliques em \"Criar alerta\"",
 };
 const KEEP_SECONDS = 400 * 24 * 60 * 60; // guarda o detalhe diario por ~13 meses
 

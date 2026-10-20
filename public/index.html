@@ -19,6 +19,7 @@
 <link rel="icon" type="image/png" href="favicon.png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <link rel="manifest" href="manifest.webmanifest" />
+<link rel="canonical" href="https://promocoesdoveras.com.br/" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="Promoções" />
 <script>
@@ -1485,6 +1486,76 @@
     .highlight-value { white-space: nowrap; }
   }
   @media (max-width: 600px) { .wa-float { width: 54px; height: 54px; } .wa-float svg { width: 27px; height: 27px; } }
+
+  /* ---------- Fileira rapida (alerta, salvos, preco) ---------- */
+  .quick-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 0 0 16px; margin-top: -6px; }
+  .quick-row::-webkit-scrollbar { display: none; }
+  .quick-chip {
+    flex-shrink: 0; height: 34px; padding: 0 13px; border-radius: 999px; border: 1px solid var(--surface-line);
+    background: transparent; color: var(--muted); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .quick-chip small { color: var(--muted-soft); font-weight: 800; margin-left: 2px; }
+  .quick-chip:hover { border-color: var(--accent); color: var(--text); }
+  .quick-chip[aria-pressed="true"] { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .quick-chip.alert-chip { border-color: rgba(42, 167, 224, 0.5); color: #2aa7e0; }
+  .quick-chip.alert-chip:hover { background: rgba(42, 167, 224, 0.1); }
+  .quick-sep { flex-shrink: 0; width: 1px; height: 20px; background: var(--surface-line); margin: 0 4px; }
+  /* Historico de preco */
+  .ph-row { margin: -2px 0 8px; }
+  .ph-badge { display: inline-block; font-size: 11.5px; font-weight: 800; padding: 3px 8px; border-radius: 7px; background: rgba(63, 201, 107, 0.14); color: var(--green); }
+  .ph-badge.down { background: var(--accent-dim); color: var(--accent); }
+  /* Acabou? */
+  .card .meta-row { flex-wrap: wrap; }
+  .flag-btn { margin-left: auto; background: none; border: none; padding: 0; color: var(--muted-soft); font: inherit; font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .flag-btn:hover { color: var(--red); }
+  .flag-btn.done { color: var(--green); cursor: default; }
+  .stale.ended { color: var(--red); }
+  /* Salvar (coracao) */
+  .btn-fav {
+    flex-shrink: 0; width: 48px; border-radius: 12px; border: 1px solid var(--surface-line); background: var(--surface);
+    color: var(--muted-soft); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .btn-fav svg { width: 19px; height: 19px; }
+  .btn-fav:hover { color: #ff4d6d; border-color: #ff4d6d; }
+  .btn-fav.on { color: #ff4d6d; }
+  .btn-fav.pop svg { animation: fav-pop 0.35s ease; }
+  @keyframes fav-pop { 50% { transform: scale(1.35); } }
+  @media (min-width: 601px) {
+    .card .btn-fav {
+      position: absolute; top: calc(75cqw - 90px); right: 12px; z-index: 2; width: 36px; height: 36px;
+      border-radius: 50%; background: rgba(255, 255, 255, 0.95); border: 1px solid #e3e6eb; color: #9aa1ad;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .card .btn-fav svg { width: 17px; height: 17px; }
+    .card .btn-fav.on { color: #ff4d6d; }
+  }
+  /* Busca sem resultado: alerta */
+  .empty-alert { margin-top: 14px; }
+  .empty-alert p { margin: 0 0 10px; color: var(--muted); }
+  .empty-alert .hd-cta { border: none; cursor: pointer; font: inherit; font-weight: 900; }
+  /* Janela do alerta */
+  .alert-card { text-align: center; }
+  .alert-bell { font-size: 44px; line-height: 1; margin-bottom: 6px; }
+  .alert-card h2 { margin: 6px 0 8px; }
+  .alert-card p { color: var(--muted); font-size: 14.5px; line-height: 1.55; margin: 0 0 14px; }
+  #alert-input {
+    width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--surface-line); background: var(--surface);
+    color: var(--text); font: inherit; font-size: 16px; outline: none;
+  }
+  #alert-input:focus { border-color: #2aa7e0; }
+  .alert-sugs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 10px 0 14px; }
+  .alert-sug { padding: 5px 10px; border-radius: 999px; border: 1px solid var(--surface-line); background: transparent; color: var(--muted); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+  .alert-sug:hover { border-color: #2aa7e0; color: #2aa7e0; }
+  .alert-cta { width: 100%; border: none; cursor: pointer; font: inherit; font-weight: 900; background: #2aa7e0; color: #fff; box-shadow: 0 10px 26px rgba(42, 167, 224, 0.35); }
+  .alert-note { font-size: 12.5px !important; margin: 12px 0 0 !important; }
+  /* Rodape: lojas */
+  .footer-stores { margin-top: 8px; font-size: 12.5px; color: var(--muted-soft); line-height: 1.8; }
+  .footer-stores a { color: var(--muted); text-decoration: none; }
+  .footer-stores a:hover { color: var(--accent); }
+  @media (max-width: 720px) {
+    .quick-row { margin: -4px -14px 0; padding: 0 14px 12px; }
+    .quick-chip { height: 32px; padding: 0 11px; font-size: 12.5px; }
+  }
 </style>
 </head>
 <body>
@@ -1673,10 +1744,24 @@
 
     <div class="cat-row" id="cat-row" role="tablist" aria-label="Categorias"></div>
 
+    <div class="quick-row" id="quick-row">
+      <button type="button" class="quick-chip alert-chip" id="alert-open">🔔 Me avise quando tiver…</button>
+      <button type="button" class="quick-chip" id="fav-only" aria-pressed="false">❤️ Salvos <small id="fav-count">0</small></button>
+      <span class="quick-sep" aria-hidden="true"></span>
+      <button type="button" class="quick-chip price-chip" data-max="50" aria-pressed="false">Até R$ 50</button>
+      <button type="button" class="quick-chip price-chip" data-max="100" aria-pressed="false">Até R$ 100</button>
+      <button type="button" class="quick-chip price-chip" data-max="200" aria-pressed="false">Até R$ 200</button>
+      <button type="button" class="quick-chip price-chip" data-max="500" aria-pressed="false">Até R$ 500</button>
+    </div>
+
     <div class="grid" id="feed"></div>
     <div class="empty" id="empty-msg" hidden>
       <div class="big">🕵️</div>
-      Nenhum anúncio encontrado.
+      <span id="empty-text">Nenhum anúncio encontrado.</span>
+      <div class="empty-alert" id="empty-alert" hidden>
+        <p>Quer que a gente te avise quando aparecer <b id="empty-term"></b>?</p>
+        <button type="button" class="hd-cta" id="empty-alert-btn">🔔 Criar alerta no Telegram</button>
+      </div>
     </div>
     <div id="load-more-wrap">
       <button id="load-more" hidden>Carregar mais antigos</button>
@@ -1737,6 +1822,22 @@
     </div>
   </div>
 
+  <div class="exit-modal" id="alert-modal" hidden role="dialog" aria-modal="true" aria-labelledby="alert-title">
+    <div class="exit-backdrop" data-close-alert></div>
+    <div class="exit-card alert-card">
+      <button type="button" class="exit-x" data-close-alert aria-label="Fechar">×</button>
+      <div class="alert-bell">🔔</div>
+      <h2 id="alert-title">Te avisamos quando aparecer!</h2>
+      <p>Digite o produto que você procura. Assim que sair uma oferta com ele, o nosso bot te manda no <b>Telegram</b>, na hora.</p>
+      <form id="alert-form">
+        <input type="text" id="alert-input" maxlength="40" placeholder="Ex.: air fryer, rtx 5060, iphone" autocomplete="off" />
+        <div class="alert-sugs" id="alert-sugs"></div>
+        <button type="submit" class="exit-cta alert-cta">✈️ Criar alerta no Telegram</button>
+      </form>
+      <p class="alert-note">Abre o Telegram com o alerta pronto: é só tocar em <b>Iniciar</b>. Grátis, e você cancela quando quiser com <code>/parar</code>.</p>
+    </div>
+  </div>
+
   <section class="trust" aria-labelledby="trust-title">
     <div class="trust-title" id="trust-title">Segurança</div>
     <div class="trust-badges">
@@ -1755,6 +1856,12 @@
       <a href="https://linktr.ee/jpverastech" target="_blank" rel="noopener noreferrer">🔗 Todos os canais</a>
       <span class="hide-in-app"> · <a href="/app" title="Baixar o app para Android (APK)">📱 App Android</a></span>
     </div>
+    <nav class="footer-stores" aria-label="Ofertas por loja">
+      Ofertas por loja:
+      <a href="/loja/amazon">Amazon</a> · <a href="/loja/mercadolivre">Mercado Livre</a> · <a href="/loja/shopee">Shopee</a> ·
+      <a href="/loja/magalu">Magalu</a> · <a href="/loja/kabum">Kabum</a> · <a href="/loja/aliexpress">AliExpress</a> ·
+      <a href="/loja/americanas">Americanas</a> · <a href="/loja/casasbahia">Casas Bahia</a> · <a href="/loja/shein">Shein</a>
+    </nav>
     <div class="footer-legal">
       <a href="/privacidade.html">Privacidade</a>
       <a href="/cookies.html">Cookies</a>
@@ -1896,6 +2003,34 @@
     return { pix, installments };
   }
 
+  // ---------- Historico de preco (vem do servidor em ad.ph) ----------
+  const brl = (n) => "R$ " + Number(n).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const dm = (iso) => { const t = new Date(iso); return isNaN(t) ? "" : t.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }); };
+  function historyBadge(ad) {
+    const ph = ad.ph, now = info(ad).price;
+    if (!ph || !now) return "";
+    if (now < ph.min) return `<div class="ph-row"><span class="ph-badge" title="Antes: ${brl(ph.min)} em ${dm(ph.minAt)}">📉 Menor preço já visto aqui</span></div>`;
+    if (ph.prev && now < ph.prev - 0.5) return `<div class="ph-row"><span class="ph-badge down" title="Antes: ${brl(ph.prev)} em ${dm(ph.prevAt)}">↓ ${brl(ph.prev - now)} mais barato</span></div>`;
+    return "";
+  }
+
+  // ---------- Salvos (favoritos, so neste navegador) ----------
+  let favs = {};
+  try { favs = JSON.parse(localStorage.getItem("pv_favs") || "{}") || {}; } catch { favs = {}; }
+  const isFav = (id) => Object.prototype.hasOwnProperty.call(favs, String(id));
+  function saveFavs() { try { localStorage.setItem("pv_favs", JSON.stringify(favs, (k, v) => (k.startsWith("_") ? undefined : v))); } catch {} }
+  function toggleFav(ad) {
+    const k = String(ad.id);
+    if (favs[k]) delete favs[k];
+    else favs[k] = { id: ad.id, text: ad.text, posted_at: ad.posted_at, store: ad.store, photo_url: ad.photo_url, ph: ad.ph || null, savedAt: Date.now() };
+    saveFavs();
+    updateFavCount();
+  }
+  function updateFavCount() { const el = document.getElementById("fav-count"); if (el) el.textContent = Object.keys(favs).length; }
+
+  // ---------- "Acabou?" (1 aviso por oferta neste navegador) ----------
+  const flagged = (id) => { try { return localStorage.getItem("pv_ended_" + id) === "1"; } catch { return false; } };
+
   // Dados calculados uma vez por anuncio (usados no card, filtros e ordem).
   function info(ad) {
     if (ad._info) return ad._info;
@@ -1948,6 +2083,8 @@
   let searchTerm = "";
   let sortOrder = "newest";
   let couponOnly = false;
+  let priceMax = null;
+  let favOnly = false;
   let pixOnly = false;
 
   const feedEl = document.getElementById("feed");
@@ -2043,9 +2180,11 @@
           </div>
         </div>
         ${pix || installments ? `<div class="pay">${pix ? `<span class="pix">💠 Pix</span>` : ""}${installments ? `<span>💳 ${escapeHtml(installments)}</span>` : ""}</div>` : ""}
+        ${historyBadge(ad)}
         <div class="meta-row">
           <div class="rating">${rating ? `⭐ <b>${escapeHtml(rating)}</b> de avaliação` : ""}</div>
-          ${isStale ? `<span class="stale" title="Publicada há mais de 2 dias">⏳ Pode ter acabado</span>` : ""}
+          ${ad.ended ? `<span class="stale ended" title="Visitantes avisaram que a oferta ou o cupom acabou">⚠️ Avisaram que acabou</span>` : isStale ? `<span class="stale" title="Publicada há mais de 2 dias">⏳ Pode ter acabado</span>` : ""}
+          ${flagged(ad.id) ? `<span class="flag-btn done">✓ Avisado</span>` : `<button type="button" class="flag-btn" title="Avisar que a oferta ou o cupom acabou">🚩 Acabou?</button>`}
         </div>
         <div class="spacer"></div>
         <div class="actions">
@@ -2062,6 +2201,7 @@
               ? `<a class="btn-offer" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${ctaLabel(store)} <span class="chev">›</span></a>`
               : `<span class="btn-offer disabled">Sem link direto</span>`
           }
+            <button type="button" class="btn-fav${isFav(ad.id) ? " on" : ""}" aria-pressed="${isFav(ad.id)}" aria-label="Salvar oferta" title="Salvar oferta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.6 0 5.6 3.5 4.3 6.8C19.5 15.9 12 20.5 12 20.5z" fill="currentColor"/></svg></button>
             <button type="button" class="btn-share" aria-label="Compartilhar oferta" title="Compartilhar">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
             </button>
@@ -2156,11 +2296,18 @@
   }
 
   function renderGrid() {
-    let list = allAds.filter((ad) => {
+    // "Salvos" mostra tambem os salvos que ja sairam da lista carregada.
+    let base = allAds;
+    if (favOnly) {
+      const loaded = new Set(allAds.map((a) => a.id));
+      base = allAds.filter((a) => isFav(a.id)).concat(Object.values(favs).filter((f) => !loaded.has(f.id)));
+    }
+    let list = base.filter((ad) => {
       if (activeStore !== "all" && storeOf(ad).key !== activeStore) return false;
       if (activeCategory !== "all" && detectCategory(ad.text).key !== activeCategory) return false;
       if (couponOnly && !info(ad).coupon) return false;
       if (pixOnly && !info(ad).pix) return false;
+      if (priceMax && !(info(ad).price && info(ad).price <= priceMax)) return false;
       if (searchTerm && !(ad.text || "").toLowerCase().includes(searchTerm)) return false;
       return true;
     });
@@ -2179,6 +2326,13 @@
     feedEl.innerHTML = "";
     if (list.length === 0) {
       emptyEl.hidden = false;
+      // Buscou algo que nao tem: oferece o alerta.
+      const termo = (searchInput.value || "").trim();
+      document.getElementById("empty-text").textContent = favOnly && !Object.keys(favs).length
+        ? "Você ainda não salvou nenhuma oferta. Toque no ❤️ de uma oferta para guardar aqui."
+        : termo ? `Nenhuma oferta com “${termo}” agora.` : "Nenhum anúncio encontrado.";
+      document.getElementById("empty-term").textContent = `“${termo}”`;
+      document.getElementById("empty-alert").hidden = !termo;
     } else {
       emptyEl.hidden = true;
       for (const ad of list) feedEl.appendChild(buildCard(ad));
@@ -2207,6 +2361,77 @@
       return ok;
     }
   }
+
+  // ---------- Fileira rapida: preco, salvos, alerta ----------
+  document.getElementById("quick-row").addEventListener("click", (e) => {
+    const p = e.target.closest(".price-chip");
+    if (p) {
+      const max = Number(p.dataset.max);
+      priceMax = priceMax === max ? null : max;
+      document.querySelectorAll(".price-chip").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.max) === priceMax)));
+      renderGrid();
+      return;
+    }
+    if (e.target.closest("#fav-only")) {
+      favOnly = !favOnly;
+      document.getElementById("fav-only").setAttribute("aria-pressed", String(favOnly));
+      renderGrid();
+      return;
+    }
+    if (e.target.closest("#alert-open")) openAlert((searchInput.value || "").trim());
+  });
+  updateFavCount();
+
+  // ---------- Alerta de produto (bot do Telegram) ----------
+  const alertModal = document.getElementById("alert-modal");
+  const alertInput = document.getElementById("alert-input");
+  const ALERT_SUGS = ["air fryer", "iphone", "rtx", "smart tv", "whey", "fone bluetooth", "notebook", "tênis"];
+  document.getElementById("alert-sugs").innerHTML = ALERT_SUGS.map((t) => `<button type="button" class="alert-sug">${t}</button>`).join("");
+  function openAlert(term) {
+    alertInput.value = term || "";
+    alertModal.hidden = false;
+    setTimeout(() => alertInput.focus(), 50);
+  }
+  function b64url(str) {
+    return btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  alertModal.addEventListener("click", (e) => {
+    if (e.target.closest("[data-close-alert]")) alertModal.hidden = true;
+    const sug = e.target.closest(".alert-sug");
+    if (sug) { alertInput.value = sug.textContent; alertInput.focus(); }
+  });
+  document.getElementById("alert-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const kw = alertInput.value.trim().slice(0, 40);
+    if (kw.length < 2) { alertInput.focus(); return; }
+    track("alert");
+    window.open(`https://t.me/PromocoesVerasBot?start=a_${b64url(kw)}`, "_blank", "noopener");
+    alertModal.hidden = true;
+  });
+  document.getElementById("empty-alert-btn").addEventListener("click", () => openAlert((searchInput.value || "").trim()));
+
+  // ---------- Salvar e "Acabou?" nos cards ----------
+  feedEl.addEventListener("click", (e) => {
+    const fav = e.target.closest(".btn-fav");
+    const flag = e.target.closest("button.flag-btn");
+    if (!fav && !flag) return;
+    const card = e.target.closest(".card");
+    const id = Number(card && card.dataset.id);
+    const ad = allAds.find((a) => a.id === id) || favs[String(id)];
+    if (!ad) return;
+    if (fav) {
+      toggleFav(ad);
+      const on = isFav(id);
+      fav.classList.toggle("on", on);
+      fav.setAttribute("aria-pressed", String(on));
+      fav.classList.remove("pop"); void fav.offsetWidth; fav.classList.add("pop");
+      if (favOnly && !on) renderGrid();
+      return;
+    }
+    try { localStorage.setItem("pv_ended_" + id, "1"); } catch {}
+    track("ended", { a: id });
+    flag.outerHTML = `<span class="flag-btn done">✓ Obrigado pelo aviso!</span>`;
+  });
 
   // ---------- Compartilhar oferta ----------
   // Link /oferta/ID: no WhatsApp aparece com a foto e o preco do produto.
@@ -2278,10 +2503,12 @@
     sortOrder = "newest"; sortSelect.value = "newest";
     couponOnlyBtn.setAttribute("aria-pressed", "false");
     pixOnlyBtn.setAttribute("aria-pressed", "false");
+    priceMax = null; favOnly = false;
+    document.querySelectorAll(".price-chip, #fav-only").forEach((b) => b.setAttribute("aria-pressed", "false"));
     refreshAll();
   });
   function updateFilterIndicators() {
-    const active = activeStore !== "all" || activeCategory !== "all" || couponOnly || pixOnly || !!searchTerm || sortOrder !== "newest";
+    const active = activeStore !== "all" || activeCategory !== "all" || couponOnly || pixOnly || !!searchTerm || sortOrder !== "newest" || !!priceMax || favOnly;
     clearBtn.hidden = !active;
     document.getElementById("filters-dot").hidden = !active;
     // Contador no botao "Filtros" do celular (so o que fica dentro do painel).

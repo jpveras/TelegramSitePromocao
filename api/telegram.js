@@ -7,6 +7,19 @@ const { resolveAd, backfillStores } = require("./_lib/resolve");
 const { webhookSecret } = require("./_lib/secret");
 const { sendMessage } = require("./_lib/tg");
 const { rememberCandidate, reportChat, sendReport } = require("./_lib/report");
+const { addAlert, listAlerts, removeAlert, stopAlerts, notifyMatches, decodeStartPayload } = require("./_lib/alerts");
+const { catchUpPrices } = require("./_lib/history");
+
+const HELP_ALERTAS =
+  "🔔 <b>Alertas de produto</b>\n" +
+  "Eu te aviso aqui assim que sair uma oferta com a palavra que você escolher.\n\n" +
+  "• <code>/alerta rtx 5060</code> → cria um alerta\n" +
+  "• <code>/alertas</code> → mostra seus alertas\n" +
+  "• <code>/remover rtx 5060</code> → apaga um alerta\n" +
+  "• <code>/parar</code> → apaga todos\n\n" +
+  "Dica: use 1 ou 2 palavras (ex.: <code>air fryer</code>, <code>iphone</code>, <code>whey</code>).";
+
+const listar = (list) => (list.length ? list.map((k) => `• ${k}`).join("\n") : "(nenhum)");
 
 const WEBHOOK_SECRET = webhookSecret();
 // Um ou mais chats separados por virgula (ex.: o canal e o grupo).
@@ -31,18 +44,46 @@ async function handlePrivate(msg) {
   const chatId = String(msg.chat.id);
   const who = [msg.chat.first_name, msg.chat.last_name].filter(Boolean).join(" ") || "Sem nome";
   const name = msg.chat.username ? `${who} (@${msg.chat.username})` : who;
-  await rememberCandidate(chatId, name);
-  const text = String(msg.text || "").trim().toLowerCase();
-  const isReportChat = (await reportChat()) === chatId;
+  const raw = String(msg.text || "").trim();
+  const text = raw.toLowerCase();
+  const arg = raw.replace(/^\/\S+\s*/, "").trim();
+  const reply = (t) => sendMessage(chatId, t);
 
+  // Link do site: t.me/PromocoesVerasBot?start=a_<palavra>
+  if (text.startsWith("/start a_")) {
+    const kw = decodeStartPayload(raw.split(/\s+/)[1]);
+    const r = kw ? await addAlert(chatId, kw) : { ok: false };
+    if (r.ok) return reply(`✅ Alerta criado: <b>${r.keyword}</b>\nAssim que sair uma oferta com isso, eu te mando aqui. 🔔\n\nSeus alertas:\n${listar(await listAlerts(chatId))}\n\n/ajuda para ver os comandos.`);
+    return reply(r.reason === "limite" ? "Você já tem 10 alertas. Apague algum com /remover antes de criar outro." : HELP_ALERTAS);
+  }
+  if (text.startsWith("/alerta") && !text.startsWith("/alertas")) {
+    if (!arg) return reply(HELP_ALERTAS);
+    const r = await addAlert(chatId, arg);
+    if (r.ok) return reply(`✅ Alerta criado: <b>${r.keyword}</b>\n\nSeus alertas:\n${listar(await listAlerts(chatId))}`);
+    return reply(r.reason === "limite" ? "Você já tem 10 alertas. Apague algum com /remover antes de criar outro." : "Escreva a palavra depois do comando. Ex.: <code>/alerta air fryer</code>");
+  }
+  if (text.startsWith("/alertas")) return reply(`🔔 Seus alertas:\n${listar(await listAlerts(chatId))}\n\nPara criar: <code>/alerta palavra</code>`);
+  if (text.startsWith("/remover")) {
+    if (!arg) return reply("Diga qual alerta apagar. Ex.: <code>/remover air fryer</code>");
+    return reply(`🗑️ Pronto. Seus alertas agora:\n${listar(await removeAlert(chatId, arg))}`);
+  }
+  if (text.startsWith("/parar")) {
+    await stopAlerts(chatId);
+    return reply("🔕 Todos os seus alertas foram apagados. Quando quiser, é só mandar <code>/alerta palavra</code>.");
+  }
+  if (text.startsWith("/ajuda") || text.startsWith("/help")) return reply(HELP_ALERTAS);
+
+  // Resumo diario (dono do site)
+  const isReportChat = (await reportChat()) === chatId;
   if (isReportChat && text.startsWith("/resumo")) {
     await sendReport({ force: true });
     return;
   }
-  const reply = isReportChat
-    ? "✅ Você já recebe o resumo diário das Promoções do Veras, todo dia por volta das 23h.\nEnvie /resumo para receber o de hoje agora."
-    : "👋 Olá! Este é o bot das <b>Promoções do Veras</b>.\n\nPara receber o resumo diário (visitas, cliques e ofertas mais clicadas), abra o painel em promocoesdoveras.com.br/admin e escolha seu nome em <b>Resumo diário no Telegram</b>.";
-  await sendMessage(chatId, reply);
+  if (text === "/start" || text.startsWith("/start ")) await rememberCandidate(chatId, name);
+  const intro = isReportChat
+    ? "✅ Você recebe o resumo diário das Promoções do Veras, todo dia por volta das 23h. Envie /resumo para receber o de hoje agora.\n\n"
+    : "👋 Olá! Este é o bot das <b>Promoções do Veras</b>.\n\n";
+  await reply(intro + HELP_ALERTAS);
 }
 
 module.exports = async function handler(req, res) {
@@ -118,7 +159,9 @@ module.exports = async function handler(req, res) {
     if (created || !ad.store_checked_at) {
       try {
         await resolveAd(ad);
-        await backfillStores({ budgetMs: 12000, max: 20 });
+        if (created) await notifyMatches(ad).catch((e) => console.error("[telegram] Falha nos alertas:", e.message));
+        await catchUpPrices({ max: 60, budgetMs: 5000 }).catch((e) => console.error("[telegram] Falha no historico:", e.message));
+        await backfillStores({ budgetMs: 10000, max: 15 });
       } catch (err) {
         console.error("[telegram] Falha ao identificar loja:", err.message);
       }

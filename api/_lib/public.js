@@ -12,6 +12,10 @@ function toPublic(ad) {
     updated_at: ad.updated_at || null,
     // "v=2" invalida a copia em cache das fotos servidas antes com tipo errado.
     photo_url: ad.photo_file_id ? `/api/photo?ad=${ad.id}&v=2` : null,
+    // Historico de preco (api/_lib/history.js): o que se sabia antes deste anuncio.
+    ph: ad.ph || null,
+    // Visitantes avisaram que a oferta/cupom acabou (3 avisos ou mais).
+    ended: ad.ended_reported ? true : undefined,
   };
 }
 

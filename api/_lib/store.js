@@ -195,4 +195,5 @@ module.exports = {
   redis,
   rememberChat,
   listSeenChats,
+  toStored,
 };

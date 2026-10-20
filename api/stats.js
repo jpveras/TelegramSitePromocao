@@ -48,7 +48,15 @@ module.exports = async function handler(req, res) {
       const [raws] = await redis([["MGET", ...skipIds.map((id) => `ad:${id}`)]]);
       skipped = skipIds.map((id, i) => ({ id, title: raws && raws[i] ? headline(JSON.parse(raws[i]).text) : "Anúncio removido" }));
     }
-    res.status(200).json({ days, ...stats, skipped });
+    // Ofertas que visitantes avisaram que acabaram
+    const [endedFlat] = await redis([["ZRANGE", "ended:ads", "0", "19", "REV", "WITHSCORES"]]);
+    let ended = [];
+    for (let i = 0; i < (endedFlat || []).length; i += 2) ended.push({ id: Number(endedFlat[i]), reports: Number(endedFlat[i + 1]) });
+    if (ended.length) {
+      const [raws] = await redis([["MGET", ...ended.map((o) => `ad:${o.id}`)]]);
+      ended = ended.map((o, i) => ({ ...o, title: raws && raws[i] ? headline(JSON.parse(raws[i]).text) : "Anúncio removido", skipped: skipIds.includes(o.id) }));
+    }
+    res.status(200).json({ days, ...stats, skipped, ended });
   } catch (err) {
     console.error("[stats] Falha ao ler numeros:", err.message);
     res.status(500).json({ error: "Falha ao ler os números." });

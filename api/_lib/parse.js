@@ -77,4 +77,12 @@ function describe(ad) {
   };
 }
 
-module.exports = { describe, clean, extractPayment };
+// Chave para comparar o mesmo produto entre anuncios: sem acento, minusculas,
+// so letras e numeros.
+function productKey(name) {
+  return String(name || "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().slice(0, 90);
+}
+
+module.exports = { describe, clean, extractPayment, parseBRL, productKey };

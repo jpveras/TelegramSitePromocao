@@ -10,6 +10,14 @@
     {
       "source": "/oferta/:id",
       "destination": "/api/oferta?id=:id"
+    },
+    {
+      "source": "/loja/:key",
+      "destination": "/api/oferta?loja=:key"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/oferta?sitemap=1"
     }
   ],
   "functions": {
