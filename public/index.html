@@ -2349,7 +2349,8 @@
   // ---------- Dados ----------
   // A Vercel nao mantem conexoes abertas por muito tempo, entao o feed ao
   // vivo pergunta a cada poucos segundos se chegou anuncio novo.
-  const POLL_MS = 5000;
+  // 15 s basta (sai uma oferta a cada ~5 min) e gasta 3x menos servidor.
+  const POLL_MS = 15000;
   let newestId = 0;
   let serverTotal = null;
   let serverLast24h = null;
@@ -2656,7 +2657,8 @@
     } catch (err) {
       console.error("[feed] Falha ao verificar novos anuncios:", err.message);
     } finally {
-      setTimeout(pollNew, document.hidden ? POLL_MS * 3 : POLL_MS);
+      // Aba escondida: quase nao pergunta (ao voltar, busca na hora).
+      setTimeout(pollNew, document.hidden ? 120000 : POLL_MS);
     }
   }
 

@@ -12,7 +12,9 @@ function toInt(value) {
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader("Cache-Control", "no-store");
+  // Cache curto na CDN: varios visitantes perguntando a mesma coisa no mesmo
+  // instante recebem a mesma resposta, sem rodar a funcao de novo.
+  res.setHeader("Cache-Control", "public, max-age=0, s-maxage=10, stale-while-revalidate=30");
 
   if (!isConfigured()) {
     res.status(200).json({ configured: false, total: 0, ads: [] });
