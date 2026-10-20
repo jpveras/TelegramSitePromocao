@@ -156,6 +156,12 @@
       </section>
 
       <section class="box top">
+        <h2>🚩 Avisos de “acabou”</h2>
+        <p class="muted small">Visitantes que tocaram em “Acabou?”. Com 3 avisos de pessoas diferentes, a oferta sai do destaque sozinha e o card mostra “Avisaram que acabou”.</p>
+        <div id="ended"></div>
+      </section>
+
+      <section class="box top">
         <h2>Fora do destaque</h2>
         <p class="muted small">Ofertas que você tirou do destaque (ex.: cupom expirou). Continuam na lista do site, só não aparecem em destaque, nas Mais clicadas nem como "Em alta".</p>
         <div id="skipped"></div>
@@ -251,6 +257,7 @@
       ["Telegram", sum(rows, "telegram"), "", ""],
       ["Instagram", sum(rows, "instagram"), "", ""],
       ["Todos os canais (Linktree)", sum(rows, "channels"), "linktr.ee/jpverastech", ""],
+      ["Alertas criados pelo site", sum(rows, "alert"), "abriram o bot para criar alerta", ""],
       ["Ofertas compartilhadas", sum(rows, "share"), "pelo botão Compartilhar", ""],
       ["Instalaram o app", sum(rows, "install"), "adicionaram o site à tela inicial", ""],
       ["Aviso de saída exibido", sum(rows, "exit_shown"), `${pct(sum(rows, "exit_whatsapp"), sum(rows, "exit_shown"))} foram para o WhatsApp`, ""],
@@ -269,6 +276,11 @@
           return `<li><span>${esc(o.title)}${off ? ' <em class="skip-tag">fora do destaque</em>' : ""}</span><span class="nums">${o.views ? `${fmt(o.views)} vista(s) · ${pct(o.clicks, o.views)}` : ""}<b>${fmt(o.clicks)} clique(s)</b>${off ? "" : `<button type="button" class="mini" data-skip="${o.id}" title="Não mostrar no destaque, nas Mais clicadas nem como Em alta">Tirar do destaque</button>`}</span></li>`;
         }).join("")}</ol>`
       : `<div class="muted">Nenhum clique em oferta no período ainda.</div>`;
+
+    const en = data.ended || [];
+    $("ended").innerHTML = en.length
+      ? `<ol>${en.map((o) => `<li><span>${esc(o.title)} <small class="muted">#${o.id}</small>${o.skipped ? ' <em class="skip-tag">fora do destaque</em>' : ""}</span><span class="nums"><b>${fmt(o.reports)} aviso(s)</b>${o.skipped ? "" : `<button type="button" class="mini" data-skip="${o.id}">Tirar do destaque</button>`}</span></li>`).join("")}</ol>`
+      : `<div class="muted">Nenhum aviso ainda.</div>`;
 
     const sk = data.skipped || [];
     $("skipped").innerHTML = sk.length
