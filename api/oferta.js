@@ -69,7 +69,35 @@ function historyBadge(ad, d) {
   return "";
 }
 
-function page({ title, desc, image, url, body, extraCss = "", wide = false }) {
+// Dados estruturados (schema.org) para o Google mostrar preco e loja na busca.
+function productJsonLd(ad, d, { origin, image, storeLabel }) {
+  const { parseBRL } = require("./_lib/parse");
+  const price = parseBRL(d.now);
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: d.name,
+    image: [image],
+    description: `${d.name}${d.coupon ? " · Cupom " + d.coupon : ""} · oferta divulgada no Promoções do Veras`,
+    url: `${origin}/oferta/${ad.id}`,
+  };
+    if (price) {
+    const posted = Date.parse(ad.posted_at || "") || Date.now();
+    data.offers = {
+      "@type": "Offer",
+      url: `${origin}/oferta/${ad.id}`,
+      priceCurrency: "BRL",
+      price: price.toFixed(2),
+      priceValidUntil: new Date(posted + 7 * 86400000).toISOString().slice(0, 10),
+      availability: ad.ended_reported ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      itemCondition: "https://schema.org/NewCondition",
+      ...(storeLabel ? { seller: { "@type": "Organization", name: storeLabel } } : {}),
+    };
+  }
+  return data;
+}
+
+function page({ title, desc, image, url, body, extraCss = "", wide = false, jsonLd = null }) {
   return `<!doctype html><html lang="pt-br"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(title)}</title><meta name="description" content="${esc(desc)}">
 <meta property="og:type" content="product"><meta property="og:site_name" content="Promoções do Veras">
@@ -77,6 +105,7 @@ function page({ title, desc, image, url, body, extraCss = "", wide = false }) {
 <meta property="og:image" content="${esc(image)}"><meta property="og:url" content="${esc(url)}"><meta property="og:locale" content="pt_BR">
 <meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#0b0d12">
 <link rel="icon" type="image/png" href="/favicon.png"><link rel="manifest" href="/manifest.webmanifest"><link rel="canonical" href="${esc(url)}">
+${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>` : ""}
 ${themeScript()}<style>${CSS}${extraCss}</style></head><body>
 <header><a href="/"><img src="/logo.png" alt=""> Promoções do Veras</a><a class="all" href="/">Ver todas as ofertas ›</a></header>
 <main${wide ? ' class="wide"' : ""}>${body}</main></body></html>`;
@@ -167,6 +196,7 @@ module.exports = async function handler(req, res) {
   const desc = `🔥 ${d.now ? d.now + off : "Oferta"}${storeLabel ? " na " + storeLabel : ""}${d.coupon ? " · Cupom " + d.coupon : ""} · Promoções do Veras`;
   const image = ad.photo_file_id ? `${origin}/api/photo?ad=${ad.id}&v=2` : `${origin}/og.png`;
   const stale = Date.now() - Date.parse(ad.posted_at) > 48 * 3600 * 1000;
+  const jsonLd = productJsonLd(ad, d, { origin, image, storeLabel });
 
   const body = `
 <div class="card">
@@ -211,5 +241,5 @@ module.exports = async function handler(req, res) {
 </script>`;
 
   res.setHeader("Cache-Control", "public, max-age=60, s-maxage=600, stale-while-revalidate=3600");
-  res.status(200).send(page({ title, desc, image, url: `${origin}/oferta/${ad.id}`, body }));
+  res.status(200).send(page({ title, desc, image, url: `${origin}/oferta/${ad.id}`, body, jsonLd }));
 };

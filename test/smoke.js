@@ -308,6 +308,9 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   assert.strictEqual(r.status, 200);
   assert.ok(r.data.includes('og:image" content="https://promocoesdoveras.com.br/api/photo?ad=1&amp;v=2"'));
   assert.ok(r.data.includes("Air Fryer R$ 229,90") && r.data.includes("Amazon"));
+  const ld = JSON.parse(r.data.match(/<script type="application\/ld\+json">(.*?)<\/script>/)[1]);
+  assert.strictEqual(ld["@type"], "Product");
+  assert.deepStrictEqual([ld.offers.price, ld.offers.priceCurrency, ld.offers.seller.name], ["229.90", "BRL", "Amazon"]);
   r = await call(oferta, { query: { id: "999" }, headers: { host: "x.com" } });
   assert.strictEqual(r.status, 404);
   console.log("OK: pagina da oferta");
