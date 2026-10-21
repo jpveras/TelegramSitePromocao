@@ -18,6 +18,14 @@
     {
       "source": "/sitemap.xml",
       "destination": "/api/oferta?sitemap=1"
+    },
+    {
+      "source": "/black-friday",
+      "destination": "/api/oferta?campanha=1"
+    },
+    {
+      "source": "/11-11",
+      "destination": "/api/oferta?campanha=1"
     }
   ],
   "functions": {

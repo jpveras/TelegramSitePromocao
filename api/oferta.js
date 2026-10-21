@@ -156,9 +156,77 @@ async function storePage(req, res, origin, key) {
   }));
 }
 
+
+// ---------- Campanha: 11.11 e Black Friday ----------
+// Uma pagina so (/black-friday, /11-11) com contagem regressiva e as melhores
+// ofertas recentes. Cache de 15 min na CDN: quase nao gasta o banco.
+const EVENTS = [
+  { key: "1111", name: "11.11", at: "2026-11-11T00:00:00-03:00", end: "2026-11-12T00:00:00-03:00", desc: "o maior dia de ofertas da Shopee e do AliExpress" },
+  { key: "bf", name: "Black Friday", at: "2026-11-27T00:00:00-03:00", end: "2026-11-28T00:00:00-03:00", desc: "descontos fortes em quase todas as lojas" },
+];
+const CAMP_RE = /black\s*friday|black\s*fri|esquenta|11[.\/]11|blackfriday|cyber\s*monday/i;
+
+const CAMP_CSS = `
+.camp-hero{border-radius:20px;padding:26px 22px;margin:0 0 20px;background:linear-gradient(135deg,#111 0%,#2a1606 100%);color:#fff;border:1px solid #3a2a1c}
+.camp-hero h1{margin:0 0 8px;font-size:clamp(24px,4.5vw,36px);line-height:1.15}
+.camp-hero p{margin:0;color:#d6d0c8;line-height:1.55}
+.cd-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:18px 0 4px}
+.cd{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px 16px}
+.cd b{display:block;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#ffb27a;margin:0 0 6px}
+.cd .t{font-size:26px;font-weight:900;font-variant-numeric:tabular-nums}
+@media (max-width:560px){.cd .t{font-size:20px}.camp-hero{padding:20px 16px}}
+.cd small{display:block;color:#bdb6ad;margin-top:4px;font-size:12.5px}
+.cd.live{border-color:#ff7a1a;background:rgba(255,122,26,.16)}
+.camp-cta{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 0}
+.camp-cta a{display:inline-flex;align-items:center;gap:6px;padding:11px 16px;border-radius:12px;font-weight:800;text-decoration:none;font-size:14.5px}
+.camp-cta .cwa{background:#25d366;color:#06301a}
+.camp-cta .ctg{background:#2aa7e0;color:#fff}
+.camp-sub{font-size:19px;margin:26px 0 12px}
+.camp-tips{margin:26px 0 0;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--soft);color:var(--muted);line-height:1.6;font-size:14px}
+.camp-tips b{color:var(--text)}
+`;
+
+async function campaignPage(req, res, origin) {
+  const recent = isConfigured() ? await listAds({ limit: 200 }).catch(() => []) : [];
+  const since = Date.now() - 72 * 3600 * 1000;
+  const fresh = recent.filter((a) => (Date.parse(a.posted_at) || 0) >= since && !a.ended_reported);
+  const scored = fresh.map((a) => ({ a, d: describe(a) }));
+  const tagged = scored.filter((x) => CAMP_RE.test(x.a.text || ""));
+  const rest = scored.filter((x) => !CAMP_RE.test(x.a.text || "")).sort((x, y) => (y.d.discount || 0) - (x.d.discount || 0));
+  const list = tagged.concat(rest).slice(0, 36);
+  const items = list.map(({ a, d }) => `<a class="item" href="/oferta/${a.id}"><span class="ph">${a.photo_file_id ? `<img src="/api/photo?ad=${a.id}&v=2" alt="${esc(d.name)}" loading="lazy">` : "🏷️"}</span><span class="in"><p class="nm">${esc(d.name)}</p><span class="pr">${esc(d.now || "Confira")}</span>${d.discount ? `<span class="off">-${d.discount}%</span>` : ""}</span></a>`).join("");
+  const cds = EVENTS.map((e) => `<div class="cd" data-at="${e.at}" data-end="${e.end}"><b>${esc(e.name)}</b><span class="t">${esc(new Date(e.at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "America/Sao_Paulo" }))}</span><small>${esc(e.desc)}</small></div>`).join("");
+  const body = `<section class="camp-hero">
+  <h1>🖤 Black Friday e 11.11 2026: ofertas e cupons</h1>
+  <p>As melhores promoções da Black Friday e do 11.11, selecionadas e conferidas pelo Promoções do Veras. Entre no canal para receber as ofertas no momento em que saírem.</p>
+  <div class="cd-row">${cds}</div>
+  <div class="camp-cta"><a class="cwa" href="${WHATSAPP}" target="_blank" rel="noopener noreferrer">📲 Receber no WhatsApp</a><a class="ctg" href="https://t.me/PromocoesdoVeras" target="_blank" rel="noopener noreferrer">✈️ Receber no Telegram</a></div>
+</section>
+<h2 class="camp-sub">${tagged.length ? "🔥 Ofertas da campanha e maiores descontos" : "🔥 Maiores descontos dos últimos dias"}</h2>
+<div class="list">${items || '<p class="intro">Novas ofertas chegam a cada poucos minutos.</p>'}</div>
+<p style="margin-top:22px"><a class="go" href="/">Ver todas as ofertas de hoje ›</a></p>
+<div class="camp-tips"><b>Dicas para aproveitar:</b> salve as ofertas no ❤️ do site, crie um alerta com o nome do produto que você quer (🔔 Me avise), compare com o selo “📉 Menor preço já visto” e confira o cupom antes de finalizar. Você paga o mesmo preço da loja.</div>
+<script>
+(function(){
+  function fmt(ms){var s=Math.max(0,Math.floor(ms/1000)),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60;return (d?d+"d ":"")+String(h).padStart(2,"0")+"h "+String(m).padStart(2,"0")+"m "+String(x).padStart(2,"0")+"s"}
+  function tick(){document.querySelectorAll(".cd").forEach(function(el){var at=Date.parse(el.dataset.at),end=Date.parse(el.dataset.end),now=Date.now(),t=el.querySelector(".t");
+    if(now<at){t.textContent="Faltam "+fmt(at-now);el.classList.remove("live")}
+    else if(now<end){t.textContent="🔴 Acontecendo agora";el.classList.add("live")}
+    else{t.textContent="Encerrado";el.classList.remove("live")}})}
+  tick();setInterval(tick,1000);
+})();
+</script>`;
+  res.setHeader("Cache-Control", "public, max-age=60, s-maxage=900, stale-while-revalidate=3600");
+  res.status(200).send(page({
+    title: "Black Friday 2026 e 11.11: ofertas e cupons de hoje · Promoções do Veras",
+    desc: "Contagem regressiva para o 11.11 e a Black Friday 2026, com as melhores ofertas e cupons do dia selecionados pelo Promoções do Veras.",
+    image: `${origin}/og.png`, url: `${origin}/black-friday`, body, extraCss: LIST_CSS + CAMP_CSS, wide: true,
+  }));
+}
+
 async function sitemap(req, res, origin) {
   const ads = isConfigured() ? await listAds({ limit: 500 }).catch(() => []) : [];
-  const urls = [`<url><loc>${origin}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>`]
+  const urls = [`<url><loc>${origin}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>`, `<url><loc>${origin}/black-friday</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>`]
     .concat(Object.keys(STORES).map((k) => `<url><loc>${origin}/loja/${k}</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>`))
     .concat(ads.map((a) => `<url><loc>${origin}/oferta/${a.id}</loc><lastmod>${String(a.updated_at || a.posted_at || "").slice(0, 10)}</lastmod><priority>0.5</priority></url>`));
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
@@ -173,6 +241,7 @@ module.exports = async function handler(req, res) {
   const origin = `https://${host}`;
   if (q.sitemap) return sitemap(req, res, origin);
   res.setHeader("Content-Type", "text/html; charset=utf-8");
+  if (q.campanha) return campaignPage(req, res, origin);
   if (q.loja) return storePage(req, res, origin, String(q.loja).toLowerCase());
   res.setHeader("Content-Type", "text/html; charset=utf-8");
 
@@ -215,7 +284,7 @@ module.exports = async function handler(req, res) {
       <button type="button" id="share">📤 Compartilhar</button>
       <a href="/">🛍️ Mais ofertas</a>
     </div>
-    <p class="note">Preços e estoque podem mudar a qualquer momento na loja.</p>
+    <p class="note">✔️ Você paga o mesmo preço da loja, pelo link oficial. Preços e estoque podem mudar a qualquer momento.</p>
     <button type="button" class="flag" id="flag">🚩 Esta oferta ou cupom acabou? Avise a gente</button>
   </div>
 </div>

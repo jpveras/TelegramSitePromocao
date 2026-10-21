@@ -1510,6 +1510,22 @@
   .flag-btn:hover { color: var(--red); }
   .flag-btn.done { color: var(--green); cursor: default; }
   .stale.ended { color: var(--red); }
+  /* Faixa de confianca */
+  .trust-strip { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .trust-strip li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .trust-strip li span { font-size: 12px; }
+  /* Faixa da campanha (11.11 / Black Friday) */
+  .camp-banner { display: flex; align-items: center; gap: 12px; margin: 14px 0 6px; padding: 12px 16px; border-radius: 14px; background: linear-gradient(135deg, #111 0%, #2a1606 100%); border: 1px solid #3a2a1c; color: #fff; text-decoration: none; }
+  .camp-banner[hidden] { display: none; }
+  .camp-banner .cb-ico { font-size: 22px; }
+  .camp-banner .cb-txt { flex: 1; min-width: 0; font-size: 14px; line-height: 1.35; color: #d6d0c8; }
+  .camp-banner .cb-txt b { color: #fff; font-size: 15px; }
+  .camp-banner .cb-go { flex-shrink: 0; font-weight: 800; font-size: 14px; color: #ffb27a; white-space: nowrap; }
+  .camp-banner:hover .cb-go { text-decoration: underline; }
+  @media (max-width: 560px) { .camp-banner .cb-go { display: none; } .trust-strip { justify-content: flex-start; font-size: 12.5px; } }
+  /* Visto hoje */
+  .seen-row { margin: -2px 0 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .seen-row b { color: var(--text); }
   /* Oferta antiga (3+ dias) ou avisada como encerrada: card mais apagado */
   .card.is-old .thumb img { opacity: 0.55; filter: grayscale(0.45); }
   .card.is-old .price-block .now { opacity: 0.7; }
@@ -1743,6 +1759,18 @@
       </section>
     </div>
 
+    <ul class="trust-strip" aria-label="Por que comprar pelo Promoções do Veras">
+      <li><span aria-hidden="true">✔️</span> Você paga o mesmo preço da loja</li>
+      <li><span aria-hidden="true">✔️</span> Link direto para a loja oficial</li>
+      <li><span aria-hidden="true">✔️</span> Ofertas conferidas pela equipe</li>
+    </ul>
+
+    <a class="camp-banner" id="camp-banner" href="/black-friday" hidden>
+      <span class="cb-ico" aria-hidden="true">🖤</span>
+      <span class="cb-txt"><b id="camp-title">Black Friday e 11.11</b> <span id="camp-when"></span></span>
+      <span class="cb-go">Ver ofertas ›</span>
+    </a>
+
     <div class="section-head">
       <h2>Ofertas do Dia</h2>
       <span class="badge" id="live-badge"><span class="dot"></span> <span id="live-text">Ao vivo</span></span>
@@ -1867,7 +1895,8 @@
       Ofertas por loja:
       <a href="/loja/amazon">Amazon</a> · <a href="/loja/mercadolivre">Mercado Livre</a> · <a href="/loja/shopee">Shopee</a> ·
       <a href="/loja/magalu">Magalu</a> · <a href="/loja/kabum">Kabum</a> · <a href="/loja/aliexpress">AliExpress</a> ·
-      <a href="/loja/americanas">Americanas</a> · <a href="/loja/casasbahia">Casas Bahia</a> · <a href="/loja/shein">Shein</a>
+      <a href="/loja/americanas">Americanas</a> · <a href="/loja/casasbahia">Casas Bahia</a> · <a href="/loja/shein">Shein</a> ·
+      <a href="/black-friday">🖤 Black Friday e 11.11</a>
     </nav>
     <div class="footer-legal">
       <a href="/privacidade.html">Privacidade</a>
@@ -1917,6 +1946,18 @@
   let hotMap = new Map();
   // Ofertas tiradas do destaque pelo painel (cupom expirado etc.).
   let heroSkip = new Set([982]);
+  // Visualizacoes de hoje (api/hot). So aparece a partir de VIEWS_MIN, para nao mostrar "2 viram".
+  const VIEWS_MIN = 20;
+  let viewsMap = {};
+  const seenHtml = (id) => { const n = viewsMap[id] || 0; return n >= VIEWS_MIN ? `<div class="seen-row">👀 <b>${n.toLocaleString("pt-BR")}</b> pessoas viram hoje</div>` : ""; };
+  function applyViews() {
+    feedEl.querySelectorAll(".card").forEach((c) => {
+      const html = seenHtml(c.dataset.id);
+      const cur = c.querySelector(".seen-row");
+      if (cur) { if (html) cur.outerHTML = html; else cur.remove(); }
+      else if (html) { const meta = c.querySelector(".meta-row"); if (meta) meta.insertAdjacentHTML("beforebegin", html); }
+    });
+  }
   let hotList = [];
   let hotPeriod = "today";
   // Numero de cliques so aparece quando impressiona; abaixo disso, o selo fica sem numero.
@@ -2191,6 +2232,7 @@
         </div>
         ${pix || installments ? `<div class="pay">${pix ? `<span class="pix">💠 Pix</span>` : ""}${installments ? `<span>💳 ${escapeHtml(installments)}</span>` : ""}</div>` : ""}
         ${historyBadge(ad)}
+        ${seenHtml(ad.id)}
         <div class="meta-row">
           <div class="rating">${rating ? `⭐ <b>${escapeHtml(rating)}</b> de avaliação` : ""}</div>
           ${ad.ended ? `<span class="stale ended" title="Visitantes avisaram que a oferta ou o cupom acabou">⚠️ Avisaram que acabou</span>` : isOld ? `<span class="stale" title="Publicada há mais de 3 dias: o preço ou o cupom pode ter mudado">⏳ Pode ter expirado</span>` : isStale ? `<span class="stale" title="Publicada há mais de 2 dias">⏳ Pode ter acabado</span>` : ""}
@@ -2687,13 +2729,32 @@
       // So ofertas recentes (48h) e com 2+ cliques contam como "em alta".
       const since = Date.now() - 48 * 60 * 60 * 1000;
       heroSkip = new Set((data.skip || []).map(Number));
+      viewsMap = data.views || {};
       hotList = (data.items || []).filter((x) => x.ad && x.clicks >= 2 && !heroSkip.has(x.id) && new Date(x.ad.posted_at).getTime() >= since);
       hotPeriod = data.period || "today";
       hotMap = new Map(hotList.map((x) => [x.id, x.clicks]));
       if (allAds.length) refreshAll();
+      applyViews();
     } catch {}
   }
   loadHot();
+
+  // Faixa da campanha: mostra o proximo evento (11.11, depois Black Friday) e some apos 28/11.
+  (function campBanner() {
+    const el = document.getElementById("camp-banner");
+    if (!el) return;
+    const evs = [
+      { name: "11.11", at: Date.parse("2026-11-11T00:00:00-03:00"), end: Date.parse("2026-11-12T00:00:00-03:00") },
+      { name: "Black Friday", at: Date.parse("2026-11-27T00:00:00-03:00"), end: Date.parse("2026-11-28T00:00:00-03:00") },
+    ];
+    const now = Date.now();
+    const ev = evs.find((e) => now < e.end);
+    if (!ev) return;
+    const days = Math.ceil((ev.at - now) / 86400000);
+    document.getElementById("camp-title").textContent = ev.name === "11.11" ? "11.11 e Black Friday" : "Black Friday";
+    document.getElementById("camp-when").textContent = now >= ev.at ? `· 🔴 ${ev.name} acontecendo agora` : days <= 1 ? `· ${ev.name} é amanhã!` : `· faltam ${days} dias para o ${ev.name}`;
+    el.hidden = false;
+  })();
   setInterval(loadHot, 120000);
 
   // ---------- Categorias em icones (acima da grade) ----------

@@ -313,6 +313,9 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   assert.deepStrictEqual([ld.offers.price, ld.offers.priceCurrency, ld.offers.seller.name], ["229.90", "BRL", "Amazon"]);
   r = await call(oferta, { query: { id: "999" }, headers: { host: "x.com" } });
   assert.strictEqual(r.status, 404);
+  r = await call(oferta, { query: { campanha: "1" }, headers: { host: "promocoesdoveras.com.br" } });
+  assert.strictEqual(r.status, 200);
+  assert.ok(r.data.includes("Black Friday") && r.data.includes('data-at="2026-11-11') && r.data.includes("/oferta/"));
   console.log("OK: pagina da oferta");
 
   // Historico de preco: mesmo produto anunciado de novo mais barato.

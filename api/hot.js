@@ -31,7 +31,10 @@ module.exports = async function handler(req, res) {
       if (seeded === "OK") await redis([["SADD", "hero:skip", "982"]]);
       seedChecked = true;
     }
-    const [skipRaw] = await redis([["SMEMBERS", "hero:skip"]]);
+    // Mesma ida ao banco: ofertas fora do destaque + mais vistas hoje (selo "viram hoje").
+    const [skipRaw, viewsFlat] = await redis([["SMEMBERS", "hero:skip"], ["ZRANGE", `st:${today}:views`, "0", "59", "REV", "WITHSCORES"]]);
+    const views = {};
+    for (let i = 0; i + 1 < (viewsFlat || []).length; i += 2) views[viewsFlat[i]] = Number(viewsFlat[i + 1]) || 0;
     const skip = (skipRaw || []).map(Number).filter(Boolean);
     let period = "today";
     let [flat] = await redis([["ZRANGE", `st:${today}:offers`, "0", "11", "REV", "WITHSCORES"]]);
@@ -51,7 +54,7 @@ module.exports = async function handler(req, res) {
     list.forEach((x, i) => {
       if (raws[i]) items.push({ id: x.id, clicks: x.clicks, ad: toPublic(JSON.parse(raws[i])) });
     });
-    res.status(200).json({ period, items: items.filter((x) => !skip.includes(x.id)), skip });
+    res.status(200).json({ period, items: items.filter((x) => !skip.includes(x.id)), skip, views });
   } catch (err) {
     console.error("[hot] Falha:", err.message);
     res.status(200).json({ period: "today", items: [] });
