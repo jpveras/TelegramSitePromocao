@@ -1513,16 +1513,29 @@
   /* Faixa de confianca */
   .trust-strip { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; font-size: 13px; font-weight: 600; color: var(--muted); }
   .trust-strip li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-  .trust-strip li span { font-size: 12px; }
+  .trust-strip .ck { font-size: 12px; color: var(--green); font-weight: 900; }
+  .trust-strip .sh { display: none; }
   /* Faixa da campanha (11.11 / Black Friday) */
-  .camp-banner { display: flex; align-items: center; gap: 12px; margin: 14px 0 6px; padding: 12px 16px; border-radius: 14px; background: linear-gradient(135deg, #111 0%, #2a1606 100%); border: 1px solid #3a2a1c; color: #fff; text-decoration: none; }
+  .camp-banner { display: flex; align-items: center; gap: 12px; margin: 14px 0 18px; padding: 12px 16px; border-radius: 14px; background: linear-gradient(135deg, #111 0%, #2a1606 100%); border: 1px solid #3a2a1c; color: #fff; text-decoration: none; }
   .camp-banner[hidden] { display: none; }
   .camp-banner .cb-ico { font-size: 22px; }
   .camp-banner .cb-txt { flex: 1; min-width: 0; font-size: 14px; line-height: 1.35; color: #d6d0c8; }
   .camp-banner .cb-txt b { color: #fff; font-size: 15px; }
   .camp-banner .cb-go { flex-shrink: 0; font-weight: 800; font-size: 14px; color: #ffb27a; white-space: nowrap; }
   .camp-banner:hover .cb-go { text-decoration: underline; }
-  @media (max-width: 560px) { .camp-banner .cb-go { display: none; } .trust-strip { justify-content: flex-start; font-size: 12.5px; } }
+  @media (max-width: 560px) {
+    .trust-strip { flex-wrap: nowrap; justify-content: space-between; gap: 8px; font-size: 11.5px; margin-top: 12px; }
+    .trust-strip li { gap: 4px; }
+    .trust-strip .lg { display: none; }
+    .trust-strip .sh { display: inline; }
+    .camp-banner { padding: 9px 12px; gap: 8px; border-radius: 12px; margin: 10px 0 14px; }
+    .camp-banner .cb-ico { font-size: 16px; }
+    .camp-banner .cb-txt { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .camp-banner .cb-txt b { font-size: 13.5px; }
+    .camp-banner .cb-more { display: none; }
+    .camp-banner .cb-go { font-size: 13px; }
+  }
+  @media (max-width: 380px) { .trust-strip { font-size: 10.8px; gap: 4px; } .trust-strip li { gap: 3px; } }
   /* Visto hoje */
   .seen-row { margin: -2px 0 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
   .seen-row b { color: var(--text); }
@@ -1760,14 +1773,14 @@
     </div>
 
     <ul class="trust-strip" aria-label="Por que comprar pelo Promoções do Veras">
-      <li><span aria-hidden="true">✔️</span> Você paga o mesmo preço da loja</li>
-      <li><span aria-hidden="true">✔️</span> Link direto para a loja oficial</li>
-      <li><span aria-hidden="true">✔️</span> Ofertas conferidas pela equipe</li>
+      <li><span class="ck" aria-hidden="true">✔</span><span class="lg">Você paga o mesmo preço da loja</span><span class="sh">Mesmo preço da loja</span></li>
+      <li><span class="ck" aria-hidden="true">✔</span><span class="lg">Link direto para a loja oficial</span><span class="sh">Link oficial</span></li>
+      <li><span class="ck" aria-hidden="true">✔</span><span class="lg">Ofertas conferidas pela equipe</span><span class="sh">Ofertas conferidas</span></li>
     </ul>
 
     <a class="camp-banner" id="camp-banner" href="/black-friday" hidden>
       <span class="cb-ico" aria-hidden="true">🖤</span>
-      <span class="cb-txt"><b id="camp-title">Black Friday e 11.11</b> <span id="camp-when"></span></span>
+      <span class="cb-txt"><b id="camp-title">11.11 e Black Friday</b><span class="cb-more" id="camp-when"></span></span>
       <span class="cb-go">Ver ofertas ›</span>
     </a>
 
@@ -2751,8 +2764,9 @@
     const ev = evs.find((e) => now < e.end);
     if (!ev) return;
     const days = Math.ceil((ev.at - now) / 86400000);
-    document.getElementById("camp-title").textContent = ev.name === "11.11" ? "11.11 e Black Friday" : "Black Friday";
-    document.getElementById("camp-when").textContent = now >= ev.at ? `· 🔴 ${ev.name} acontecendo agora` : days <= 1 ? `· ${ev.name} é amanhã!` : `· faltam ${days} dias para o ${ev.name}`;
+    // Titulo curto (cabe no celular); o resto so aparece no computador.
+    document.getElementById("camp-title").textContent = now >= ev.at ? `🔴 ${ev.name} é hoje!` : days <= 1 ? `${ev.name} é amanhã!` : `${ev.name} em ${days} dias`;
+    document.getElementById("camp-when").textContent = ev.name === "11.11" ? " · depois vem a Black Friday (27/11)" : " · as melhores ofertas reunidas";
     el.hidden = false;
   })();
   setInterval(loadHot, 120000);
