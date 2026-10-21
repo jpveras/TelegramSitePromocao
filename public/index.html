@@ -1516,26 +1516,32 @@
   .trust-strip .ck { font-size: 12px; color: var(--green); font-weight: 900; }
   .trust-strip .sh { display: none; }
   /* Faixa da campanha (11.11 / Black Friday) */
-  .camp-banner { display: flex; align-items: center; gap: 12px; margin: 14px 0 18px; padding: 12px 16px; border-radius: 14px; background: linear-gradient(135deg, #111 0%, #2a1606 100%); border: 1px solid #3a2a1c; color: #fff; text-decoration: none; }
+  .camp-banner { position: relative; overflow: hidden; display: flex; align-items: center; gap: 14px; margin: 14px 0 18px; padding: 12px 14px 12px 12px; border-radius: 16px; background: linear-gradient(120deg, #1a0d04 0%, #3a1a06 55%, #5a2408 100%); border: 1px solid rgba(255, 122, 26, 0.55); box-shadow: 0 8px 24px rgba(255, 106, 0, 0.18); color: #fff; text-decoration: none; }
   .camp-banner[hidden] { display: none; }
-  .camp-banner .cb-ico { font-size: 22px; }
-  .camp-banner .cb-txt { flex: 1; min-width: 0; font-size: 14px; line-height: 1.35; color: #d6d0c8; }
-  .camp-banner .cb-txt b { color: #fff; font-size: 15px; }
-  .camp-banner .cb-go { flex-shrink: 0; font-weight: 800; font-size: 14px; color: #ffb27a; white-space: nowrap; }
-  .camp-banner:hover .cb-go { text-decoration: underline; }
+  .camp-banner::after { content: ""; position: absolute; top: 0; bottom: 0; width: 60px; left: -80px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent); transform: skewX(-20deg); animation: cb-shine 4.5s ease-in-out infinite; pointer-events: none; }
+  @keyframes cb-shine { 0%, 70% { left: -80px; } 100% { left: 110%; } }
+  .camp-banner .cb-badge { flex-shrink: 0; display: grid; place-items: center; min-width: 58px; height: 48px; padding: 0 8px; border-radius: 12px; background: linear-gradient(160deg, #ff8a2a, #ff4d00); color: #fff; font-weight: 900; font-size: 19px; letter-spacing: -0.02em; line-height: 1.05; text-align: center; box-shadow: 0 4px 14px rgba(255, 77, 0, 0.45); }
+  .camp-banner .cb-badge.long { font-size: 11px; letter-spacing: 0.02em; text-transform: uppercase; max-width: 66px; }
+  .camp-banner .cb-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.25; }
+  .camp-banner .cb-txt b { color: #fff; font-size: 16px; font-weight: 900; }
+  .camp-banner .cb-txt small { color: #ffcfa8; font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .camp-banner .cb-go { flex-shrink: 0; padding: 9px 14px; border-radius: 10px; background: #ff7a1a; color: #fff; font-weight: 900; font-size: 14px; white-space: nowrap; transition: transform 0.15s; }
+  .camp-banner:hover .cb-go { transform: translateX(2px); background: #ff8a2a; }
+  @media (prefers-reduced-motion: reduce) { .camp-banner::after { animation: none; display: none; } }
   @media (max-width: 560px) {
     .trust-strip { flex-wrap: nowrap; justify-content: space-between; gap: 8px; font-size: 11.5px; margin-top: 12px; }
     .trust-strip li { gap: 4px; }
     .trust-strip .lg { display: none; }
     .trust-strip .sh { display: inline; }
-    .camp-banner { padding: 9px 12px; gap: 8px; border-radius: 12px; margin: 10px 0 14px; }
-    .camp-banner .cb-ico { font-size: 16px; }
-    .camp-banner .cb-txt { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .camp-banner .cb-txt b { font-size: 13.5px; }
-    .camp-banner .cb-more { display: none; }
-    .camp-banner .cb-go { font-size: 13px; }
+    .camp-banner { padding: 10px; gap: 10px; border-radius: 14px; margin: 10px 0 14px; }
+    .camp-banner .cb-badge { min-width: 50px; height: 42px; font-size: 16px; border-radius: 10px; }
+    .camp-banner .cb-txt b { font-size: 14.5px; }
+    .camp-banner .cb-txt small { font-size: 11.5px; }
+    .camp-banner .cb-long { display: none; }
+    .camp-banner .cb-go { padding: 8px 11px; font-size: 13px; }
   }
   @media (max-width: 380px) { .trust-strip { font-size: 10.8px; gap: 4px; } .trust-strip li { gap: 3px; } }
+  @media (max-width: 350px) { .camp-banner .cb-w { display: none; } }
   /* Visto hoje */
   .seen-row { margin: -2px 0 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
   .seen-row b { color: var(--text); }
@@ -1779,9 +1785,9 @@
     </ul>
 
     <a class="camp-banner" id="camp-banner" href="/black-friday" hidden>
-      <span class="cb-ico" aria-hidden="true">🖤</span>
-      <span class="cb-txt"><b id="camp-title">11.11 e Black Friday</b><span class="cb-more" id="camp-when"></span></span>
-      <span class="cb-go">Ver ofertas ›</span>
+      <span class="cb-badge" id="camp-badge">11.11</span>
+      <span class="cb-txt"><b id="camp-title">11.11 e Black Friday</b><small id="camp-sub">Mega ofertas Shopee e AliExpress</small></span>
+      <span class="cb-go">Ver<span class="cb-w"> ofertas</span> <span aria-hidden="true">›</span></span>
     </a>
 
     <div class="section-head">
@@ -2765,8 +2771,11 @@
     if (!ev) return;
     const days = Math.ceil((ev.at - now) / 86400000);
     // Titulo curto (cabe no celular); o resto so aparece no computador.
-    document.getElementById("camp-title").textContent = now >= ev.at ? `🔴 ${ev.name} é hoje!` : days <= 1 ? `${ev.name} é amanhã!` : `${ev.name} em ${days} dias`;
-    document.getElementById("camp-when").textContent = ev.name === "11.11" ? " · depois vem a Black Friday (27/11)" : " · as melhores ofertas reunidas";
+    const badge = document.getElementById("camp-badge");
+    badge.textContent = ev.name;
+    badge.classList.toggle("long", ev.name !== "11.11");
+    document.getElementById("camp-title").textContent = now >= ev.at ? "🔴 É hoje! Corre" : days <= 1 ? "É amanhã! ⏰" : `Faltam ${days} dias`;
+    document.getElementById("camp-sub").innerHTML = ev.name === "11.11" ? '<span class="cb-long">Mega ofertas </span>Shopee e AliExpress 🔥' : '<span class="cb-long">Os </span>maiores descontos do ano 🔥';
     el.hidden = false;
   })();
   setInterval(loadHot, 120000);
