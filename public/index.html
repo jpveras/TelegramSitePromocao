@@ -1543,21 +1543,10 @@
   @media (max-width: 380px) { .trust-strip { font-size: 10.8px; gap: 4px; } .trust-strip li { gap: 3px; } }
   @media (max-width: 350px) { .camp-banner .cb-w { display: none; } }
   /* Card de post so de cupom (sem produto) */
-  .coupon-thumb { background: var(--cbg) !important; display: flex; align-items: center; justify-content: center; padding: 12px; }
-  .coupon-thumb .ticket { position: relative; width: 100%; max-width: 260px; aspect-ratio: 16 / 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px 14px; border-radius: 12px; background: #fff; color: #15181f; border: 2px dashed var(--cbg); box-shadow: 0 0 0 4px #fff, 0 6px 18px rgba(0, 0, 0, 0.25); text-align: center; }
-  .coupon-thumb .ticket::before, .coupon-thumb .ticket::after { content: ""; position: absolute; top: 50%; width: 18px; height: 18px; margin-top: -9px; border-radius: 50%; background: var(--cbg); }
-  .coupon-thumb .ticket::before { left: -13px; } .coupon-thumb .ticket::after { right: -13px; }
-  .coupon-thumb .t-top { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #5b6372; }
-  .coupon-thumb .t-code { max-width: 100%; font-size: clamp(14px, 9cqw, 22px); font-weight: 900; letter-spacing: 0.04em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; line-height: 1.1; color: #e85d00; }
-  .coupon-thumb .t-bot { font-size: 10px; font-weight: 600; color: #8b93a1; }
-  .coupon-thumb .t-ico { display: none; font-size: 30px; line-height: 1; }
-  @media (max-width: 600px) {
-    .coupon-thumb { padding: 8px; }
-    .coupon-thumb .ticket { aspect-ratio: auto; height: 100%; gap: 4px; padding: 8px 10px; box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0, 0, 0, 0.25); }
-    .coupon-thumb .t-ico { display: block; }
-    .coupon-thumb .t-code, .coupon-thumb .t-bot { display: none; }
-    .coupon-thumb .t-top { font-size: 12px; font-weight: 900; color: #15181f; letter-spacing: 0.03em; }
-    .coupon-card .coupon-pitch { -webkit-line-clamp: 2; font-size: 13px; }
+  .coupon-thumb { background: var(--cbg) !important; padding: 0 !important; overflow: hidden; }
+  .coupon-thumb .coupon-art { display: block; width: 100%; height: 100%; }
+  @media (max-width: 600px) { .coupon-card .coupon-pitch { -webkit-line-clamp: 2; font-size: 13px; } }
+  .coupon-card .coupon-pitch { -webkit-line-clamp: 2; font-size: 13px; }
   }
   .coupon-card .coupon-pitch { margin: 6px 0 10px; font-size: 13.5px; line-height: 1.4; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   /* Visto hoje */
@@ -2220,6 +2209,44 @@
   }
   const sentenceCase = (str) => { const x = String(str || "").trim().toLowerCase(); return x.charAt(0).toUpperCase() + x.slice(1); };
 
+  // Ilustracao do cupom (SVG proprio), na cor da loja.
+  function shade(hex, f) {
+    const n = parseInt(String(hex).replace("#", ""), 16);
+    if (!Number.isFinite(n)) return hex;
+    const c = (v) => Math.max(0, Math.min(255, Math.round(v * f)));
+    return "#" + [c((n >> 16) & 255), c((n >> 8) & 255), c(n & 255)].map((v) => v.toString(16).padStart(2, "0")).join("");
+  }
+  function couponArt(color, label, light) {
+    // light = cor clara (ex.: amarelo do Mercado Livre): textos escuros para ter contraste.
+    const dark = light ? "#1f2340" : shade(color, 0.62), deep = shade(color, light ? 0.72 : 0.42);
+    const ink = light ? "#1f2340" : "#fff", brand = light ? "#2d3277" : color;
+    const name = escapeHtml((label || "Desconto").toUpperCase());
+    const fs = name.length > 10 ? 15 : 19;
+    return `<svg class="coupon-art" viewBox="0 0 400 300" role="img" aria-label="Cupom de desconto ${escapeHtml(label || "")}" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="cg${color.slice(1)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="${deep}"/></linearGradient>
+        <radialGradient id="cs${color.slice(1)}" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      </defs>
+      <rect width="400" height="300" fill="url(#cg${color.slice(1)})"/>
+      <rect width="400" height="300" fill="url(#cs${color.slice(1)})"/>
+      <g fill="#fff" opacity=".9">
+        <circle cx="52" cy="58" r="5"/><circle cx="350" cy="250" r="6"/><circle cx="330" cy="44" r="4"/><circle cx="70" cy="248" r="4"/>
+        <path d="M352 92l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/><path d="M40 150l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/>
+      </g>
+      <g opacity=".85"><rect x="96" y="40" width="10" height="4" rx="2" fill="#ffe066" transform="rotate(30 101 42)"/><rect x="300" y="200" width="12" height="4" rx="2" fill="#7cf2c0" transform="rotate(-25 306 202)"/><rect x="286" y="62" width="10" height="4" rx="2" fill="#ffffff" transform="rotate(60 291 64)"/><rect x="112" y="236" width="12" height="4" rx="2" fill="#ffe066" transform="rotate(-40 118 238)"/></g>
+      <g transform="rotate(-8 200 150)">
+        <rect x="78" y="88" width="250" height="132" rx="16" fill="${deep}" opacity=".35" transform="translate(6 8)"/>
+        <path d="M94 86h218a16 16 0 0 1 16 16v30a18 18 0 0 0 0 36v30a16 16 0 0 1-16 16H94a16 16 0 0 1-16-16v-30a18 18 0 0 0 0-36v-30a16 16 0 0 1 16-16z" fill="#fff"/>
+        <line x1="236" y1="98" x2="236" y2="202" stroke="${color}" stroke-width="3" stroke-dasharray="7 7" stroke-linecap="round" opacity=".6"/>
+        <circle cx="282" cy="150" r="30" fill="${color}"/>
+        <text x="282" y="161" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="32" fill="${ink}">%</text>
+        <text x="157" y="138" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="30" letter-spacing="2" fill="${dark}">CUPOM</text>
+        <text x="157" y="166" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-weight="800" font-size="${fs}" letter-spacing="1" fill="${brand}">${name}</text>
+        <rect x="112" y="178" width="90" height="8" rx="4" fill="${color}" opacity=".22"/>
+      </g>
+    </svg>`;
+  }
+
   function buildCouponCard(ad) {
     const store = storeOf(ad);
     const url = extractUrl(ad.text);
@@ -2237,12 +2264,7 @@
     card.dataset.id = ad.id;
     card.innerHTML = `
       <div class="thumb coupon-thumb" style="--cbg:${bg};--cfg:${fg}">
-        <div class="ticket">
-          <span class="t-ico" aria-hidden="true">🎟️</span>
-          <span class="t-top">Cupom${label ? " " + escapeHtml(label) : ""}</span>
-          <span class="t-code">${coupon ? escapeHtml(coupon) : "DESCONTO"}</span>
-          <span class="t-bot">Toque em copiar e use no carrinho</span>
-        </div>
+        ${couponArt(bg, label, !!store.dark)}
         ${isNew ? `<span class="new-badge">Novo</span>` : ""}
       </div>
       <div class="body">
