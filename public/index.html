@@ -1542,6 +1542,24 @@
   }
   @media (max-width: 380px) { .trust-strip { font-size: 10.8px; gap: 4px; } .trust-strip li { gap: 3px; } }
   @media (max-width: 350px) { .camp-banner .cb-w { display: none; } }
+  /* Card de post so de cupom (sem produto) */
+  .coupon-thumb { background: var(--cbg) !important; display: flex; align-items: center; justify-content: center; padding: 12px; }
+  .coupon-thumb .ticket { position: relative; width: 100%; max-width: 260px; aspect-ratio: 16 / 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px 14px; border-radius: 12px; background: #fff; color: #15181f; border: 2px dashed var(--cbg); box-shadow: 0 0 0 4px #fff, 0 6px 18px rgba(0, 0, 0, 0.25); text-align: center; }
+  .coupon-thumb .ticket::before, .coupon-thumb .ticket::after { content: ""; position: absolute; top: 50%; width: 18px; height: 18px; margin-top: -9px; border-radius: 50%; background: var(--cbg); }
+  .coupon-thumb .ticket::before { left: -13px; } .coupon-thumb .ticket::after { right: -13px; }
+  .coupon-thumb .t-top { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #5b6372; }
+  .coupon-thumb .t-code { max-width: 100%; font-size: clamp(14px, 9cqw, 22px); font-weight: 900; letter-spacing: 0.04em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; line-height: 1.1; color: #e85d00; }
+  .coupon-thumb .t-bot { font-size: 10px; font-weight: 600; color: #8b93a1; }
+  .coupon-thumb .t-ico { display: none; font-size: 30px; line-height: 1; }
+  @media (max-width: 600px) {
+    .coupon-thumb { padding: 8px; }
+    .coupon-thumb .ticket { aspect-ratio: auto; height: 100%; gap: 4px; padding: 8px 10px; box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(0, 0, 0, 0.25); }
+    .coupon-thumb .t-ico { display: block; }
+    .coupon-thumb .t-code, .coupon-thumb .t-bot { display: none; }
+    .coupon-thumb .t-top { font-size: 12px; font-weight: 900; color: #15181f; letter-spacing: 0.03em; }
+    .coupon-card .coupon-pitch { -webkit-line-clamp: 2; font-size: 13px; }
+  }
+  .coupon-card .coupon-pitch { margin: 6px 0 10px; font-size: 13.5px; line-height: 1.4; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   /* Visto hoje */
   .seen-row { margin: -2px 0 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
   .seen-row b { color: var(--text); }
@@ -2194,7 +2212,66 @@
     return div.innerHTML.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
+  // Post so de cupom do disparador: "🔥 🎟️ Cupom Shopee" + codigo + link cupom.pravce, sem preco.
+  function isCouponPost(ad) {
+    const t = ad.text || "";
+    if (/R\$\s?\d/.test(t)) return false;
+    return /^\s*🔥?\s*🎟️?\s*cupom\b/imu.test(t) || /cupom\.pravce\.com\.br/i.test(t);
+  }
+  const sentenceCase = (str) => { const x = String(str || "").trim().toLowerCase(); return x.charAt(0).toUpperCase() + x.slice(1); };
+
+  function buildCouponCard(ad) {
+    const store = storeOf(ad);
+    const url = extractUrl(ad.text);
+    const { coupon } = info(ad);
+    const ageMs = Date.now() - new Date(ad.posted_at).getTime();
+    const isNew = ageMs < 15 * 60 * 1000;
+    const isOld = ageMs > 72 * 60 * 60 * 1000 || !!ad.ended;
+    const label = store.key !== "outros" ? store.label : "";
+    const first = firstLine(ad.text);
+    const pitch = /cupom\s/i.test(first) && first.length < 140 && !/^\s*🔥/u.test(first) ? sentenceCase(first) : "";
+    const bg = store.key !== "outros" ? store.color : "#ff7a1a";
+    const fg = store.dark ? "#1a1a1a" : "#fff";
+    const card = document.createElement("div");
+    card.className = "card coupon-card" + (isOld ? " is-old" : "");
+    card.dataset.id = ad.id;
+    card.innerHTML = `
+      <div class="thumb coupon-thumb" style="--cbg:${bg};--cfg:${fg}">
+        <div class="ticket">
+          <span class="t-ico" aria-hidden="true">🎟️</span>
+          <span class="t-top">Cupom${label ? " " + escapeHtml(label) : ""}</span>
+          <span class="t-code">${coupon ? escapeHtml(coupon) : "DESCONTO"}</span>
+          <span class="t-bot">Toque em copiar e use no carrinho</span>
+        </div>
+        ${isNew ? `<span class="new-badge">Novo</span>` : ""}
+      </div>
+      <div class="body">
+        <p class="title">Cupom de desconto${label ? " " + escapeHtml(label) : ""}</p>
+        <div class="category"><span class="cat">🎟️ Cupom</span><span class="ago" title="${formatDate(ad.posted_at)}">${timeAgo(ad.posted_at)}</span></div>
+        <p class="coupon-pitch">${pitch ? escapeHtml(pitch) : `Copie o código e aplique no carrinho${label ? ((STORE_PREP[store.key] || "na") === "no" ? " do " : " da ") + escapeHtml(label) : ""} antes de pagar.`}</p>
+        <div class="meta-row">
+          <div class="rating"></div>
+          ${ad.ended ? `<span class="stale ended" title="Visitantes avisaram que o cupom acabou">⚠️ Avisaram que acabou</span>` : isOld ? `<span class="stale">⏳ Pode ter expirado</span>` : ""}
+          ${flagged(ad.id) ? `<span class="flag-btn done">✓ Avisado</span>` : `<button type="button" class="flag-btn" title="Avisar que o cupom acabou">🚩 Acabou?</button>`}
+        </div>
+        <div class="spacer"></div>
+        <div class="actions">
+          ${coupon ? `<button type="button" class="btn-coupon" data-coupon="${escapeHtml(coupon)}" title="Clique para copiar o cupom"><span class="tag">🏷️</span><span class="code">Cupom: ${escapeHtml(coupon)}</span><span class="hint">copiar</span></button>` : ""}
+          <div class="offer-row">
+            ${url ? `<a class="btn-offer" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Usar cupom <span class="chev">›</span></a>` : `<span class="btn-offer disabled">Sem link direto</span>`}
+            <button type="button" class="btn-fav${isFav(ad.id) ? " on" : ""}" aria-pressed="${isFav(ad.id)}" aria-label="Salvar cupom" title="Salvar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.6 0 5.6 3.5 4.3 6.8C19.5 15.9 12 20.5 12 20.5z" fill="currentColor"/></svg></button>
+            <button type="button" class="btn-share" aria-label="Compartilhar cupom" title="Compartilhar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    return card;
+  }
+
   function buildCard(ad) {
+    if (isCouponPost(ad)) return buildCouponCard(ad);
     const store = storeOf(ad);
     const category = detectCategory(ad.text);
     const url = extractUrl(ad.text);

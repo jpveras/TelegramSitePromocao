@@ -259,6 +259,9 @@ module.exports = async function handler(req, res) {
 
   const d = describe(ad);
   const storeLabel = STORES[ad.store] || null;
+  // Post so de cupom (sem preco): titulo e texto proprios.
+  const couponOnly = !d.now && !!d.coupon && (/^\s*🔥?\s*🎟️?\s*cupom\b/imu.test(ad.text || "") || /cupom\.pravce\.com\.br/i.test(ad.text || ""));
+  if (couponOnly) d.name = `Cupom de desconto${storeLabel ? " " + storeLabel : ""}: ${d.coupon}`;
   const price = d.now ? ` por ${d.now}` : "";
   const off = d.discount ? ` (-${d.discount}%)` : "";
   const title = `${d.name}${price}`;
@@ -274,7 +277,7 @@ module.exports = async function handler(req, res) {
     ${stale ? `<div class="stale">⏳ Oferta publicada há mais de 2 dias, o preço pode ter mudado.</div>` : ""}
     <h1>${esc(d.name)}</h1>
     ${d.old ? `<div><span class="old">${esc(d.old)}</span>${d.discount ? `<span class="off">-${d.discount}%</span>` : ""}</div>` : ""}
-    <div class="now">${esc(d.now || "Confira o preço")}</div>
+    ${couponOnly ? `<p class="note" style="text-align:left;margin:4px 0 12px">Copie o código abaixo e aplique no carrinho${storeLabel ? " " + (["mercadolivre","aliexpress","carrefour"].includes(ad.store) ? "do" : "da") + " " + esc(storeLabel) : ""} antes de pagar.</p>` : `<div class="now">${esc(d.now || "Confira o preço")}</div>`}
     ${d.pix || d.installments ? `<div class="pay">${d.pix ? "<span>💠 Preço no Pix</span>" : ""}${d.installments ? `<span>💳 ${esc(d.installments)}</span>` : ""}</div>` : ""}
     ${historyBadge(ad, d)}
     ${d.rating ? `<div class="rating">⭐ <b>${esc(d.rating)}</b> de avaliação</div>` : ""}
