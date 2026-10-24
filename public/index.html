@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Promoções do Veras</title>
+<title>Promoções do Veras: ofertas e cupons de hoje (Amazon, Shopee, Mercado Livre)</title>
 <meta name="description" content="Ofertas e cupons da Amazon, Shopee, Mercado Livre e muito mais, atualizados ao vivo todos os dias. Menos preço, mais economia!" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Promoções do Veras" />
@@ -2318,7 +2318,7 @@
     card.dataset.id = ad.id;
 
     const thumbInner = ad.photo_url
-      ? `<img src="${escapeHtml(ad.photo_url)}" alt="" loading="lazy" onerror="this.onerror=null; this.outerHTML='<span class=&quot;placeholder&quot;>🏷️</span>';" />`
+      ? `<img src="${escapeHtml(ad.photo_url)}" alt="${escapeHtml(name.slice(0, 120))}" loading="lazy" onerror="this.onerror=null; this.outerHTML='<span class=&quot;placeholder&quot;>🏷️</span>';" />`
       : `<span class="placeholder">🏷️</span>`;
 
     const storeBadge =
@@ -2819,7 +2819,7 @@
     const name = extractProductName(ad.text) || firstLine(ad.text);
     const url = extractUrl(ad.text);
     heroEl.innerHTML = `
-      <div class="hd-img">${ad.photo_url ? `<img src="${escapeHtml(ad.photo_url)}" alt="" />` : `<span class="placeholder">🏷️</span>`}${i.off && i.off < 95 ? `<span class="off-badge big">-${i.off}%</span>` : ""}</div>
+      <div class="hd-img">${ad.photo_url ? `<img src="${escapeHtml(ad.photo_url)}" alt="${escapeHtml(name.slice(0, 120))}" />` : `<span class="placeholder">🏷️</span>`}${i.off && i.off < 95 ? `<span class="off-badge big">-${i.off}%</span>` : ""}</div>
       <div class="hd-info">
         <div class="hd-kicker">${escapeHtml(kicker)}</div>
         <p class="hd-name" title="${escapeHtml(name)}">${escapeHtml(name)}</p>
@@ -2931,7 +2931,7 @@
       const name = extractProductName(ad.text) || firstLine(ad.text);
       const sw = st.key !== "outros" ? `<span class="st" style="background:${st.color}; color:${st.dark ? "#1a1a1a" : "#fff"}">${st.icon}</span>` : "";
       return `<button type="button" class="fresh-item" data-id="${ad.id}" title="${escapeHtml(name)}">
-        <span class="ph"><img src="${escapeHtml(ad.photo_url)}" alt="" loading="lazy" />${sw}</span>
+        <span class="ph"><img src="${escapeHtml(ad.photo_url)}" alt="${escapeHtml(name.slice(0, 120))}" loading="lazy" />${sw}</span>
         <span class="pr">${escapeHtml(info(ad).now || "Ver oferta")}</span>
         <span class="nm">${escapeHtml(name)}</span>
       </button>`;
