@@ -79,9 +79,13 @@ async function handlePrivate(msg) {
     await sendReport({ force: true });
     return;
   }
+  if (isReportChat && text.startsWith("/semana")) {
+    await require("./_lib/weekly").sendWeekly({ force: true });
+    return;
+  }
   if (text === "/start" || text.startsWith("/start ")) await rememberCandidate(chatId, name);
   const intro = isReportChat
-    ? "✅ Você recebe o resumo diário das Promoções do Veras, todo dia por volta das 23h. Envie /resumo para receber o de hoje agora.\n\n"
+    ? "✅ Você recebe o resumo diário das Promoções do Veras, todo dia por volta das 23h. Envie /resumo para receber o de hoje agora. Todo domingo às 8h chega também o relatório semanal (ou envie /semana).\n\n"
     : "👋 Olá! Este é o bot das <b>Promoções do Veras</b>.\n\n";
   await reply(intro + HELP_ALERTAS);
 }

@@ -5,9 +5,12 @@
 //     /api/report?key=...&action=set&chat=ID    -> escolhe quem recebe (chat vazio desativa)
 //     /api/report?key=...&action=send           -> envia agora (teste)
 //     /api/report?key=...&action=preview        -> texto do resumo, sem enviar
+//   Relatorio semanal: cron de domingo 8h de Brasilia -> GET /api/report?weekly=1
+//     /api/report?key=...&action=weekly-preview | weekly-send
 
 const { isConfigured, redis } = require("./_lib/store");
 const { buildReport, sendReport, reportChat, listCandidates } = require("./_lib/report");
+const { buildWeekly, sendWeekly } = require("./_lib/weekly");
 
 function isCron(req) {
   const secret = process.env.CRON_SECRET;
@@ -31,7 +34,11 @@ module.exports = async function handler(req, res) {
         res.status(401).json({ error: "Não autorizado." });
         return;
       }
-      res.status(200).json({ ok: true, ...(await sendReport()) });
+      // Semanal: pedido pelo cron de domingo (?weekly=1) ou, por garantia, qualquer chamada do cron domingo de manha.
+      const sp = new Intl.DateTimeFormat("en-US", { timeZone: "America/Sao_Paulo", weekday: "short", hour: "numeric", hour12: false }).formatToParts(new Date());
+      const wd = sp.find((x) => x.type === "weekday").value, hr = Number(sp.find((x) => x.type === "hour").value);
+      const weekly = !!q.weekly || (wd === "Sun" && hr >= 6 && hr < 12);
+      res.status(200).json({ ok: true, ...(weekly ? await sendWeekly() : await sendReport()) });
       return;
     }
 
@@ -54,6 +61,10 @@ module.exports = async function handler(req, res) {
       res.status(200).json({ ok: true, chat });
     } else if (action === "send") {
       res.status(200).json({ ok: true, ...(await sendReport({ force: true })) });
+    } else if (action === "weekly-preview") {
+      res.status(200).json({ ok: true, text: await buildWeekly() });
+    } else if (action === "weekly-send") {
+      res.status(200).json({ ok: true, ...(await sendWeekly({ force: true })) });
     } else if (action === "preview") {
       res.status(200).json({ ok: true, text: await buildReport() });
     } else {
