@@ -4,6 +4,7 @@
 
 const { isConfigured, getAd, listAds } = require("./_lib/store");
 const { describe } = require("./_lib/parse");
+const { CATEGORIES, categoryOf } = require("./_lib/category");
 
 const STORES = {
   amazon: "Amazon", mercadolivre: "Mercado Livre", shopee: "Shopee", shein: "Shein",
@@ -140,14 +141,15 @@ async function storePage(req, res, origin, key) {
   const de = `${PREP[key] || "da"} ${label}`;
   const items = ads.map((a) => {
     const d = describe(a);
-    return `<a class="item" href="/oferta/${a.id}"><span class="ph">${a.photo_file_id ? `<img src="/api/photo?ad=${a.id}&v=2" alt="${esc(d.name)}" loading="lazy">` : "🏷️"}</span><span class="in"><p class="nm">${esc(d.name)}</p><span class="pr">${esc(d.now || "Confira")}</span>${d.discount ? `<span class="off">-${d.discount}%</span>` : ""}</span></a>`;
+    return `<a class="item" href="/oferta/${a.id}"><span class="ph">${a.photo_file_id ? `<img src="/api/photo?ad=${a.id}&v=${a.photo_thumb_id ? "3&s=m" : "2"}" alt="${esc(d.name)}" loading="lazy">` : "🏷️"}</span><span class="in"><p class="nm">${esc(d.name)}</p><span class="pr">${esc(d.now || "Confira")}</span>${d.discount ? `<span class="off">-${d.discount}%</span>` : ""}</span></a>`;
   }).join("");
   const others = Object.entries(STORES).filter(([k]) => k !== key).map(([k, l]) => `<a href="/loja/${k}">${esc(l)}</a>`).join("");
   const body = `<h1>Promoções e cupons ${esc(de)} hoje</h1>
 <p class="intro">As melhores ofertas ${esc(de)} selecionadas pelo canal Promoções do Veras, atualizadas ao vivo. ${ads.length ? `${ads.length} ofertas recentes abaixo.` : "Nenhuma oferta recente desta loja agora — confira as de outras lojas."}</p>
 <div class="list">${items}</div>
 <p style="margin-top:22px"><a class="go" href="/">Ver todas as ofertas de hoje ›</a></p>
-<div class="stores">${others}</div>`;
+<div class="stores">${others}</div>
+${catLinks("")}`;
   res.setHeader("Cache-Control", "public, max-age=60, s-maxage=900, stale-while-revalidate=3600");
   res.status(200).send(page({
     title: `Promoções ${de} hoje · ofertas e cupons · Promoções do Veras`,
@@ -194,7 +196,7 @@ async function campaignPage(req, res, origin) {
   const tagged = scored.filter((x) => CAMP_RE.test(x.a.text || ""));
   const rest = scored.filter((x) => !CAMP_RE.test(x.a.text || "")).sort((x, y) => (y.d.discount || 0) - (x.d.discount || 0));
   const list = tagged.concat(rest).slice(0, 36);
-  const items = list.map(({ a, d }) => `<a class="item" href="/oferta/${a.id}"><span class="ph">${a.photo_file_id ? `<img src="/api/photo?ad=${a.id}&v=2" alt="${esc(d.name)}" loading="lazy">` : "🏷️"}</span><span class="in"><p class="nm">${esc(d.name)}</p><span class="pr">${esc(d.now || "Confira")}</span>${d.discount ? `<span class="off">-${d.discount}%</span>` : ""}</span></a>`).join("");
+  const items = list.map(({ a, d }) => `<a class="item" href="/oferta/${a.id}"><span class="ph">${a.photo_file_id ? `<img src="/api/photo?ad=${a.id}&v=${a.photo_thumb_id ? "3&s=m" : "2"}" alt="${esc(d.name)}" loading="lazy">` : "🏷️"}</span><span class="in"><p class="nm">${esc(d.name)}</p><span class="pr">${esc(d.now || "Confira")}</span>${d.discount ? `<span class="off">-${d.discount}%</span>` : ""}</span></a>`).join("");
   const cds = EVENTS.map((e) => `<div class="cd" data-at="${e.at}" data-end="${e.end}"><b>${esc(e.name)}</b><span class="t">${esc(new Date(e.at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "America/Sao_Paulo" }))}</span><small>${esc(e.desc)}</small></div>`).join("");
   const body = `<section class="camp-hero">
   <h1>🖤 Black Friday e 11.11 2026: ofertas e cupons</h1>
@@ -224,10 +226,41 @@ async function campaignPage(req, res, origin) {
   }));
 }
 
+// ---------- Paginas por categoria (Google) ----------
+const catLinks = (except) => `<div class="stores">${CATEGORIES.filter((c) => c.key !== except).map((c) => `<a href="/categoria/${c.key}">${c.icon} ${esc(c.label)}</a>`).join("")}</div>`;
+
+async function categoryPage(req, res, origin, key) {
+  const cat = CATEGORIES.find((c) => c.key === key);
+  if (!cat) {
+    res.setHeader("Cache-Control", "no-store");
+    res.status(404).send(page({ title: "Categoria não encontrada · Promoções do Veras", desc: "Veja as ofertas de hoje.", image: `${origin}/og.png`, url: `${origin}/`, body: `<div class="card"><div class="body"><h1>Categoria não encontrada</h1><a class="go" href="/">Ver ofertas de hoje</a></div></div>${catLinks("")}` }));
+    return;
+  }
+  const recent = isConfigured() ? await listAds({ limit: 400 }).catch(() => []) : [];
+  const ads = recent.filter((a) => !a.ended_reported && categoryOf(a) && categoryOf(a).key === key).slice(0, 48);
+  const items = ads.map((a) => {
+    const d = describe(a);
+    return `<a class="item" href="/oferta/${a.id}"><span class="ph">${a.photo_file_id ? `<img src="/api/photo?ad=${a.id}&v=${a.photo_thumb_id ? "3&s=m" : "2"}" alt="${esc(d.name)}" loading="lazy">` : esc(cat.icon)}</span><span class="in"><p class="nm">${esc(d.name)}</p><span class="pr">${esc(d.now || "Confira")}</span>${d.discount ? `<span class="off">-${d.discount}%</span>` : ""}</span></a>`;
+  }).join("");
+  const label = cat.label;
+  const body = `<h1>${cat.icon} Ofertas de ${esc(label)} hoje</h1>
+<p class="intro">Promoções e cupons de ${esc(label.toLowerCase())} na Amazon, Shopee, Mercado Livre e outras lojas, selecionados pelo canal Promoções do Veras e atualizados ao vivo. ${ads.length ? `${ads.length} ofertas recentes abaixo.` : "Nenhuma oferta recente desta categoria agora; veja as outras categorias."}</p>
+<div class="list">${items}</div>
+<p style="margin-top:22px"><a class="go" href="/">Ver todas as ofertas de hoje ›</a></p>
+${catLinks(key)}`;
+  res.setHeader("Cache-Control", "public, max-age=60, s-maxage=900, stale-while-revalidate=3600");
+  res.status(200).send(page({
+    title: `Ofertas de ${label} hoje · promoções e cupons · Promoções do Veras`,
+    desc: `Promoções de ${label.toLowerCase()} atualizadas ao vivo: os melhores descontos e cupons do dia na Amazon, Shopee, Mercado Livre e mais.`,
+    image: `${origin}/og.png`, url: `${origin}/categoria/${key}`, body, extraCss: LIST_CSS, wide: true,
+  }));
+}
+
 async function sitemap(req, res, origin) {
   const ads = isConfigured() ? await listAds({ limit: 500 }).catch(() => []) : [];
   const urls = [`<url><loc>${origin}/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>`, `<url><loc>${origin}/black-friday</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>`]
     .concat(Object.keys(STORES).map((k) => `<url><loc>${origin}/loja/${k}</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>`))
+    .concat(CATEGORIES.map((c) => `<url><loc>${origin}/categoria/${c.key}</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>`))
     .concat(ads.map((a) => `<url><loc>${origin}/oferta/${a.id}</loc><lastmod>${String(a.updated_at || a.posted_at || "").slice(0, 10)}</lastmod><priority>0.5</priority></url>`));
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
   res.setHeader("Cache-Control", "public, max-age=600, s-maxage=3600");
@@ -243,6 +276,7 @@ module.exports = async function handler(req, res) {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   if (q.campanha) return campaignPage(req, res, origin);
   if (q.loja) return storePage(req, res, origin, String(q.loja).toLowerCase());
+  if (q.categoria) return categoryPage(req, res, origin, String(q.categoria).toLowerCase());
   res.setHeader("Content-Type", "text/html; charset=utf-8");
 
   const ad = Number.isFinite(id) && id > 0 && isConfigured() ? await getAd(id).catch(() => null) : null;

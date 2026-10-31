@@ -29,6 +29,10 @@
     {
       "source": "/11-11",
       "destination": "/api/oferta?campanha=1"
+    },
+    {
+      "source": "/categoria/:key",
+      "destination": "/api/oferta?categoria=:key"
     }
   ],
   "functions": {

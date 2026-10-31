@@ -71,6 +71,7 @@ async function upsertAd(ad) {
       ...ad,
       // Edicao sem foto nao apaga a foto que ja existia (nem a de reserva).
       photo_file_id: ad.photo_file_id || current.photo_file_id || null,
+      photo_thumb_id: ad.photo_file_id ? ad.photo_thumb_id || null : current.photo_thumb_id || null,
       id: Number(existingId),
       received_at: current.received_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -92,6 +93,7 @@ async function upsertAd(ad) {
     chat_id: ad.chat_id,
     text: ad.text ?? null,
     photo_file_id: ad.photo_file_id ?? null,
+    photo_thumb_id: ad.photo_thumb_id ?? null,
     posted_at: ad.posted_at,
     received_at: new Date().toISOString(),
   };

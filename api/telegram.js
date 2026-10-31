@@ -144,6 +144,11 @@ module.exports = async function handler(req, res) {
   // Telegram manda varias resolucoes da foto; guarda a maior.
   const photoFileId =
     msg.photo && msg.photo.length > 0 ? msg.photo[msg.photo.length - 1].file_id : null;
+  // Versao media (lado maior >= 640 px) para os cards: 2 a 4 vezes mais leve.
+  const mid = msg.photo && msg.photo.length > 1
+    ? msg.photo.find((p) => Math.max(p.width || 0, p.height || 0) >= 640)
+    : null;
+  const photoThumbId = mid && mid.file_id !== photoFileId ? mid.file_id : null;
 
   if (!text && !photoFileId) {
     res.status(200).json({ ok: true, ignored: "sem conteudo" });
@@ -156,6 +161,7 @@ module.exports = async function handler(req, res) {
       chat_id: incomingChatId,
       text,
       photo_file_id: photoFileId,
+      photo_thumb_id: photoThumbId,
       posted_at: new Date((msg.date || Date.now() / 1000) * 1000).toISOString(),
     });
     console.log(`[telegram] Anuncio ${created ? "salvo" : "atualizado"} (id=${ad.id})`);

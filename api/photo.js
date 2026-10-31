@@ -20,8 +20,10 @@ module.exports = async function handler(req, res) {
       return;
     }
 
+    // s=m: versao media para os cards, quando existir.
+    const fileId = (req.query || {}).s === "m" && ad.photo_thumb_id ? ad.photo_thumb_id : ad.photo_file_id;
     const infoRes = await fetch(
-      `https://api.telegram.org/bot${TOKEN}/getFile?file_id=${encodeURIComponent(ad.photo_file_id)}`
+      `https://api.telegram.org/bot${TOKEN}/getFile?file_id=${encodeURIComponent(fileId)}`
     );
     const info = await infoRes.json();
     if (!info.ok || !info.result || !info.result.file_path) {

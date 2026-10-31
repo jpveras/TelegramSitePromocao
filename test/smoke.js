@@ -365,8 +365,20 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   assert.ok(r.data.includes("<urlset") && r.data.includes("/loja/shopee") && r.data.includes(`/oferta/${idB}`));
   r = await call(oferta, { query: { id: String(idB) }, headers: { host: "promocoesdoveras.com.br" } });
   assert.ok(r.data.includes("Menor preço já visto aqui"));
+  r = await call(oferta, { query: { categoria: "casa" }, headers: { host: "promocoesdoveras.com.br" } });
+  assert.strictEqual(r.status, 200);
+  assert.ok(r.data.includes("Ofertas de Casa e Cozinha hoje") && r.data.includes("/categoria/games"));
+  r = await call(oferta, { query: { categoria: "xpto" }, headers: { host: "x" } });
+  assert.strictEqual(r.status, 404);
+  r = await call(oferta, { query: { sitemap: "1" }, headers: { host: "promocoesdoveras.com.br" } });
+  assert.ok(r.data.includes("/categoria/informatica"));
   console.log("OK: paginas de loja, sitemap e historico na pagina da oferta");
 
+  // Foto media para os cards quando o Telegram manda varios tamanhos.
+  await call(telegram, { method: "POST", headers: ok,
+    body: { channel_post: { message_id: 900, date: Math.floor(Date.now() / 1000), chat: { id: -100111 }, caption: "🔥 Fone Teste Tamanhos\n💰 R$ 99,00", photo: [{ file_id: "P90", width: 90, height: 90 }, { file_id: "P320", width: 320, height: 320 }, { file_id: "P800", width: 800, height: 800 }, { file_id: "P1280", width: 1280, height: 1280 }] } } });
+  const tam = (await call(ads, { query: { limit: "1" } })).data.ads[0];
+  assert.ok(tam.photo_url.includes("s=m"), "card usa a foto media");
   // Oferta sem foto pega a foto de um anuncio anterior do mesmo produto.
   r = await call(telegram, { method: "POST", headers: ok,
     body: { channel_post: { message_id: 901, date: Math.floor(Date.now() / 1000), chat: { id: -100111 }, caption: "🔥 Water Cooler Eskimo 36 RGB Preto\n💰 R$ 309,00", photo: [{ file_id: "F-ESKIMO" }] } } });
