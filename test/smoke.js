@@ -105,9 +105,11 @@ function fakeRedisServer() {
       }
       case "HSET": {
         if (!hashes.has(args[0])) hashes.set(args[0], new Map());
-        hashes.get(args[0]).set(args[1], args[2]);
+        for (let i = 1; i + 1 < args.length; i += 2) hashes.get(args[0]).set(args[i], args[i + 1]);
         return 1;
       }
+      case "HGET": return (hashes.get(args[0]) || new Map()).get(args[1]) ?? null;
+      case "HMGET": return args.slice(1).map((f) => (hashes.get(args[0]) || new Map()).get(f) ?? null);
       case "HGETALL": return [...(hashes.get(args[0]) || new Map())].flat();
       default: return { error: `comando nao suportado no teste: ${cmd}` };
     }
@@ -365,6 +367,18 @@ function call(handler, { method = "GET", query = {}, headers = {}, body } = {}) 
   assert.ok(r.data.includes("Menor preço já visto aqui"));
   console.log("OK: paginas de loja, sitemap e historico na pagina da oferta");
 
+  // Oferta sem foto pega a foto de um anuncio anterior do mesmo produto.
+  r = await call(telegram, { method: "POST", headers: ok,
+    body: { channel_post: { message_id: 901, date: Math.floor(Date.now() / 1000), chat: { id: -100111 }, caption: "🔥 Water Cooler Eskimo 36 RGB Preto\n💰 R$ 309,00", photo: [{ file_id: "F-ESKIMO" }] } } });
+  r = await call(telegram, { method: "POST", headers: ok,
+    body: { channel_post: { message_id: 902, date: Math.floor(Date.now() / 1000), chat: { id: -100111 }, text: "🔥 Water Cooler Eskimo 36 RGB Preto\n💰 R$ 299,00" } } });
+  const semFoto = (await call(ads, { query: { limit: "1" } })).data.ads[0];
+  assert.ok(semFoto.photo_url && semFoto.text.includes("299"), "deveria reaproveitar a foto do mesmo produto");
+  // Edicao sem foto nao apaga a foto.
+  await call(telegram, { method: "POST", headers: ok,
+    body: { edited_channel_post: { message_id: 901, date: Math.floor(Date.now() / 1000), chat: { id: -100111 }, text: "🔥 Water Cooler Eskimo 36 RGB Preto\n💰 R$ 305,00" } } });
+  const editado = (await call(ads, { query: { limit: "5" } })).data.ads.find((a) => a.text.includes("305"));
+  assert.ok(editado && editado.photo_url, "edicao sem foto manteve a foto");
   server.close();
   console.log("OK: webhook, edicao, filtro de chat, listagem, paginacao e feed ao vivo");
 })().catch((err) => {

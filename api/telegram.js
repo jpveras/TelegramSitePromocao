@@ -9,6 +9,7 @@ const { sendMessage } = require("./_lib/tg");
 const { rememberCandidate, reportChat, sendReport } = require("./_lib/report");
 const { addAlert, listAlerts, removeAlert, stopAlerts, notifyMatches, decodeStartPayload } = require("./_lib/alerts");
 const { catchUpPrices } = require("./_lib/history");
+const { handleNewAdPhoto, catchUpPhotos } = require("./_lib/photos");
 
 const HELP_ALERTAS =
   "🔔 <b>Alertas de produto</b>\n" +
@@ -162,9 +163,11 @@ module.exports = async function handler(req, res) {
     // anuncios antigos). Falhas aqui nunca impedem o anuncio de ser salvo.
     if (created || !ad.store_checked_at) {
       try {
+        if (created) await handleNewAdPhoto(ad).catch((e) => console.error("[telegram] Falha na foto de reserva:", e.message));
         await resolveAd(ad);
         if (created) await notifyMatches(ad).catch((e) => console.error("[telegram] Falha nos alertas:", e.message));
         await catchUpPrices({ max: 60, budgetMs: 5000 }).catch((e) => console.error("[telegram] Falha no historico:", e.message));
+        await catchUpPhotos().catch((e) => console.error("[telegram] Falha na varredura de fotos:", e.message));
         await backfillStores({ budgetMs: 10000, max: 15 });
       } catch (err) {
         console.error("[telegram] Falha ao identificar loja:", err.message);

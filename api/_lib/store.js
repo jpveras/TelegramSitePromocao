@@ -69,6 +69,8 @@ async function upsertAd(ad) {
     const updated = {
       ...current,
       ...ad,
+      // Edicao sem foto nao apaga a foto que ja existia (nem a de reserva).
+      photo_file_id: ad.photo_file_id || current.photo_file_id || null,
       id: Number(existingId),
       received_at: current.received_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),

@@ -1542,6 +1542,11 @@
   }
   @media (max-width: 380px) { .trust-strip { font-size: 10.8px; gap: 4px; } .trust-strip li { gap: 3px; } }
   @media (max-width: 350px) { .camp-banner .cb-w { display: none; } }
+  /* Oferta sem foto */
+  .nophoto { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--npc) 38%, #fff) 0%, color-mix(in srgb, var(--npc) 70%, #000) 100%); }
+  .nophoto .np-ico { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: rgba(255, 255, 255, 0.92); font-size: 32px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); }
+  .nophoto .np-txt { font-size: 11.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45); }
+  @media (max-width: 600px) { .nophoto .np-ico { width: 46px; height: 46px; font-size: 24px; } .nophoto .np-txt { display: none; } }
   /* Card de post so de cupom (sem produto) */
   .coupon-thumb { background: var(--cbg) !important; padding: 0 !important; overflow: hidden; }
   .coupon-thumb .coupon-art { display: block; width: 100%; height: 100%; }
@@ -2292,6 +2297,13 @@
     return card;
   }
 
+  // Oferta sem foto (o disparador mandou so texto, ou a foto falhou):
+  // um fundo na cor da loja com o icone da categoria, no lugar do vazio.
+  function noPhotoHtml(color, icon) {
+    return `<span class="nophoto" style="--npc:${color}"><span class="np-ico" aria-hidden="true">${icon}</span><span class="np-txt">Foto indisponível</span></span>`;
+  }
+  window.pvNoPhoto = (img) => { img.outerHTML = noPhotoHtml(img.dataset.npC || "#ff7a1a", img.dataset.npI || "🛍️"); };
+
   function buildCard(ad) {
     if (isCouponPost(ad)) return buildCouponCard(ad);
     const store = storeOf(ad);
@@ -2317,9 +2329,11 @@
     card.className = isOld ? "card is-old" : "card";
     card.dataset.id = ad.id;
 
+    const npColor = store.key !== "outros" ? store.color : "#ff7a1a";
+    const npIcon = category.key !== "outros" ? category.icon : "🛍️";
     const thumbInner = ad.photo_url
-      ? `<img src="${escapeHtml(ad.photo_url)}" alt="${escapeHtml(name.slice(0, 120))}" loading="lazy" onerror="this.onerror=null; this.outerHTML='<span class=&quot;placeholder&quot;>🏷️</span>';" />`
-      : `<span class="placeholder">🏷️</span>`;
+      ? `<img src="${escapeHtml(ad.photo_url)}" alt="${escapeHtml(name.slice(0, 120))}" loading="lazy" data-np-c="${npColor}" data-np-i="${npIcon}" onerror="this.onerror=null; window.pvNoPhoto && window.pvNoPhoto(this);" />`
+      : noPhotoHtml(npColor, npIcon);
 
     const storeBadge =
       store.key !== "outros"
