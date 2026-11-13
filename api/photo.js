@@ -13,8 +13,11 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  const t0 = Date.now();
+  const step = (name) => console.log(`[photo] ad=${id} ${name} +${Date.now() - t0}ms`);
   try {
     const ad = await getAd(id);
+    step("redis");
     if (!ad || !ad.photo_file_id) {
       res.status(404).end();
       return;
@@ -23,17 +26,21 @@ module.exports = async function handler(req, res) {
     // s=m: versao media para os cards, quando existir.
     const fileId = (req.query || {}).s === "m" && ad.photo_thumb_id ? ad.photo_thumb_id : ad.photo_file_id;
     const infoRes = await fetch(
-      `https://api.telegram.org/bot${TOKEN}/getFile?file_id=${encodeURIComponent(fileId)}`
+      `https://api.telegram.org/bot${TOKEN}/getFile?file_id=${encodeURIComponent(fileId)}`,
+      { signal: AbortSignal.timeout(8000) }
     );
     const info = await infoRes.json();
+    step(`getFile ${infoRes.status} ${info.ok ? "ok" : info.description || ""}`);
     if (!info.ok || !info.result || !info.result.file_path) {
       res.status(404).end();
       return;
     }
 
     const fileRes = await fetch(
-      `https://api.telegram.org/file/bot${TOKEN}/${info.result.file_path}`
+      `https://api.telegram.org/file/bot${TOKEN}/${info.result.file_path}`,
+      { signal: AbortSignal.timeout(10000) }
     );
+    step(`download ${fileRes.status}`);
     if (!fileRes.ok) {
       res.status(502).end();
       return;
@@ -49,6 +56,7 @@ module.exports = async function handler(req, res) {
     // A foto de um anuncio nao muda: a CDN da Vercel guarda por 30 dias.
     res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=2592000, immutable");
     res.status(200).send(buffer);
+    step(`enviado ${buffer.length}b`);
   } catch (err) {
     console.error("[photo] Falha ao buscar foto:", err.message);
     res.status(502).end();
