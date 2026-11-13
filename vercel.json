@@ -41,6 +41,9 @@
     },
     "api/stores.js": {
       "maxDuration": 30
+    },
+    "api/photo.js": {
+      "maxDuration": 20
     }
   },
   "redirects": [
