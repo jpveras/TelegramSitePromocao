@@ -1610,6 +1610,86 @@
     .quick-chip { height: 32px; padding: 0 11px; font-size: 12.5px; }
   }
 </style>
+<style id="redesign-bf">
+  /* ===== Redesenho para a Black Friday (nov/2026): "escuro refinado" =====
+     Tudo do redesenho fica neste bloco, para ser facil ajustar ou desfazer.
+     Objetivo: a 1a oferta aparecer ja na 1a tela do celular, menos coisas
+     antes das ofertas, menu fixo embaixo no celular e cards mais compactos. */
+
+  /* Faixa da campanha agora vem antes do topo (destaque da Black Friday). */
+  .camp-banner { margin: 0 0 18px; }
+  /* Computador: tira a faixa decorativa de 3 itens do topo (so enfeite). */
+  .brand-strip { display: none !important; }
+
+  /* Esqueleto enquanto as ofertas carregam (some quando chegam). */
+  .sk-card { border-radius: 22px; background: var(--card, #16181d); border: 1px solid rgba(255, 255, 255, 0.06); overflow: hidden; }
+  .sk-card .sk-img { aspect-ratio: 4 / 3; }
+  .sk-card .sk-line { height: 14px; margin: 14px 16px 0; border-radius: 7px; }
+  .sk-card .sk-line.w60 { width: 60%; } .sk-card .sk-line.w40 { width: 40%; height: 22px; margin-bottom: 18px; }
+  .sk-shine { background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 100%); background-size: 200% 100%; animation: sk 1.2s ease-in-out infinite; }
+  html[data-theme="light"] .sk-shine { background: linear-gradient(90deg, #ececf0 0%, #f7f7f9 50%, #ececf0 100%); background-size: 200% 100%; }
+  @keyframes sk { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+  @media (prefers-reduced-motion: reduce) { .sk-shine { animation: none; } }
+
+  /* Menu fixo embaixo (so no celular). */
+  .bottom-nav { display: none; }
+
+  @media (max-width: 720px) {
+    /* Topo enxuto: so logo, nome, @ e redes, numa linha. */
+    .brand-panel .brand-top { flex-wrap: nowrap; align-items: center; gap: 10px; padding: 12px 12px 12px 14px !important; }
+    .brand-panel .brand-id { gap: 10px; min-width: 0; flex: 1; }
+    .brand-panel .avatar { width: 44px !important; height: 44px !important; }
+    .brand-panel .brand-text h1 { font-size: 16.5px !important; line-height: 1.15; }
+    .brand-panel .brand-text .verified { width: 18px; height: 18px; font-size: 11px; }
+    .brand-panel .brand-handle { font-size: 12.5px; }
+    .brand-panel .highlight { display: none !important; }
+    .brand-side { width: auto !important; flex-shrink: 0; }
+    .brand-side .social-row { gap: 6px; }
+    .brand-side .social-row .btn-join { width: 32px !important; height: 32px !important; }
+    .brand-side .social-row .btn-join svg { width: 16px !important; height: 16px !important; }
+    .hero { gap: 10px !important; margin-bottom: 14px !important; }
+    /* Busca fica; cupons, maior desconto e cartao do WhatsApp saem do caminho
+       (cupons ficam no menu de baixo; WhatsApp no botao flutuante). */
+    .filter-panel .filter-body { padding: 12px !important; }
+    .filter-panel .spotlight, .filter-panel .wa-card, .filter-panel .all-channels { display: none !important; }
+    .camp-banner { margin: 0 0 12px !important; }
+    .trust-strip { margin: 0 0 4px !important; }
+    .section-head { margin-top: 6px !important; }
+    .section-head h2 { font-size: 26px; }
+
+    /* Cards mais compactos: 1 oferta a mais por tela. */
+    .card .body { padding-top: 12px; }
+    .card .title { font-size: 15.5px; -webkit-line-clamp: 2; }
+    .card .price-block .now, .card .price-now-row .now { font-size: 22px !important; }
+    .card .price-block { gap: 2px; }
+    .card .rating .rt-l { display: none; }
+    .card .meta-row { margin-top: 2px; }
+    .card .category { margin-bottom: 2px; }
+    /* Busca sem a moldura grande em volta */
+    .filter-panel { background: none !important; border: 0 !important; box-shadow: none !important; }
+    .filter-panel .filter-body { padding: 0 !important; }
+    .trust-strip { margin: 2px 0 10px !important; }
+    .card .rating { font-size: 12.5px; }
+    .card .actions { gap: 8px; }
+    .card .btn-offer, .card .btn-fav, .card .btn-share { min-height: 44px !important; height: 44px !important; }
+    .card .btn-coupon { min-height: 40px; padding-top: 8px; padding-bottom: 8px; }
+
+    /* Menu de baixo */
+    .bottom-nav { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+      padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: rgba(12, 13, 17, 0.94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08); }
+    html[data-theme="light"] .bottom-nav { background: rgba(255, 255, 255, 0.95); border-top-color: rgba(0, 0, 0, 0.08); }
+    .bottom-nav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 50px; padding: 4px 0;
+      background: none; border: 0; color: var(--muted, #9aa2b0); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 12px; -webkit-tap-highlight-color: transparent; }
+    .bottom-nav button svg { width: 23px; height: 23px; }
+    .bottom-nav button.on { color: var(--accent, #ff7a1a); }
+    .bottom-nav button.on svg { filter: drop-shadow(0 0 6px rgba(255, 122, 26, 0.45)); }
+    body { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
+    .wa-float { bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
+    .clicks-float { bottom: calc(76px + env(safe-area-inset-bottom)) !important; }
+    body.sheet-lock .bottom-nav { display: none; }
+  }
+</style>
 </head>
 <body>
   <div class="topbar">
@@ -1633,6 +1713,12 @@
   <button type="button" class="new-pill" id="new-pill" hidden>↑ <span id="new-pill-n">1</span> nova<span id="new-pill-s"></span> oferta<span id="new-pill-s2"></span></button>
 
   <main>
+    <a class="camp-banner" id="camp-banner" href="/black-friday" hidden>
+      <span class="cb-badge" id="camp-badge">11.11</span>
+      <span class="cb-txt"><b id="camp-title">11.11 e Black Friday</b><small id="camp-sub">Mega ofertas Shopee e AliExpress</small></span>
+      <span class="cb-go">Ver<span class="cb-w"> ofertas</span> <span aria-hidden="true">›</span></span>
+    </a>
+
     <div class="hero">
       <section class="panel brand-panel">
         <div class="brand-top">
@@ -1796,11 +1882,6 @@
       <li><span class="ck" aria-hidden="true">✔</span><span class="lg">Ofertas conferidas pela equipe</span><span class="sh">Ofertas conferidas</span></li>
     </ul>
 
-    <a class="camp-banner" id="camp-banner" href="/black-friday" hidden>
-      <span class="cb-badge" id="camp-badge">11.11</span>
-      <span class="cb-txt"><b id="camp-title">11.11 e Black Friday</b><small id="camp-sub">Mega ofertas Shopee e AliExpress</small></span>
-      <span class="cb-go">Ver<span class="cb-w"> ofertas</span> <span aria-hidden="true">›</span></span>
-    </a>
 
     <div class="section-head">
       <h2>Ofertas do Dia</h2>
@@ -1820,7 +1901,7 @@
       <button type="button" class="quick-chip price-chip" data-max="500" aria-pressed="false">Até R$ 500</button>
     </div>
 
-    <div class="grid" id="feed"></div>
+    <div class="grid" id="feed" aria-busy="true"><div class="sk-card" aria-hidden="true"><div class="sk-img sk-shine"></div><div class="sk-line sk-shine"></div><div class="sk-line w60 sk-shine"></div><div class="sk-line w40 sk-shine"></div></div><div class="sk-card" aria-hidden="true"><div class="sk-img sk-shine"></div><div class="sk-line sk-shine"></div><div class="sk-line w60 sk-shine"></div><div class="sk-line w40 sk-shine"></div></div><div class="sk-card" aria-hidden="true"><div class="sk-img sk-shine"></div><div class="sk-line sk-shine"></div><div class="sk-line w60 sk-shine"></div><div class="sk-line w40 sk-shine"></div></div><div class="sk-card" aria-hidden="true"><div class="sk-img sk-shine"></div><div class="sk-line sk-shine"></div><div class="sk-line w60 sk-shine"></div><div class="sk-line w40 sk-shine"></div></div><div class="sk-card" aria-hidden="true"><div class="sk-img sk-shine"></div><div class="sk-line sk-shine"></div><div class="sk-line w60 sk-shine"></div><div class="sk-line w40 sk-shine"></div></div><div class="sk-card" aria-hidden="true"><div class="sk-img sk-shine"></div><div class="sk-line sk-shine"></div><div class="sk-line w60 sk-shine"></div><div class="sk-line w40 sk-shine"></div></div></div>
     <div class="empty" id="empty-msg" hidden>
       <div class="big">🕵️</div>
       <span id="empty-text">Nenhum anúncio encontrado.</span>
@@ -2372,7 +2453,7 @@
         ${historyBadge(ad)}
         ${seenHtml(ad.id)}
         <div class="meta-row">
-          <div class="rating">${rating ? `⭐ <b>${escapeHtml(rating)}</b> de avaliação` : ""}</div>
+          <div class="rating">${rating ? `⭐ <b>${escapeHtml(rating)}</b><span class="rt-l"> de avaliação</span>` : ""}</div>
           ${ad.ended ? `<span class="stale ended" title="Visitantes avisaram que a oferta ou o cupom acabou">⚠️ Avisaram que acabou</span>` : isOld ? `<span class="stale" title="Publicada há mais de 3 dias: o preço ou o cupom pode ter mudado">⏳ Pode ter expirado</span>` : isStale ? `<span class="stale" title="Publicada há mais de 2 dias">⏳ Pode ter acabado</span>` : ""}
           ${flagged(ad.id) ? `<span class="flag-btn done">✓ Avisado</span>` : `<button type="button" class="flag-btn" title="Avisar que a oferta ou o cupom acabou">🚩 Acabou?</button>`}
         </div>
@@ -3355,5 +3436,52 @@
     });
   })();
 </script>
+
+  <!-- Menu fixo embaixo, so no celular (redesenho Black Friday) -->
+  <nav class="bottom-nav" id="bottom-nav" aria-label="Atalhos">
+    <button type="button" data-go="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Início</button>
+    <button type="button" data-go="cats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Categorias</button>
+    <button type="button" data-go="coupons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14.5 9.5l-5 5M9.5 9.5h.01M14.5 14.5h.01"/></svg>Cupons</button>
+    <button type="button" data-go="favs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.6 0 5.6 3.5 4.3 6.8C19.5 15.9 12 20.5 12 20.5z"/></svg>Salvos</button>
+    <button type="button" data-go="alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Alertas</button>
+  </nav>
+  <script>
+  // Menu de baixo: reaproveita os botoes que ja existem na pagina.
+  (function () {
+    const nav = document.getElementById("bottom-nav");
+    if (!nav) return;
+    const btn = (go) => nav.querySelector(`[data-go="${go}"]`);
+    const scrollToEl = (el) => { if (!el) return; const y = el.getBoundingClientRect().top + window.scrollY - 74; window.scrollTo({ top: Math.max(0, y), behavior: "smooth" }); };
+    const sync = () => {
+      const coupon = document.getElementById("coupon-only")?.getAttribute("aria-pressed") === "true";
+      const fav = document.getElementById("fav-only")?.getAttribute("aria-pressed") === "true";
+      btn("coupons").classList.toggle("on", coupon);
+      btn("favs").classList.toggle("on", fav);
+      btn("home").classList.toggle("on", !coupon && !fav);
+    };
+    nav.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-go]");
+      if (!b) return;
+      const go = b.dataset.go;
+      if (go === "home") {
+        if (document.getElementById("coupon-only")?.getAttribute("aria-pressed") === "true") document.getElementById("coupon-only").click();
+        if (document.getElementById("fav-only")?.getAttribute("aria-pressed") === "true") document.getElementById("fav-only").click();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else if (go === "cats") {
+        scrollToEl(document.getElementById("cat-row"));
+      } else if (go === "coupons") {
+        document.getElementById("coupon-only")?.click();
+        scrollToEl(document.querySelector(".section-head"));
+      } else if (go === "favs") {
+        document.getElementById("fav-only")?.click();
+        scrollToEl(document.querySelector(".section-head"));
+      } else if (go === "alerts") {
+        document.getElementById("alert-open")?.click();
+      }
+      setTimeout(sync, 50);
+    });
+    document.addEventListener("click", (e) => { if (e.target.closest("#coupon-only, #fav-only, #clear-filters")) setTimeout(sync, 50); });
+  })();
+  </script>
 </body>
 </html>
