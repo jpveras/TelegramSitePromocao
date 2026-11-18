@@ -12,9 +12,14 @@ function extractUrl(text) {
 
 function extractPrices(text) {
   if (!text) return { now: null, old: null };
-  const oldM = text.match(/\bDe\s*R\$\s?([\d.,]*\d)/i);
+  // "12x de R$ 43,66" e parcela, nao preco antigo (o "x" antes do "de" denuncia).
+  const oldM = text.match(/(?<!\d\s*x\s*)\bDe\s*R\$\s?([\d.,]*\d)/i);
   const nowM = text.match(/💰\s*R\$\s?([\d.,]*\d)/u);
-  if (nowM) return { now: `R$ ${nowM[1]}`, old: oldM ? `R$ ${oldM[1]}` : null };
+  if (nowM) {
+    // Preco antigo so vale se for maior que o atual.
+    const okOld = oldM && parseBRL(oldM[1]) > parseBRL(nowM[1]);
+    return { now: `R$ ${nowM[1]}`, old: okOld ? `R$ ${oldM[1]}` : null };
+  }
   const all = [...text.matchAll(/R\$\s?([\d.,]*\d)/g)].map((m) => `R$ ${m[1]}`);
   if (all.length === 0) return { now: null, old: null };
   if (all.length === 1) return { now: all[0], old: null };
