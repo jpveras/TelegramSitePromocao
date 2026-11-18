@@ -63,8 +63,16 @@ function extractPayment(text) {
 function extractName(text) {
   const lines = (text || "").split("\n");
   const fire = lines.find((l) => /^\s*🔥/u.test(l));
-  const name = fire ? fire.replace(/^\s*🔥\s*/u, "") : lines.find((l) => l.trim()) || "Oferta";
-  return name.trim().slice(0, 160);
+  const name = (fire ? fire.replace(/^\s*🔥\s*/u, "") : lines.find((l) => l.trim()) || "Oferta").trim();
+  // O disparador as vezes manda so "Produto Shopee": usa a frase de chamada.
+  if (/^produto(\s+\S+)?$/i.test(name)) {
+    const first = (lines.find((l) => l.trim()) || "").replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu, "").trim();
+    if (first.length >= 8 && !/^\s*🔥/u.test(first)) {
+      const x = first.toLowerCase().replace(/\s+/g, " ");
+      return (x.charAt(0).toUpperCase() + x.slice(1)).slice(0, 160);
+    }
+  }
+  return name.slice(0, 160);
 }
 
 function describe(ad) {

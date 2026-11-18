@@ -1631,6 +1631,20 @@
   @keyframes sk { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
   @media (prefers-reduced-motion: reduce) { .sk-shine { animation: none; } }
 
+  /* Computador: topo mais curto e sem buracos. */
+  @media (min-width: 1063px) { .hero { align-items: start !important; } }
+  @media (min-width: 721px) {
+    .filter-panel .filter-head { display: none !important; }
+    /* O "maior desconto" ja aparece em destaque no painel da esquerda. */
+    .filter-panel #best-deal { display: none !important; }
+  }
+  /* Telas bem largas: mais ofertas por fileira. */
+  @media (min-width: 1680px) {
+    main { max-width: 1640px !important; }
+    .topbar { padding-left: max(24px, calc((100% - 1640px) / 2 + 24px)) !important; padding-right: max(24px, calc((100% - 1640px) / 2 + 24px)) !important; }
+    #feed.grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  }
+
   /* Menu fixo embaixo (so no celular). */
   .bottom-nav { display: none; }
 
@@ -2222,7 +2236,16 @@
   function extractProductName(text) {
     if (!text) return null;
     const line = text.split("\n").find((l) => /^\s*🔥/.test(l));
-    return line ? line.replace(/^\s*🔥\s*/, "").trim() : null;
+    const name = line ? line.replace(/^\s*🔥\s*/, "").trim() : null;
+    // O disparador as vezes manda so "Produto Shopee": usa a frase de chamada.
+    if (name && /^produto(\s+\S+)?$/i.test(name)) return headlineName(text) || name;
+    return name;
+  }
+  function headlineName(text) {
+    const first = (text.split("\n").find((l) => l.trim()) || "").replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu, "").trim();
+    if (!first || /^\s*🔥/u.test(first) || first.length < 8) return null;
+    const x = first.toLowerCase().replace(/\s+/g, " ").trim();
+    return x.charAt(0).toUpperCase() + x.slice(1, 120);
   }
 
   // "Use o Cupom: HOJE10DO10" -> "HOJE10DO10". Exige os dois-pontos para nao
